@@ -9,13 +9,15 @@ import Abilities
 import Skills
 import Feats
 import CombatManager
+import Unit
 
-class Character():
+class Character(Unit.Unit):
     def __init__(self, ctx):
+        super(Character, self).__init__(ctx)
         self.ctx = ctx
         self.combat = CombatManager.CombatManager(self)
 
-    def BuildLevel1(self, race, gender, age, nameFirst, nameLast, align, cls, deity, abilities, skills, feats):
+    def buildLevel1(self, race, gender, age, nameFirst, nameLast, align, cls, deity, abilities, skills, feats):
         self.race = race
         self.gender = gender
         self.age = age
@@ -26,3 +28,7 @@ class Character():
         self.abilities = Abilities.Abilities(abilities)
         self.skills = Skills.Skills(skills)
         self.feats = Feats.Feats(feats, self.ctx['protosFeats'])
+        self.__updateProps()
+
+    def __updateProps(self):
+        pass

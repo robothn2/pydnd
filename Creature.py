@@ -1,22 +1,16 @@
 #coding: utf-8
 
-import json
-from common import CsvLoader
+import Abilities
+import Unit
 
-class CreaturePrototypes:
-    def __init__(self):
-        self.prototypes = CsvLoader.CsvLoader(r'data/beastiary.csv')
-
-    def __contains__(self, creatureName):
-        return creatureName in self.d
-    def __getattr__(self, name):
-        return self.prototypes.__getattr__(name)
-
-class Creature:
-    def __init__(self, proto):
+class Creature(Unit.Unit):
+    def __init__(self, ctx, name):
+        super(Creature, self).__init__(ctx)
+        proto = ctx['protosCreatures'][name]
         self.d = proto
-
-if __name__ == '__main__':
-    protos = CreaturePrototypes()
-    mob = Creature(protos.zombie)
-    print(mob.d)
+        self.abilities = Abilities.Abilities([proto['Str'], proto['Dex'], proto['Con'],
+                                    proto['Wis'], proto['Int'], proto['Cha']])
+        self.level = proto['level']
+        self.hp = proto['hp']
+        self.ac = proto['ac']
+        self.level = proto['level']

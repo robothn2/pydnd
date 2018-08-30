@@ -3,11 +3,15 @@
 import json
 
 class Unit:
-    def __init__(self, proto):
-        self.d = proto
+    def __init__(self, ctx):
+        self.ctx = ctx
 
     @classmethod
     def update(self, deltaTime):
+        pass
+
+    @classmethod
+    def setEnemy(self, monster):
         pass
 
 if __name__ == '__main__':
