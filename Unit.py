@@ -1,16 +1,16 @@
 #coding: utf-8
 
 import json
-import CombatManager
+from CombatManager import CombatManager
 
 class Unit:
     def __init__(self, ctx):
         self.ctx = ctx
-        self.props = {'dead': False}
-        self.combat = CombatManager.CombatManager(self)
+        self.props = {'dead': False, 'weapon': 'unarmed'}
+        self.combat = CombatManager(self)
 
     def update(self, deltaTime):
-        print('Unit.update', deltaTime)
+        #print('Unit.update', deltaTime)
         self.combat.update(deltaTime)
 
     def setProp(self, key, value):
@@ -23,3 +23,13 @@ class Unit:
     def addEnemy(self, enemy):
         self.combat.addEnemy(enemy)
 
+    def applyDamage(self, damageTotal):
+        hpOld = int(self.getProp('hp'))
+        hpNew = hpOld - damageTotal
+        if hpNew < 0:
+            hpNew = 0
+        print('hp of', self.getProp('name'), 'changed:', hpOld, '->', hpNew)
+        self.setProp('hp', hpNew)
+        if hpNew == 0:
+            self.setProp('dead', True)
+            print(self.getProp('name'), 'dead')

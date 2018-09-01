@@ -1,19 +1,16 @@
 #coding: utf-8
 
-import Abilities
-import Unit
+from Unit import Unit
+import warnings
 
-class Creature(Unit.Unit):
+class Creature(Unit):
     def __init__(self, ctx, name):
         super(Creature, self).__init__(ctx)
-        proto = ctx['protosCreatures'][name]
-        self.proto = proto
-        self.abilities = Abilities.Abilities([proto['Str'], proto['Dex'], proto['Con'],
-                                    proto['Wis'], proto['Int'], proto['Cha']])
-        self.level = proto['level']
-        self.hp = proto['hp']
-        self.ac = proto['ac']
-        self.level = proto['level']
+        if name in ctx['protosCreatures']:
+            self.props.update(ctx['protosCreatures'][name])
+        else:
+            warnings.warn('unknown create name: %s' % name)
+        Unit.setProp(self, 'FinalAttackBonus', 0)
 
     def update(self, deltaTime):
-        pass
+        Unit.update(self, deltaTime)

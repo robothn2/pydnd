@@ -1,7 +1,6 @@
 #coding: utf-8
-import Character
-import Creature
-import Feats
+from Character import Character
+from Creature import Creature
 import Object
 from common import CsvLoader
 import time
@@ -21,27 +20,24 @@ class Room:
         for unit in self.units:
             unit.update(deltaTime)
 
-    def getAliveCount(self):
-        cnt = 0
-        for unit in self.units:
-            if not unit.getProp('dead'):
-                cnt += 1
-        return cnt
-
 if __name__ == '__main__':
-    player = Character.Character(ctx)
-    player.buildLevel1('human', 'female', 20, 'Lora', 'Craft', 'Ranger', 'Chaotic Neutral', 'Leira',
-                     {'str': 16, 'dex': 14, 'con':10, 'int': 16, 'wis': 8, 'cha':  18},
-                     {'Heal': 4, 'Intimidate': 4, 'Hide':4, 'MoveSilent': 4, 'Spot': 4, 'Listen': 4, 'Tumble': 4, 'Spellcraft': 4, 'UseMagicDevice': 4},
-                     ['FavordEnemy:Humans', 'Dodge'])
+    player = Character(ctx)
+    player.buildLevel1({'race':'human', 'gender':'female', 'age':20, 'name':'Lora', 'deity':'Leira',
+                        'alignment':'ChaoticNeutral'},
+                        'Ranger',
+                        {'Str': 16, 'Dex': 14, 'Con':10, 'Int': 16, 'Wis': 8, 'Cha':  18},
+                        {'Heal': 4, 'Intimidate': 4, 'Hide':4, 'MoveSilent': 4, 'Spot': 4, 'Listen': 4, 'Tumble': 4, 'Spellcraft': 4, 'UseMagicDevice': 4},
+                        ['FavordEnemy:Humans', 'Dodge'])
 
-    monster = Creature.Creature(ctx, 'zombie')
+    monster = Creature(ctx, 'zombie')
 
     room = Room()
     room.addUnit(player)
     room.addUnit(monster)
     player.addEnemy(monster)
+    monster.addEnemy(player)
 
-    while room.getAliveCount() > 1:
-        room.update(20)
-        time.sleep(0.02)
+    deltaInSeconds = 2.0
+    while not player.getProp('dead'):
+        room.update(deltaInSeconds)
+        time.sleep(deltaInSeconds)
