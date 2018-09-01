@@ -4,6 +4,7 @@ import Creature
 import Feats
 import Object
 from common import CsvLoader
+import time
 
 ctx = Object.Object()
 ctx['protosFeats'] = CsvLoader.loadCsvFile(r'data/feats.csv')
@@ -20,8 +21,12 @@ class Room:
         for unit in self.units:
             unit.update(deltaTime)
 
-    def getAliveUnits(self):
-        return 2
+    def getAliveCount(self):
+        cnt = 0
+        for unit in self.units:
+            if not unit.getProp('dead'):
+                cnt += 1
+        return cnt
 
 if __name__ == '__main__':
     player = Character.Character(ctx)
@@ -35,7 +40,8 @@ if __name__ == '__main__':
     room = Room()
     room.addUnit(player)
     room.addUnit(monster)
-    player.setEnemy(monster)
+    player.addEnemy(monster)
 
-    while room.getAliveUnits() > 1:
+    while room.getAliveCount() > 1:
         room.update(20)
+        time.sleep(0.02)

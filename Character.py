@@ -8,14 +8,12 @@ import string
 import Abilities
 import Skills
 import Feats
-import CombatManager
 import Unit
 
 class Character(Unit.Unit):
     def __init__(self, ctx):
         super(Character, self).__init__(ctx)
         self.ctx = ctx
-        self.combat = CombatManager.CombatManager(self)
 
     def buildLevel1(self, race, gender, age, nameFirst, nameLast, align, cls, deity, abilities, skills, feats):
         self.race = race
@@ -32,3 +30,4 @@ class Character(Unit.Unit):
 
     def __updateProps(self):
         pass
+

@@ -1,19 +1,25 @@
 #coding: utf-8
 
 import json
+import CombatManager
 
 class Unit:
     def __init__(self, ctx):
         self.ctx = ctx
+        self.props = {'dead': False}
+        self.combat = CombatManager.CombatManager(self)
 
-    @classmethod
     def update(self, deltaTime):
-        pass
+        print('Unit.update', deltaTime)
+        self.combat.update(deltaTime)
 
-    @classmethod
-    def setEnemy(self, monster):
-        pass
+    def setProp(self, key, value):
+        self.props[key] = value
+    def getProp(self, key):
+        if key in self.props:
+            return self.props[key]
+        return None
 
-if __name__ == '__main__':
-    u = Unit()
-    u.update(20)
+    def addEnemy(self, enemy):
+        self.combat.addEnemy(enemy)
+
