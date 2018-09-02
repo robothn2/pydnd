@@ -1,14 +1,9 @@
 #coding: utf-8
 
-import os
-import json
-import time
-import string
-
-from Abilities import parse_abilities
-from Skills import parse_skills
-from Feats import parse_feats
-from Unit import Unit
+from Skills import *
+from Feats import *
+from Unit import *
+from Classes import *
 
 class Character(Unit):
     def __init__(self, ctx):
@@ -16,16 +11,20 @@ class Character(Unit):
         self.ctx = ctx
 
     def buildLevel1(self, props, cls, abilities, skills, feats):
-        self.props = {**self.props, **props, **parse_abilities(abilities)}
-        Unit.setProp(self, 'classList', [cls])
-        Unit.setProp(self, 'skills', parse_skills(skills))
-        Unit.setProp(self, 'feats', parse_feats(feats, self.ctx['protosFeats']))
+        if cls not in self.ctx['protosClass']:
+            return False
+        self.props = {**self.props, **props, **abilities_parse(abilities)}
+        Unit.setProp(self, 'classes', {cls: {'level': 1, 'proto': self.ctx['protosClass'][cls]}})
+        Unit.setProp(self, 'skills', skills_parse(skills))
+        Unit.setProp(self, 'feats', feats_parse(feats, self.ctx['protosFeat']))
+        Unit.setProp(self, 'buffs', {})
 
-        self.__updateProps()
+        self._applyAll()
+        return True
 
-    def __updateProps(self):
-        Unit.setProp(self, 'FinalAttackBonus', (self.getProp('Str') - 10)/2)
-        Unit.setProp(self, 'ac', 10 + (self.getProp('Dex') - 10)/2)
-        Unit.setProp(self, 'hp', 20)
+    def _applyAll(self):
+        classes_apply(self.getProp('classes'), self.modifier)
+        Unit._applyAll(self)
+        Unit._postApplyAll(self)
+        print(self.modifier)
         print(self.props)
-

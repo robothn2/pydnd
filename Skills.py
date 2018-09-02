@@ -5,8 +5,8 @@ Skill = Enum('Skill', ('Appraise', 'Bluff', 'Concentration', 'DisableTrap', 'Hea
                        'Listen', 'Lore', 'MoveSilent', 'Spot', 'Spellcraft', 'Taunt', 'Tumble',
                        'UseMagicDevice'))
 
-#     sk = parse_skills({'Concentration': 4, 'SpellCraft': 1, 'Tumble': 3, 'Lore': 4})
-def parse_skills(skills):
+#     sk = skills_parse({'Concentration': 4, 'SpellCraft': 1, 'Tumble': 3, 'Lore': 4})
+def skills_parse(skills):
     d = [0] * len(Skill)
 
     if type(skills) is dict:
@@ -15,5 +15,8 @@ def parse_skills(skills):
                 d[Skill[k].value - 1] = int(v)
             else:
                 print('  unknown skill:', k, v)
-    print(d)
     return d
+
+def skills_apply(skills, props):
+    props.addTypedSource('ArmorClass', 'tumble', int(skills['Tumble']/5), 'Skills:Tumble')
+    props.addTypedSource('SavingThrow', 'all', int(skills['Spellcraft'] / 5), 'Skills:Spellcraft')

@@ -6,8 +6,9 @@ from common import CsvLoader
 import time
 
 ctx = Object()
-ctx['protosFeats'] = CsvLoader.loadCsvFile(r'data/feats.csv')
-ctx['protosCreatures'] = CsvLoader.loadCsvFile(r'data/beastiary.csv')
+ctx['protosFeat'] = CsvLoader.loadCsvFile(r'data/feats.csv')
+ctx['protosCreature'] = CsvLoader.loadCsvFile(r'data/beastiary.csv')
+ctx['protosClass'] = CsvLoader.loadCsvFile(r'data/classes.csv')
 
 class Room:
     def __init__(self):
@@ -27,9 +28,9 @@ if __name__ == '__main__':
                         'Ranger',
                         {'Str': 16, 'Dex': 14, 'Con':10, 'Int': 16, 'Wis': 8, 'Cha':  18},
                         {'Heal': 4, 'Intimidate': 4, 'Hide':4, 'MoveSilent': 4, 'Spot': 4, 'Listen': 4, 'Tumble': 4, 'Spellcraft': 4, 'UseMagicDevice': 4},
-                        ['FavordEnemy:Humans', 'Dodge'])
+                        ['FavoredEnemy:Undead', 'Dodge'])
 
-    monster = Creature(ctx, 'zombie')
+    monster = Creature(ctx, 'badger')
 
     room = Room()
     room.addUnit(player)

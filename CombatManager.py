@@ -1,8 +1,6 @@
 #coding: utf-8
 
 from Dice import rollDice
-#from Character import Character
-#from Creature import Creature
 
 class CombatManager:
     def __init__(self, unit):
@@ -40,7 +38,7 @@ class CombatManager:
             print(caster.getProp('name'), 'melee attack', target.getProp('name'), ', roll: ', roll, ', missing')
             return
 
-        dcCaster = roll + caster.getProp('FinalAttackBonus')
+        dcCaster = roll + caster.getProp('ab')
         dcTarget = int(target.getProp('ac'))
         if roll < 20:
             if dcCaster < dcTarget:

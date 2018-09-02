@@ -1,12 +1,12 @@
 #coding: utf-8
 
 '''
-ab1 = parse_abilities({'Str': 16, 'Dex': 14, 'Con': 10, 'Int': 16, 'Wis': 8, 'Cha': 18})
-ab2 = parse_abilities({'strength': 16, 'dexterity': 14, 'constitution': 10, 'intelligence': 16, 'wisdom': 8, 'charisma': 18})
-ab3 = parse_abilities([16, 14, 10, 16, 8, 18])
-ab4 = parse_abilities(16, 14, 10, 16, 8, 18)
+ab1 = abilities_parse({'Str': 16, 'Dex': 14, 'Con': 10, 'Int': 16, 'Wis': 8, 'Cha': 18})
+ab2 = abilities_parse({'strength': 16, 'dexterity': 14, 'constitution': 10, 'intelligence': 16, 'wisdom': 8, 'charisma': 18})
+ab3 = abilities_parse([16, 14, 10, 16, 8, 18])
+ab4 = abilities_parse(16, 14, 10, 16, 8, 18)
 '''
-def parse_abilities(abilities, dexterity = None, constitution = None, intelligence = None, wisdom = None, charisma = None):
+def abilities_parse(abilities, dexterity = None, constitution = None, intelligence = None, wisdom = None, charisma = None):
     d = {'Str':8, 'Dex':8, 'Con':8, 'Int':8, 'Wis':8, 'Cha':8}
 
     if type(abilities) is int:
@@ -40,5 +40,12 @@ def parse_abilities(abilities, dexterity = None, constitution = None, intelligen
         d['Wis'] = abilities[4]
         d['Cha'] = abilities[5]
 
-    print(d)
     return d
+
+def abilities_modifier(props, key):
+    return int((int(props[key]) - 10) / 2)
+
+def abilities_apply(props, modifier):
+    modifier.addTypedSource('AttackBonus', 'Str', abilities_modifier(props, 'Str'), 'Ability:Str')
+    modifier.addTypedSource('ArmorClass', 'Dex', abilities_modifier(props, 'Dex'), 'Ability:Dex')
+    modifier.addSource('HitPoint', abilities_modifier(props, 'Con'), 'Ability:Con')
