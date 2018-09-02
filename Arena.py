@@ -1,11 +1,11 @@
 #coding: utf-8
 from Character import Character
 from Creature import Creature
-import Object
+from Object import Object
 from common import CsvLoader
 import time
 
-ctx = Object.Object()
+ctx = Object()
 ctx['protosFeats'] = CsvLoader.loadCsvFile(r'data/feats.csv')
 ctx['protosCreatures'] = CsvLoader.loadCsvFile(r'data/beastiary.csv')
 
@@ -38,6 +38,6 @@ if __name__ == '__main__':
     monster.addEnemy(player)
 
     deltaInSeconds = 2.0
-    while not player.getProp('dead'):
+    while not player.getProp('dead') and not monster.getProp('dead'):
         room.update(deltaInSeconds)
         time.sleep(deltaInSeconds)
