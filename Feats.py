@@ -13,6 +13,6 @@ def feats_parse(feats, featPrototypes):
 def feats_apply(feats, props):
     for feat in feats.keys():
         if feat == 'Dodge':
-            props.addTypedSource('ArmorClass', 'dodge', 1, 'Feat:Dodge')
-        elif feat == 'FavoredEnemy:Undead':
-            props.addTypedSource('AttackBonus', 'racial:undead', 1, 'Feat:FavoredEnemy:Undead')
+            props.addTypedSource('ArmorClass', 'Dodge', 1, 'Feat:Dodge')
+        elif feat == 'FavoredEnemy(Undead)':
+            props.addTypedSource('AttackBonus', 'Racial:Undead', 1, 'Feat:FavoredEnemy:Undead')

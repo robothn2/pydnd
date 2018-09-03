@@ -31,13 +31,13 @@ class Props(dict):
 
 if __name__ == '__main__':
     modifier = Modifier({})
-    modifier.addTypedSource('ArmorClass', 'tumble', 1)
+    modifier.addTypedSource('ArmorClass', 'Tumble', 1)
     print(modifier)
 
     modifier = Modifier({'ArmorClass': {}})
-    modifier.addTypedSource('ArmorClass', 'tumble', 2, 'Skills:Tumble')
+    modifier.addTypedSource('ArmorClass', 'Tumble', 2, 'Skills:Tumble')
     print(modifier)
 
-    modifier = Modifier({'ArmorClass': {'dodge': {'Dex': 2}}})
-    modifier.addTypedSource('ArmorClass', 'tumble', 2, 'Skills:Tumble')
+    modifier = Modifier({'ArmorClass': {'Dodge': {'Dex': 2}}})
+    modifier.addTypedSource('ArmorClass', 'Tumble', 2, 'Skills:Tumble')
     print(modifier)

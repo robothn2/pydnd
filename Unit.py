@@ -7,8 +7,10 @@ from CombatManager import CombatManager
 class Unit:
     def __init__(self, ctx):
         self.ctx = ctx
-        self.props = Props.Props({'dead': False, 'weapon': 'unarmed', 'ac': 0, 'ab': 0, 'hp': 0})
-        self.modifier = Props.Modifier({'ArmorClass': {'nature': {'Unit': 10}}, 'HitPoint': {}})
+        self.props = Props.Props({'dead': False, 'weapon': 'unarmed',
+                                  'ac': 0, 'ab': 0, 'hp': 0,
+                                  'feats': {}, 'buffs': {}})
+        self.modifier = Props.Modifier({'ArmorClass': {'Natural': {'BaseArmor': 10}}, 'HitPoint': {}})
         self.combat = CombatManager(self)
 
     def update(self, deltaTime):

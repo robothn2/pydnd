@@ -1,5 +1,5 @@
 #coding: utf-8
-from Character import Character
+from Character import *
 from Creature import Creature
 from Object import Object
 from common import CsvLoader
@@ -22,15 +22,12 @@ class Room:
             unit.update(deltaTime)
 
 if __name__ == '__main__':
+    builder = loadJsonFile(r'data/builders/builder1.json')
+    print(builder)
     player = Character(ctx)
-    player.buildLevel1({'race':'human', 'gender':'female', 'age':20, 'name':'Lora', 'deity':'Leira',
-                        'alignment':'ChaoticNeutral'},
-                        'Ranger',
-                        {'Str': 16, 'Dex': 14, 'Con':10, 'Int': 16, 'Wis': 8, 'Cha':  18},
-                        {'Heal': 4, 'Intimidate': 4, 'Hide':4, 'MoveSilent': 4, 'Spot': 4, 'Listen': 4, 'Tumble': 4, 'Spellcraft': 4, 'UseMagicDevice': 4},
-                        ['FavoredEnemy:Undead', 'Dodge'])
+    player.buildByBuilder(builder, 5)
 
-    monster = Creature(ctx, 'badger')
+    monster = Creature(ctx, 'zombie')
 
     room = Room()
     room.addUnit(player)
