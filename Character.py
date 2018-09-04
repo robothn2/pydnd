@@ -29,7 +29,6 @@ class Character(Unit):
         self.setProp('classes', {cls: {'level': 1, 'proto': self.ctx['protosClass'][cls]}})
         self.setProp('skills', skills_parse(skills))
         self.setProp('feats', feats_parse(feats, self.ctx['protosFeat']))
-        self.setProp('buffs', {})
 
         self._applyAll()
         return True
@@ -67,22 +66,27 @@ class Character(Unit):
             if level > levelRequest:
                 break
 
+            # check class name existence
+            cls = levelEntry['class']
+            if cls not in self.ctx['protosClass']:
+                warnings.warn('unknown character class: %s at level %d' % (cls, level))
+                return False
+            clsProto = self.ctx['protosClass'][cls]
+
             # add ability
             if 'ability' in levelEntry:
                 self.modifier.addSource(levelEntry['ability'], 1, ('LevelUp:%d'%level))
 
-            # add class level
-            cls = levelEntry['class']
             if 'classes' not in self.props:
-                self.props['classes'] = {cls: {'level': 1, 'proto': self.ctx['protosClass'][cls]}}
-                continue
+                self.props['classes'] = {}
             classesEntry = self.props['classes']
             if cls not in classesEntry:
-                classesEntry[cls] = {'level': 1, 'proto': self.ctx['protosClass'][cls]}
-                continue
-            classesEntry[cls]['level'] += 1
+                classesEntry[cls] = {'level': 0, 'proto': clsProto}
+            clsEntry = classesEntry[cls]
+            clsEntry['level'] += 1
 
-            # todo: apply class feats by level
+            # apply class feats/abilities by level
+            clsProto.applyLevelUp(self, clsEntry['level'], levelEntry)
 
             # add feats
             if 'feats' in levelEntry:

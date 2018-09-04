@@ -8,7 +8,7 @@ import time
 ctx = Object()
 ctx['protosFeat'] = CsvLoader.loadCsvFile(r'data/feats.csv')
 ctx['protosCreature'] = CsvLoader.loadCsvFile(r'data/beastiary.csv')
-ctx['protosClass'] = CsvLoader.loadCsvFile(r'data/classes.csv')
+ctx['protosClass'] = classes_load(r'Class')
 
 class Room:
     def __init__(self):

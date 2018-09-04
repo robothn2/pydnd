@@ -1,5 +1,5 @@
 #coding: utf-8
-
+import warnings
 from common import Props
 from Abilities import *
 from CombatManager import CombatManager
@@ -47,6 +47,22 @@ class Unit:
         for hpSource in self.modifier['HitPoint'].values():
             hp += hpSource
         self.setProp('hp', hp)
+
+    def addFeat(self, feats, featsHint = []):
+        for _, featName in enumerate(feats):
+            if featName not in self.ctx['protosFeat']:
+                warnings.warn('unknown feat: %s' % featName)
+                continue
+
+            hitHint = False
+            for _, featHintName in enumerate(featsHint):
+                if len(featHintName) > len(featName) and featName == featHintName[0:len(featName)]:
+                    self.props['feats'][featHintName] = self.ctx['protosFeat'][featHintName]
+                    hitHint = True
+                    break
+
+            if not hitHint:
+                self.props['feats'][featName] = self.ctx['protosFeat'][featName]
 
     def addEnemy(self, enemy):
         self.combat.addEnemy(enemy)
