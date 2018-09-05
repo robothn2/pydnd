@@ -17,7 +17,7 @@ proto = {
 def applyLevelUp(unit, level, levelInfo):
     featsHint = levelInfo['featsHint'] if 'featsHint' in levelInfo else []
 
-    print('ranger apply level %d' % level, featsHint)
+    print('%s apply level %d, featsHint: %s' % (proto['name'], level, featsHint))
     if level == 1:
         unit.addFeat(['Track'])
         unit.addFeat(['FavoredEnemy'], featsHint)
@@ -27,7 +27,7 @@ def applyLevelUp(unit, level, levelInfo):
         unit.addFeat(['Toughness'])
     elif level == 4:
         unit.addFeat(['AnimalCompanion'], featsHint)
-        # todo: Spells: Beginning at 4th level, a ranger gains the ability to cast a small number of divine spells, which are drawn from the ranger spell list. A ranger must choose and prepare his spells in advance. To prepare or cast a spell, a ranger must have a Wisdom score equal to at least 10 + the spell level (Wis 10 for 0-level spells, Wis 11 for 1st-level spells, and so forth).
+        unit.grantSpellClass('divine', proto['name'])
     elif level == 6:
         unit.addFeat(['ImprovedCombatStyle'], featsHint)
     elif level == 7:

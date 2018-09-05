@@ -28,25 +28,9 @@ class Unit:
         abilities_apply(self.props, self.modifier)
 
     def _postApplyAll(self):
-        #armor class
-        ac = 0
-        for acType in self.modifier['ArmorClass'].values():
-            for acSource in acType.values():
-                ac += acSource
-        self.setProp('ac', ac)
-
-        #attack bonus
-        ab = 0
-        for abType in self.modifier['AttackBonus'].values():
-            for abSource in abType.values():
-                ab += abSource
-        self.setProp('ab', ab)
-
-        #hp
-        hp = int(self.getProp('hp'))
-        for hpSource in self.modifier['HitPoint'].values():
-            hp += hpSource
-        self.setProp('hp', hp)
+        self.setProp('ac', self.modifier.sumTypedSourceAll('ArmorClass'))
+        self.setProp('ab', self.modifier.sumTypedSourceAll('AttackBonus'))
+        self.setProp('hp', self.modifier.sumTypedSourceAll('HitPoint'))
 
     def addFeat(self, feats, featsHint = []):
         for _, featName in enumerate(feats):
@@ -56,13 +40,36 @@ class Unit:
 
             hitHint = False
             for _, featHintName in enumerate(featsHint):
+                '''
+                result = re.match(r'%s(?P<param>\w+)' % featName, featHintName)
+                if not result:
+                    continue
+
+                result.group('param'), result.group('osver'), result.group('cid'), fileFullPath)
+                '''
                 if len(featHintName) > len(featName) and featName == featHintName[0:len(featName)]:
-                    self.props['feats'][featHintName] = self.ctx['protosFeat'][featHintName]
+                    #todo: store extra param into list
+                    self.props['feats'][featHintName] = []
                     hitHint = True
                     break
 
             if not hitHint:
-                self.props['feats'][featName] = self.ctx['protosFeat'][featName]
+                self.props['feats'][featName] = []
+
+    def grantSpellClass(self, spellClass, className):
+        if 'spells' not in self.props:
+            self.props['spells'] = {}
+
+        spellsEntry = self.props['spells']
+        if spellClass not in spellsEntry:
+            spellsEntry[spellClass] = {}
+
+        spellsClassEntry = spellsEntry[spellClass]
+        if className not in spellsClassEntry:
+            spellsClassEntry[className] = {}
+
+    def grantSpells(self, spellClass, className, spells):
+        pass
 
     def addEnemy(self, enemy):
         self.combat.addEnemy(enemy)

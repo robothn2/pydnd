@@ -6,9 +6,9 @@ from common import CsvLoader
 import time
 
 ctx = Object()
-ctx['protosFeat'] = CsvLoader.loadCsvFile(r'data/feats.csv')
-ctx['protosCreature'] = CsvLoader.loadCsvFile(r'data/beastiary.csv')
+ctx['protosFeat'] = feats_load(r'Feat')
 ctx['protosClass'] = classes_load(r'Class')
+ctx['protosCreature'] = CsvLoader.loadCsvFile(r'data/beastiary.csv')
 
 class Room:
     def __init__(self):
@@ -25,7 +25,7 @@ if __name__ == '__main__':
     builder = loadJsonFile(r'data/builders/builder1.json')
     print(builder)
     player = Character(ctx)
-    player.buildByBuilder(builder, 5)
+    player.buildByBuilder(builder, 30)
 
     monster = Creature(ctx, 'zombie')
 

@@ -104,6 +104,7 @@ class Character(Unit):
         return True
 
     def _applyAll(self):
+        feats_apply(self)
         classes_apply(self.getProp('classes'), self.modifier)
         Unit._applyAll(self)
         Unit._postApplyAll(self)

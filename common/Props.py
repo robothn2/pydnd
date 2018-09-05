@@ -21,6 +21,27 @@ class Modifier(dict):
         entrySub = entry[subtype]
         entrySub[source] = value
 
+    def sumTypedSourceAll(self, key):
+        if key not in self:
+            return 0
+
+        sumValue = 0
+        for abType in self[key].values():
+            for abSource in abType.values():
+                sumValue += int(abSource)
+        return sumValue
+
+    def sumTypedSource(self, key, subtypes):
+        if key not in self:
+            return 0
+
+        sumValue = 0
+        for abType in self[key].values():
+            for subtype in abType.keys():
+                if subtype in subtypes:
+                    sumValue += int(abType[subtype])
+        return sumValue
+
 class Props(dict):
     def incValue(self, key, value):
         if key not in self:
@@ -28,6 +49,21 @@ class Props(dict):
             return
 
         self[key] += value
+
+    def hasKey(self, key, subkey):
+        if key not in self:
+            return False
+        return subkey in self[key]
+
+    def hasKeyList(self, key, subKeyList):
+        if key not in self:
+            return False
+
+        keyEntry = self[key]
+        for i, subKey in enumerate(subKeyList):
+            if subKey not in keyEntry:
+                return False
+        return True
 
 if __name__ == '__main__':
     modifier = Modifier({})

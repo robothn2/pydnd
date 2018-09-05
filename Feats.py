@@ -1,18 +1,23 @@
 #coding: utf-8
-import warnings
+import os
 
-def feats_parse(feats, featPrototypes):
-    d = {}
-    if type(feats) is list:
-        for featName in feats:
-            if featName in featPrototypes:
-                d[featName] = featPrototypes[featName]
-            else:
-                warnings.warn('unknown feat: %s' % featName)
+def feats_load(scriptRoot):
+    protos = {}
+    for folder, _, fileNames in os.walk(scriptRoot, followlinks=False):
+        for fileName in fileNames:
+            (name, extension) = os.path.splitext(fileName)
+            if extension != '.py':
+                continue
+            mod = __import__('Feat.' + name)
+            protos[name] = eval('mod.' + name)
+    return protos
 
-def feats_apply(feats, props):
-    for feat in feats.keys():
-        if feat == 'Dodge':
-            props.addTypedSource('ArmorClass', 'Dodge', 1, 'Feat:Dodge')
-        elif feat == 'FavoredEnemy(Undead)':
-            props.addTypedSource('AttackBonus', 'Racial:Undead', 1, 'Feat:FavoredEnemy:Undead')
+def feats_apply(unit):
+    feats = unit.props['feats']
+    protos = unit.ctx['protosFeat']
+    for featName in feats.keys():
+        if featName not in protos:
+            continue
+
+        proto = protos[featName]
+        proto.apply(unit)

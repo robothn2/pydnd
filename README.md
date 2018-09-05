@@ -1,7 +1,5 @@
 TODO:
 <p>kill monster and gain exp, also need exp gain table
-<p>class data and script: Ranger, Cleric, ...
-<p>feat data
 <p>weapon, and damage type, damage roll
 <p>apply equipments to Character 
 <p>apply buffs to Unit, support buff script

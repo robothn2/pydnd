@@ -34,11 +34,11 @@ def abilities_parse(abilities, dexterity = None, constitution = None, intelligen
 
     elif type(abilities) is list and len(abilities) == 6:
         d['Str'] = int(abilities[0])
-        d['Dex'] = abilities[1]
-        d['Con'] = abilities[2]
-        d['Int'] = abilities[3]
-        d['Wis'] = abilities[4]
-        d['Cha'] = abilities[5]
+        d['Dex'] = int(abilities[1])
+        d['Con'] = int(abilities[2])
+        d['Int'] = int(abilities[3])
+        d['Wis'] = int(abilities[4])
+        d['Cha'] = int(abilities[5])
 
     return d
 
@@ -48,4 +48,4 @@ def abilities_modifier(props, key):
 def abilities_apply(props, modifier):
     modifier.addTypedSource('AttackBonus', 'Str', abilities_modifier(props, 'Str'), 'Ability:Str')
     modifier.addTypedSource('ArmorClass', 'Dex', abilities_modifier(props, 'Dex'), 'Ability:Dex')
-    modifier.addSource('HitPoint', abilities_modifier(props, 'Con'), 'Ability:Con')
+    modifier.addTypedSource('HitPoint', 'Con', abilities_modifier(props, 'Con'), 'Ability:Con')
