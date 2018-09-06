@@ -1,13 +1,27 @@
 #coding: utf-8
 from Character import *
 from Creature import Creature
-from Object import Object
 from common import CsvLoader
 import time
 
-ctx = Object()
-ctx['protosFeat'] = feats_load(r'Feat')
-ctx['protosClass'] = classes_load(r'Class')
+def loadScriptsFolder(scriptFolderName):
+    protos = {}
+    for folder, _, fileNames in os.walk(scriptFolderName, followlinks=False):
+        for fileName in fileNames:
+            (name, extension) = os.path.splitext(fileName)
+            if extension != '.py':
+                continue
+            mod = __import__(scriptFolderName + '.' + name)
+            # print(dir(mod))
+            proto = eval('mod.' + name)
+            # print(dir(proto))
+            protos[name] = proto
+    return protos
+
+ctx = {}
+ctx['protosFeat'] = loadScriptsFolder('Feat')
+ctx['protosClass'] = loadScriptsFolder('Class')
+ctx['protosRace'] = loadScriptsFolder('Race')
 ctx['protosCreature'] = CsvLoader.loadCsvFile(r'data/beastiary.csv')
 
 class Room:

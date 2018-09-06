@@ -11,14 +11,11 @@ proto = {
 def matchRequirements(unit):
     return True
 
-def apply(unit):
+def apply(unit, featParams):
     print('apply feat %s' % proto['name'])
 
-    totalLevel = 0
-    for cls in unit.getProp('classes').values():
-        totalLevel += cls['level']
-
+    totalLevel = unit.props.sumFieldValue('classes', 'level')
     unit.modifier.addTypedSource('HitPoint', proto['name'], totalLevel, 'Feat:' + proto['name'])
 
-def check(caster, target):
+def applyAgainstTarget(caster, target):
     return True

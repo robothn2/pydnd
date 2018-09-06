@@ -19,16 +19,16 @@ class Character(Unit):
     def __init__(self, ctx):
         super(Character, self).__init__(ctx)
         self.ctx = ctx
-        self.props = { **self.props, 'name': 'NoName',
-                      **abilities_parse(10, 10, 10, 10, 10, 10)}
+        self.props.update({'name': 'NoName',
+                      **abilities_parse(10, 10, 10, 10, 10, 10)})
 
     def buildLevel1(self, props, cls, abilities, skills, feats):
         if cls not in self.ctx['protosClass']:
             return False
-        self.props = {**self.props, **props, **abilities_parse(abilities)}
+        self.props.update({**props, **abilities_parse(abilities)})
         self.setProp('classes', {cls: {'level': 1, 'proto': self.ctx['protosClass'][cls]}})
         self.setProp('skills', skills_parse(skills))
-        self.setProp('feats', feats_parse(feats, self.ctx['protosFeat']))
+        self.addFeat(feats)
 
         self._applyAll()
         return True
@@ -50,7 +50,7 @@ class Character(Unit):
         'background': 'WildChild',
         'abilities': {'Str': 16, 'Dex': 14, 'Con': 10, 'Int': 16, 'Wis': 8, 'Cha': 18},
        '''
-        self.props = {**self.props, 'name': builder['charName'], **builder['abilities']}
+        self.props.update({'name': builder['charName'], **builder['abilities']})
         for key in builder.keys():
             if key in ['race', 'gender', 'age', 'deity', 'alignment', 'background']:
                 self.props[key] = builder[key]
@@ -75,7 +75,7 @@ class Character(Unit):
 
             # add ability
             if 'ability' in levelEntry:
-                self.modifier.addSource(levelEntry['ability'], 1, ('LevelUp:%d'%level))
+                self.modifier.addTypedSource(levelEntry['ability'], 'Base', 1, ('LevelUp:%d'%level))
 
             if 'classes' not in self.props:
                 self.props['classes'] = {}
@@ -104,10 +104,12 @@ class Character(Unit):
         return True
 
     def _applyAll(self):
+        race = self.props['race']
+        if race in self.ctx['protosRace']:
+            self.ctx['protosRace'][race].apply(self)
         feats_apply(self)
         classes_apply(self.getProp('classes'), self.modifier)
         Unit._applyAll(self)
         Unit._postApplyAll(self)
         print(self.modifier)
         print(self.props)
-
