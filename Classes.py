@@ -6,9 +6,9 @@ def classes_apply(classes, modifier):
         clsLevel = classes[cls]['level']
         clsProto = classes[cls]['proto']
 
-        modifier.addTypedSource('HitPoint', 'Class', int(clsLevel * int(clsProto.proto['HitDie'])), cls)
-        modifier.addTypedSource('AttackBonus', 'Base', int(clsLevel * float(clsProto.proto['BaseAttackBonus'])), cls)
-        modifier.addTypedSource('SavingThrow', 'Fortitude', int(clsLevel * float(clsProto.proto['FortitudePerLevel'])), cls)
-        modifier.addTypedSource('SavingThrow', 'Reflex', int(clsLevel * float(clsProto.proto['ReflexPerLevel'])), cls)
-        modifier.addTypedSource('SavingThrow', 'Will', int(clsLevel * float(clsProto.proto['WillPerLevel'])), cls)
+        modifier.updateUniqueSource(('HitPoint', 'Class', cls), int(clsLevel * int(clsProto.proto['HitDie'])))
+        modifier.updateUniqueSource(('AttackBonus', 'Base', cls), int(clsLevel * float(clsProto.proto['BaseAttackBonus'])))
+        modifier.updateUniqueSource(('SavingThrow', 'Fortitude', cls), int(clsLevel * float(clsProto.proto['FortitudePerLevel'])))
+        modifier.updateUniqueSource(('SavingThrow', 'Reflex', cls), int(clsLevel * float(clsProto.proto['ReflexPerLevel'])))
+        modifier.updateUniqueSource(('SavingThrow', 'Will', cls), int(clsLevel * float(clsProto.proto['WillPerLevel'])))
 

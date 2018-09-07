@@ -14,7 +14,7 @@ def matchRequirements(unit):
 
 def apply(unit, featParams):
     print('apply feat %s' % proto['name'])
-    unit.modifier.addTypedSource('ArmorClass', 'Dodge', 1, 'Feat:' + proto['name'])
+    unit.modifier.updateUniqueSource(('ArmorClass', 'Dodge', 'Feat:' + proto['name']), 1)
 
 def applyAgainstTarget(caster, target):
     # todo: current target or last attacker

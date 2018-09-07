@@ -1,0 +1,36 @@
+Weapon,BaseDMG,Threat,Multi,Size,DamageType,FeatRequired
+BastardSword,1d10,18-20,x2,Medium,Slashing Piercing,Exotic
+Battleaxe,1d8,19-20,x3,Medium,Slashing,Martial
+Club,1d6,19-20,x2,Medium,Bludgeoning,Simple
+Dagger,1d4,18-20,x2,Tiny,Piercing,Simple
+Dart,1d4,19-20,x2,Tiny,Piercing,Simple
+DwarvenWaraxe,1d10,19-20,x3,Medium,Slashing,Exotic
+Falchion,2d4,17-20,x2,Large,Slashing,Martial
+Flail,1d8,19-20,x2,Medium,Bludgeoning,Martial
+Greataxe,1d12,19-20,x3,Large,Slashing,Martial
+Greatsword,2d6,18-20,x2,Large,Slashing Piercing,Martial
+Halberd,1d10,19-20,x3,Large,Slashing Piercing,Martial
+Handaxe,1d6,19-20,x3,Small,Slashing,Martial
+HeavyCrossbow,1d10,18-20,x2,Medium,Piercing,Simple
+Kama,1d6,19-20,x2,Small,Slashing,Exotic
+Katana,1d10,18-20,x2,Medium,Slashing Piercing,Exotic
+Kukri,1d4,17-20,x2,Tiny,Slashing,Martial
+LightCrossbow,1d8,18-20,x2,Small,Piercing,Simple
+LightHammer,1d4,19-20,x2,Small,Bludgeoning,Martial
+Longbow,1d8,19-20,x3,Large,Piercing,Martial
+Longsword,1d8,18-20,x2,Medium,Slashing Piercing,Martial
+Mace,1d6,19-20,x2,Small,Bludgeoning,Simple
+Morningstar,1d8,19-20,x2,Medium,Bludgeoning,Simple
+Quarterstaff,1d6,19-20,x2,Large,Bludgeoning,Simple
+Rapier,1d6,17-20,x2,Medium,Piercing,Martial
+Scimitar,1d6,17-20,x2,Medium,Slashing,Martial
+Scythe,2d4,19-20,x4,Large,Slashing Piercing,Martial
+Short Sword,1d6,18-20,x2,Small,Piercing,Martial
+Shortbow,1d6,19-20,x3,Medium,Piercing,Martial
+Shuriken,1d3,19-20,x2,Tiny,Piercing,Exotic
+Sickle,1d6,19-20,x2,Small,Slashing,Simple
+Sling,1d4,19-20,x2,Small,Bludgeoning,Simple
+Spear,1d8,19-20,x3,Large,Piercing,Simple
+Throwing Axe,1d6,19-20,x2,Tiny,Slashing,Martial
+Warhammer,1d8,19-20,x3,Medium,Bludgeoning,Martial
+Warmace,1d12,19-20,x2,Large,Bludgeoning,Martial

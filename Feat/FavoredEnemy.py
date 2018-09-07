@@ -19,8 +19,8 @@ def apply(unit, featParams):
     if bonus == 0:
         bonus = 1
     for _, raceName in enumerate(featParams):
-        unit.modifier.addTypedSource('MeleeDamage', proto['name'], bonus, 'Feat:' + proto['name'])
-        unit.modifier.addTypedSource('RangeDamage', proto['name'], bonus, 'Feat:' + proto['name'])
+        unit.modifier.updateUniqueSource(('MeleeDamage', 'Racial', 'Feat:' + proto['name']), bonus)
+        unit.modifier.updateUniqueSource(('RangeDamage', 'Racial', 'Feat:' + proto['name']), bonus)
 
 def applyAgainstTarget(caster, target):
     return True

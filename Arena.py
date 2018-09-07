@@ -1,6 +1,7 @@
 #coding: utf-8
 from Character import *
 from Creature import Creature
+from Weapon import Weapon
 from common import CsvLoader
 import time
 
@@ -21,7 +22,8 @@ def loadScriptsFolder(scriptFolderName):
 ctx = {}
 ctx['protosFeat'] = loadScriptsFolder('Feat')
 ctx['protosClass'] = loadScriptsFolder('Class')
-ctx['protosRace'] = loadScriptsFolder('Race')
+ctx['protosRace'] = loadScriptsFolder('Races')
+ctx['protosWeapon'] = loadScriptsFolder('Weapons')
 ctx['protosCreature'] = CsvLoader.loadCsvFile(r'data/beastiary.csv')
 
 class Room:
@@ -40,6 +42,7 @@ if __name__ == '__main__':
     print(builder)
     player = Character(ctx)
     player.buildByBuilder(builder, 30)
+    #weapon = Weapon()
 
     monster = Creature(ctx, 'zombie')
 

@@ -18,5 +18,5 @@ def skills_parse(skills):
     return d
 
 def skills_apply(skills, props):
-    props.addTypedSource('ArmorClass', 'Tumble', int(skills['Tumble'] / 10), 'Skills:Tumble')
-    props.addTypedSource('SavingThrow', 'All', int(skills['Spellcraft'] / 5), 'Skills:Spellcraft')
+    props.updateUniqueSource(('ArmorClass', 'Tumble', 'Skills:Tumble'), int(skills['Tumble'] / 10))
+    props.updateUniqueSource(('SavingThrow', 'All', 'Skills:Spellcraft'), int(skills['Spellcraft'] / 5))

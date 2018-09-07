@@ -75,7 +75,7 @@ class Character(Unit):
 
             # add ability
             if 'ability' in levelEntry:
-                self.modifier.addTypedSource(levelEntry['ability'], 'Base', 1, ('LevelUp:%d'%level))
+                self.modifier.updateUniqueSource((levelEntry['ability'], 'Base', 'LevelUp:%d'%level), 1)
 
             if 'classes' not in self.props:
                 self.props['classes'] = {}

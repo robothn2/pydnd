@@ -45,7 +45,12 @@ def abilities_parse(abilities, dexterity = None, constitution = None, intelligen
 def abilities_modifier(props, key):
     return int((int(props[key]) - 10) / 2)
 
-def abilities_apply(props, modifier):
-    modifier.addTypedSource('AttackBonus', 'Str', abilities_modifier(props, 'Str'), 'Ability:Str')
-    modifier.addTypedSource('ArmorClass', 'Dex', abilities_modifier(props, 'Dex'), 'Ability:Dex')
-    modifier.addTypedSource('HitPoint', 'Con', abilities_modifier(props, 'Con'), 'Ability:Con')
+def abilities_apply(modifier):
+    modStr = int(modifier.sumTypedSourceAll('Str') / 2)
+    modDex = int(modifier.sumTypedSourceAll('Dex') / 2)
+    modCon = int(modifier.sumTypedSourceAll('Con') / 2)
+    modifier.updateUniqueSource(('AttackBonus', 'Str', 'Ability:Str'), modStr)
+    modifier.updateUniqueSource(('ArmorClass', 'Dex', 'Ability:Dex'), modDex)
+    modifier.updateUniqueSource(('HitPoint', 'Con', 'Ability:Con'), modCon)
+
+    # todo: apply abilities to skills

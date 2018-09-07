@@ -15,7 +15,7 @@ def apply(unit, featParams):
     print('apply feat %s' % proto['name'])
 
     totalLevel = unit.props.sumFieldValue('classes', 'level')
-    unit.modifier.addTypedSource('HitPoint', proto['name'], totalLevel, 'Feat:' + proto['name'])
+    unit.modifier.updateUniqueSource(('HitPoint', proto['name'], 'Feat:' + proto['name']), totalLevel)
 
 def applyAgainstTarget(caster, target):
     return True

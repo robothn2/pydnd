@@ -14,8 +14,8 @@ def matchRequirements(unit):
 def apply(unit, featParams):
     print('apply feat %s' % proto['name'])
 
-    unit.modifier.addTypedSource('SavingThrow', 'All', 1, 'Feat:' + proto['name'])
-    unit.modifier.addTypedSource('ArmorClass', 'Luck', 1, 'Feat:' + proto['name'])
+    unit.modifier.updateUniqueSource(('SavingThrow', 'All', 'Feat:' + proto['name']), 1)
+    unit.modifier.updateUniqueSource(('ArmorClass', 'Luck', 'Feat:' + proto['name']), 1)
 
 def applyAgainstTarget(caster, target):
     return True

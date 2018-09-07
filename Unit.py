@@ -25,7 +25,7 @@ class Unit:
         return None
 
     def _applyAll(self):
-        abilities_apply(self.props, self.modifier)
+        abilities_apply(self.modifier)
 
     def _postApplyAll(self):
         self.setProp('ac', self.modifier.sumTypedSourceAll('ArmorClass'))

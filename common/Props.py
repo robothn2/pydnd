@@ -1,19 +1,6 @@
 #coding: utf-8
 
 class Modifier(dict):
-    def addTypedSource(self, key, subtype, value, source = ''):
-        if key not in self:
-            self[key] = {subtype: {source: value}}
-            return
-
-        entry = self[key]
-        if subtype not in entry:
-            entry[subtype] = {source: value}
-            return
-
-        entrySub = entry[subtype]
-        entrySub[source] = value
-
     def updateUniqueSource(self, pathsTuple, value):
         d = self
         cnt = len(pathsTuple)
@@ -25,6 +12,18 @@ class Modifier(dict):
 
             if key not in d:
                 d[key] = {}
+            d = d[key]
+
+    def getSource(self, pathsTuple, defaultValue):
+        d = self
+        cnt = len(pathsTuple)
+        for i in range(cnt):
+            key = pathsTuple[i]
+            if i == cnt -1:
+                return d[key] if key in d else defaultValue
+
+            if key not in d:
+                return defaultValue
             d = d[key]
 
     def sumTypedSourceAll(self, key):
