@@ -3,7 +3,7 @@ from Character import *
 from Creature import Creature
 from Weapon import Weapon
 from common import CsvLoader
-import time
+import time, os
 
 def loadScriptsFolder(scriptFolderName):
     protos = {}
@@ -39,10 +39,12 @@ class Room:
 
 if __name__ == '__main__':
     builder = loadJsonFile(r'data/builders/builder1.json')
-    print(builder)
+    #print(builder)
     player = Character(ctx)
     player.buildByBuilder(builder, 30)
-    #weapon = Weapon()
+    weapon = Weapon(ctx, {'BaseItem': 'Kukri', 'Enhancement': 2})
+    player.setProp('WeaponMainHand', weapon)
+    player.statistic()
 
     monster = Creature(ctx, 'zombie')
 

@@ -1,9 +1,9 @@
 #coding: utf-8
 
 from Skills import *
-from Feats import *
 from Unit import *
-from Classes import *
+from Apply import *
+from Abilities import *
 import json
 import warnings
 
@@ -104,12 +104,20 @@ class Character(Unit):
         return True
 
     def _applyAll(self):
-        race = self.props['race']
-        if race in self.ctx['protosRace']:
-            self.ctx['protosRace'][race].apply(self)
+        race_apply(self)
+        classes_apply(self)
+        buffs_apply(self)
         feats_apply(self)
-        classes_apply(self.getProp('classes'), self.modifier)
-        Unit._applyAll(self)
+        abilities_apply(self)
+        skills_apply(self)
         Unit._postApplyAll(self)
         print(self.modifier)
         print(self.props)
+
+    def printModifier(self, key):
+        print(key, ':', self.modifier.sumSource(key), ',', self.modifier[key])
+
+    def statistic(self):
+        self.printModifier('AttackBonus')
+        self.printModifier('ArmorClass')
+        self.printModifier('HitPoint')

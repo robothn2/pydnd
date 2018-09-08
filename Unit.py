@@ -1,7 +1,6 @@
 #coding: utf-8
 import warnings
 from common import Props
-from Abilities import *
 from CombatManager import CombatManager
 
 class Unit:
@@ -23,9 +22,6 @@ class Unit:
         if key in self.props:
             return self.props[key]
         return None
-
-    def _applyAll(self):
-        abilities_apply(self.modifier)
 
     def _postApplyAll(self):
         self.setProp('ac', self.modifier.sumTypedSourceAll('ArmorClass'))

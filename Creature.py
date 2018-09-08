@@ -1,6 +1,7 @@
 #coding: utf-8
 
 from Unit import Unit
+from Apply import *
 import warnings
 import copy
 class Creature(Unit):
@@ -21,6 +22,11 @@ class Creature(Unit):
         self.modifier.updateUniqueSource(('ArmorClass', 'beastiary', 'armor_bonus'), int(self.proto['armor_bonus']))
         self.modifier.updateUniqueSource(('HitPoint', 'beastiary', 'expected_hp'), int(self.proto['expected_hp']))
         self.modifier.updateUniqueSource(('HitPoint', 'beastiary', 'hp_fudge'), int(self.proto['hp_fudge']))
-        Unit._applyAll(self)
+
+        buffs_apply(self)
+        race_apply(self)
+        feats_apply(self)
+        abilities_apply(self)
+
         Unit._postApplyAll(self)
         print(self.modifier)

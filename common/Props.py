@@ -15,8 +15,11 @@ class Modifier(dict):
             d = d[key]
 
     def getSource(self, pathsTuple, defaultValue):
-        d = self
         cnt = len(pathsTuple)
+        if cnt == 0:
+            return None
+
+        d = self
         for i in range(cnt):
             key = pathsTuple[i]
             if i == cnt -1:
@@ -25,6 +28,27 @@ class Modifier(dict):
             if key not in d:
                 return defaultValue
             d = d[key]
+
+    def sumSource(self, pathsTuple, includeSourceNames = None, excludeSourceNames = None):
+        branch = self.getSource(pathsTuple, {})
+        sumValue = 0
+        if type(includeSourceNames) == list:
+            for _, name in enumerate(includeSourceNames):
+                if name not in branch:
+                    continue
+
+                # sum sources under branch
+                for source in branch.values():
+                    sumValue += int(source)
+        else:
+            for key, value in branch.items():
+                if type(excludeSourceNames) == list and key not in excludeSourceNames:
+                    continue
+                # sum sources under branch
+                for source in branch.values():
+                    sumValue += int(source)
+
+        return sumValue
 
     def sumTypedSourceAll(self, key):
         if key not in self:

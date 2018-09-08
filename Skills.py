@@ -16,7 +16,3 @@ def skills_parse(skills):
             else:
                 print('  unknown skill:', k, v)
     return d
-
-def skills_apply(skills, props):
-    props.updateUniqueSource(('ArmorClass', 'Tumble', 'Skills:Tumble'), int(skills['Tumble'] / 10))
-    props.updateUniqueSource(('SavingThrow', 'All', 'Skills:Spellcraft'), int(skills['Spellcraft'] / 5))
