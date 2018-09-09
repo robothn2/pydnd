@@ -48,12 +48,16 @@ class Character(Unit):
         'deity': 'Leira',
         'alignment': 'ChaoticNeutral',
         'background': 'WildChild',
-        'abilities': {'Str': 16, 'Dex': 14, 'Con': 10, 'Int': 16, 'Wis': 8, 'Cha': 18},
+        'abilities': {'Str': 16, 'Dex': 12, 'Con': 10, 'Int': 14, 'Wis': 8, 'Cha': 16},
        '''
-        self.props.update({'name': builder['charName'], **builder['abilities']})
+        self.props.update({'name': builder['charName']})
         for key in builder.keys():
             if key in ['race', 'gender', 'age', 'deity', 'alignment', 'background']:
                 self.props[key] = builder[key]
+
+        race_apply(self)
+        for k, v in builder['abilities'].items():
+            self.modifier.updateSource(('Abilities', k, 'Base', 'Builder'), int(v))
 
         '''
         'levels': [
@@ -75,7 +79,7 @@ class Character(Unit):
 
             # add ability
             if 'ability' in levelEntry:
-                self.modifier.updateUniqueSource((levelEntry['ability'], 'Base', 'LevelUp:%d'%level), 1)
+                self.modifier.updateSource(('Abilities', levelEntry['ability'], 'Base', 'LevelUp:%d'%level), 1)
 
             if 'classes' not in self.props:
                 self.props['classes'] = {}
@@ -95,10 +99,8 @@ class Character(Unit):
                         self.props['feats'][featName] = self.ctx['protosFeat'][featName]
 
             # update skills
-            if 'skills' in self.props:
-                self.props['skills'].update(levelEntry['skills'])
-            else:
-                self.props['skills'] = levelEntry['skills']
+            for skillName,skillLevel in levelEntry['skills'].items():
+                self.modifier.updateSource(('Skills', skillName, 'Base', 'Builder'), skillLevel)
 
         self._applyAll()
         return True
@@ -112,12 +114,15 @@ class Character(Unit):
         skills_apply(self)
         Unit._postApplyAll(self)
         print(self.modifier)
-        print(self.props)
+        #print(self.props)
 
     def printModifier(self, key):
-        print(key, ':', self.modifier.sumSource(key), ',', self.modifier[key])
+        print(key, ':', self.modifier.sumSource(key), ',', self.modifier.getSource(key))
 
     def statistic(self):
         self.printModifier('AttackBonus')
         self.printModifier('ArmorClass')
         self.printModifier('HitPoint')
+        self.printModifier('SpellResistance')
+        self.printModifier('Reduction')
+        self.printModifier('SpellCasting')

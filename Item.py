@@ -1,5 +1,4 @@
 #coding: utf-8
-import warnings
 from common import Props
 
 class Item:
@@ -7,3 +6,13 @@ class Item:
         self.ctx = ctx
         self.props = Props.Props(props)
         self.modifier = Props.Modifier()
+
+class Weapon(Item):
+    def __init__(self, ctx, props):
+        super(Weapon, self).__init__(ctx, props)
+        self.props['Type'] = 'Weapon'
+        protoName = self.props['BaseItem']
+        self.proto = self.ctx['protosWeapon']
+
+    def apply(self, unit):
+        unit.modifier.updateSource(('MeleeDamage', 'Base'), self.proto['BaseDamage']['params'])

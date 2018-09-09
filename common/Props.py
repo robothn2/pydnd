@@ -1,11 +1,20 @@
 #coding: utf-8
 
+def sumIntValue(value):
+    sumValue = 0
+    if type(value) == int:
+        sumValue += value
+    elif type(value) == dict:
+        for subValue in value.values():
+            sumValue += int(subValue)
+    return sumValue
+
 class Modifier(dict):
-    def updateUniqueSource(self, pathsTuple, value):
+    def updateSource(self, paths, value):
         d = self
-        cnt = len(pathsTuple)
+        cnt = len(paths)
         for i in range(cnt):
-            key = pathsTuple[i]
+            key = paths[i]
             if i == cnt -1:
                 d[key] = value
                 return
@@ -14,14 +23,19 @@ class Modifier(dict):
                 d[key] = {}
             d = d[key]
 
-    def getSource(self, pathsTuple, defaultValue):
-        cnt = len(pathsTuple)
-        if cnt == 0:
-            return None
-
+    def getSource(self, paths, defaultValue = {}):
         d = self
+        if type(paths) == str:
+            return d[paths] if paths in d else defaultValue
+        if (type(paths) != list and type(paths) != tuple):
+            return defaultValue
+
+        cnt = len(paths)
+        if cnt == 0:
+            return defaultValue
+
         for i in range(cnt):
-            key = pathsTuple[i]
+            key = paths[i]
             if i == cnt -1:
                 return d[key] if key in d else defaultValue
 
@@ -29,46 +43,25 @@ class Modifier(dict):
                 return defaultValue
             d = d[key]
 
-    def sumSource(self, pathsTuple, includeSourceNames = None, excludeSourceNames = None):
-        branch = self.getSource(pathsTuple, {})
+    def sumSource(self, pathsList, includeBranchNames = None, excludeBranchNames = None):
+        branch = self.getSource(pathsList, {})
+        #print('got branch:', branch)
         sumValue = 0
-        if type(includeSourceNames) == list:
-            for _, name in enumerate(includeSourceNames):
+        if type(includeBranchNames) == list:
+            for _, name in enumerate(includeBranchNames):
                 if name not in branch:
                     continue
-
-                # sum sources under branch
-                for source in branch.values():
-                    sumValue += int(source)
+                # sum sources under branch[name]
+                for v in branch[name].values():
+                    sumValue += sumIntValue(v)
         else:
-            for key, value in branch.items():
-                if type(excludeSourceNames) == list and key not in excludeSourceNames:
+            for key, branchSub in branch.items():
+                if type(excludeBranchNames) == list and key not in excludeBranchNames:
                     continue
                 # sum sources under branch
-                for source in branch.values():
-                    sumValue += int(source)
+                for v in branchSub.values():
+                    sumValue += sumIntValue(v)
 
-        return sumValue
-
-    def sumTypedSourceAll(self, key):
-        if key not in self:
-            return 0
-
-        sumValue = 0
-        for abType in self[key].values():
-            for abSource in abType.values():
-                sumValue += int(abSource)
-        return sumValue
-
-    def sumTypedSource(self, key, subtypes):
-        if key not in self:
-            return 0
-
-        sumValue = 0
-        for abType in self[key].values():
-            for subtype in abType.keys():
-                if subtype in subtypes:
-                    sumValue += int(abType[subtype])
         return sumValue
 
 class Props(dict):
@@ -105,16 +98,25 @@ class Props(dict):
 
 if __name__ == '__main__':
     modifier = Modifier({})
-    modifier.updateUniqueSource(('ArmorClass', 'Tumble'), 1)
+    modifier.updateSource(('ArmorClass', 'Tumble'), 1)
     print(modifier)
 
     modifier = Modifier({'ArmorClass': {}})
-    modifier.updateUniqueSource(('ArmorClass', 'Tumble', 'Skills:Tumble'), 2)
+    modifier.updateSource(('ArmorClass', 'Tumble', 'Skills:Tumble'), 2)
     print(modifier)
 
     modifier = Modifier({'ArmorClass': {'Dodge': {'Dex': 2}}})
-    modifier.updateUniqueSource(('ArmorClass', 'Tumble', 'Skills:Tumble'), 3)
+    modifier.updateSource(('ArmorClass', 'Tumble', 'Skills:Tumble'), 3)
 
-    modifier = Modifier({'AttackBonus': {}})
-    modifier.updateUniqueSource(('AttackBonus', 'Racial', 'Undead', 'Feat:FavoredEnemy'), 3)
-    print(modifier)
+    modifier.updateSource(('AttackBonus', 'Racial', 'Undead', 'Feat:FavoredEnemy'), 3)
+
+    modifier.updateSource(('Str', 'Race', 'Orc'), 2)
+    print(modifier.getSource(['Str'], {}))
+    print(modifier.getSource(('Str'), {}))
+    print(modifier.getSource([], {}))
+    print(modifier.getSource(['Str', 'Race'], {}))
+    print(modifier.getSource(['Str', 'NotExist'], {}))
+    print(modifier.getSource(['NotExist', 'NotExist'], {}))
+
+    modifier = Modifier({'ArmorClass': {'Natural': {'BaseArmor': 10, 'Race:YuantiPureblood': 1}, 'Dodge': {'Feat:Dodge': 1}, 'Dex': {'Ability:Dex': 3}, 'Tumble': {'Skills:Tumble': 3}}})
+    print(modifier.sumSource('ArmorClass', {}))

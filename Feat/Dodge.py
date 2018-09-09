@@ -10,11 +10,11 @@ proto = {
 }
 
 def matchRequirements(unit):
-    return unit.modifier.sumTypedSource('Dex', ['Base']) >= 13
+    return unit.modifier.sumSource(('Abilities', 'Dex'), ['Base']) >= 13
 
 def apply(unit, featParams):
     print('apply feat %s' % proto['name'])
-    unit.modifier.updateUniqueSource(('ArmorClass', 'Dodge', 'Feat:' + proto['name']), 1)
+    unit.modifier.updateSource(('ArmorClass', 'Dodge', 'Feat:' + proto['name']), 1)
 
 def applyAgainstTarget(caster, target):
     # todo: current target or last attacker

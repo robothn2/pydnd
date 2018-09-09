@@ -19,6 +19,12 @@ def applyLevelUp(unit, level, levelInfo):
 
     print('%s apply level %d, featsHint: %s' % (proto['name'], level, featsHint))
     if level == 1:
+        for _, domainName in enumerate(levelInfo['clericDomains']):
+            if domainName not in unit.ctx['protosDomain']:
+                continue
+            domainProto = unit.ctx['protosDomain'][domainName]
+            domainProto.apply(unit)
+
         unit.addFeat(['Domains'], featsHint)
         unit.addFeat(['TurnUndead'])
         unit.addFeat(['SpontaneousCasting'])

@@ -17,11 +17,11 @@ proto = {
 
 def matchRequirements(unit):
     # skills check
-    if unit.modifier.sumTypedSource('Intimidate', ['Base']) < 4:
+    if unit.modifier.sumSource(('Skills', 'Intimidate'), ['Base']) < 4:
         return False
 
     # bab check
-    if unit.modifier.sumTypedSource('AttackBonus', ['Base']) < 5:
+    if unit.modifier.sumSource('AttackBonus', ['Base']) < 5:
         return False
 
     # feats check

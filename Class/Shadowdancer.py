@@ -17,9 +17,9 @@ proto = {
 
 def matchRequirements(unit):
     # skills check
-    if unit.modifier.sumTypedSource('MoveSilently', ['Base']) < 8\
-            or unit.modifier.sumTypedSource('Hide', ['Base']) < 10\
-            or unit.modifier.sumTypedSource('Tumble', ['Base']) < 5:
+    if unit.modifier.sumSource(('Skills', 'MoveSilently'), ['Base']) < 8\
+            or unit.modifier.sumSource(('Skills', 'Hide'), ['Base']) < 10\
+            or unit.modifier.sumSource(('Skills', 'Tumble'), ['Base']) < 5:
         return False
 
     # feats check

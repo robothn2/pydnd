@@ -61,5 +61,5 @@ class CombatManager:
     def calcMeleeDamage(self, caster, target):
         dmgParams = caster.modifier.getSource(('Weapon', 'Base'), [1,4,2])
         dmgBase = rollDice(dmgParams[0], dmgParams[1], dmgParams[2])
-        dmg = dmgBase + caster.modifier.sumTypedSourceAll('MeleeDamage')
+        dmg = dmgBase + caster.modifier.sumSource(('MeleeDamage'))
         return {'Piercing': 0, 'Slashing': dmg, 'Bludgeoning': 0}

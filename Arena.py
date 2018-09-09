@@ -1,7 +1,7 @@
 #coding: utf-8
 from Character import *
 from Creature import Creature
-from Weapon import Weapon
+from Item import *
 from common import CsvLoader
 import time, os
 
@@ -20,10 +20,13 @@ def loadScriptsFolder(scriptFolderName):
     return protos
 
 ctx = {}
+ctx['protosBackground'] = loadScriptsFolder('Background')
+ctx['protosDeity'] = loadScriptsFolder('Deity')
+ctx['protosDomain'] = loadScriptsFolder('Domain')
 ctx['protosFeat'] = loadScriptsFolder('Feat')
 ctx['protosClass'] = loadScriptsFolder('Class')
-ctx['protosRace'] = loadScriptsFolder('Races')
-ctx['protosWeapon'] = loadScriptsFolder('Weapons')
+ctx['protosRace'] = loadScriptsFolder('Race')
+ctx['protosWeapon'] = loadScriptsFolder('Weapon')
 ctx['protosCreature'] = CsvLoader.loadCsvFile(r'data/beastiary.csv')
 
 class Room:

@@ -19,9 +19,9 @@ class Creature(Unit):
         Unit.update(self, deltaTime)
 
     def _applyAll(self):
-        self.modifier.updateUniqueSource(('ArmorClass', 'beastiary', 'armor_bonus'), int(self.proto['armor_bonus']))
-        self.modifier.updateUniqueSource(('HitPoint', 'beastiary', 'expected_hp'), int(self.proto['expected_hp']))
-        self.modifier.updateUniqueSource(('HitPoint', 'beastiary', 'hp_fudge'), int(self.proto['hp_fudge']))
+        self.modifier.updateSource(('ArmorClass', 'beastiary', 'armor_bonus'), int(self.proto['armor_bonus']))
+        self.modifier.updateSource(('HitPoint', 'beastiary', 'expected_hp'), int(self.proto['expected_hp']))
+        self.modifier.updateSource(('HitPoint', 'beastiary', 'hp_fudge'), int(self.proto['hp_fudge']))
 
         buffs_apply(self)
         race_apply(self)

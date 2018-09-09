@@ -24,9 +24,9 @@ class Unit:
         return None
 
     def _postApplyAll(self):
-        self.setProp('ac', self.modifier.sumTypedSourceAll('ArmorClass'))
-        self.setProp('ab', self.modifier.sumTypedSourceAll('AttackBonus'))
-        self.setProp('hp', self.modifier.sumTypedSourceAll('HitPoint'))
+        self.setProp('ac', self.modifier.sumSource(('ArmorClass')))
+        self.setProp('ab', self.modifier.sumSource(('AttackBonus')))
+        self.setProp('hp', self.modifier.sumSource(('HitPoint')))
 
     def addFeat(self, feats, featsHint = []):
         for _, featName in enumerate(feats):
