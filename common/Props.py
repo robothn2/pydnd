@@ -64,6 +64,25 @@ class Modifier(dict):
 
         return sumValue
 
+    def updateListParam(self, paths, params):
+        d = self
+        cnt = len(paths)
+        for i in range(cnt):
+            key = paths[i]
+            if i == cnt -1:
+                if key not in d:
+                    d[key] = params
+                else:
+                    #merge params and d[key]
+                    for _, param in params:
+                        if param not in d[key]:
+                            d[key].append(param)
+                return
+
+            if key not in d:
+                d[key] = {}
+            d = d[key]
+
 class Props(dict):
     def incValue(self, key, value):
         if key not in self:

@@ -23,7 +23,7 @@ def matchRequirements(unit):
         return False
 
     # feats check
-    if not unit.props.hasKeyList(['Dodge', 'Mobility']):
+    if not unit.hasFeats(['Dodge', 'Mobility']):
         return False
     return True
 
@@ -32,16 +32,16 @@ def applyLevelUp(unit, level, levelInfo):
 
     print('%s apply level %d, featsHint: %s' % (proto['name'], level, featsHint))
     if level == 1:
-        unit.addFeat(['HideInPlainSight'])
+        unit.addFeat('HideInPlainSight')
     elif level == 2:
-        unit.addFeat(['Darkvision', 'Evasion', 'UncannyDodge'])
+        unit.addFeats(['Darkvision', 'Evasion', 'UncannyDodge'])
     elif level == 3:
-        unit.addFeat(['SummonShadow', 'ShadowDaze'])
+        unit.addFeats(['SummonShadow', 'ShadowDaze'])
     elif level == 4:
-        unit.addFeat(['ShadowEvade'])
+        unit.addFeat('ShadowEvade')
     elif level == 5:
-        unit.addFeat(['DefensiveRoll', 'ImprovedUncannyDodge'])
+        unit.addFeats(['DefensiveRoll', 'ImprovedUncannyDodge'])
     elif level == 7:
-        unit.addFeat(['SlipperyMind'])
+        unit.addFeat('SlipperyMind')
     elif level == 10:
-        unit.addFeat(['Improved Evasion'])
+        unit.addFeat('ImprovedEvasion')

@@ -8,7 +8,7 @@
 	"deity":"Leira",
 	"alignment":"ChaoticNeutral",
 	"background":"WildChild",
-	"abilities":{"Str": 16, "Dex": 14, "Con":10, "Int": 16, "Wis": 8, "Cha":  18},
+	"abilities":{"Str": 16, "Dex": 12, "Con":10, "Int": 14, "Wis": 8, "Cha":  16},
 	
 	"levels": [
 		{"level": 1, "class": "Ranger",	"feats": ["Dodge"], "featsHint": ["FavoredEnemy(Humans)"], "skills": {"CraftWeapon": 4, "Heal": 4, "Hide": 4, "Intimidate": 2, "MoveSilently": 4, "Spellcraft": 1, "Spot": 4, "Tumble": 2, "UseMagicDevice": 2}},
@@ -29,7 +29,7 @@
 		{"level":16, "class": "Ranger",	"ability": "Str", "skills": {"CraftWeapon": 10, "Heal": 14, "Hide": 19, "Intimidate": 4, "MoveSilently": 19, "Spellcraft": 18, "Spot": 19, "Tumble": 19, "UseMagicDevice": 9}},
 		{"level":17, "class": "Ranger",	"featsHint": ["FavoredEnemy(Halflings)"], "skills": {"CraftWeapon": 10, "Heal": 14, "Hide": 20, "Intimidate": 4, "MoveSilently": 20, "Spellcraft": 19, "Spot": 20, "Tumble": 20, "UseMagicDevice": 10}},
 		{"level":18, "class": "Ranger",	"feats": ["WhirlwindAttack"], "skills": {"CraftWeapon": 10, "Heal": 14, "Hide": 21, "Intimidate": 4, "MoveSilently": 21, "Spellcraft": 20, "Spot": 21, "Tumble": 21, "UseMagicDevice": 10}},
-		{"level":19, "class": "WeaponMaster", "feats": ["WeaponOfChoice(Kukri)"], "skills": {"CraftWeapon": 10, "Heal": 14, "Hide": 21, "Intimidate": 4, "MoveSilently": 21, "Spellcraft": 21, "Spot": 21, "Tumble": 22, "UseMagicDevice": 10}},
+		{"level":19, "class": "WeaponMaster", "featsHint": ["WeaponOfChoice(Kukri)"], "skills": {"CraftWeapon": 10, "Heal": 14, "Hide": 21, "Intimidate": 4, "MoveSilently": 21, "Spellcraft": 21, "Spot": 21, "Tumble": 22, "UseMagicDevice": 10}},
 		{"level":20, "class": "WeaponMaster", "ability": "Cha", "skills": {"CraftWeapon": 10, "Heal": 14, "Hide": 21, "Intimidate": 4, "MoveSilently": 21, "Spellcraft": 22, "Spot": 21, "Tumble": 23, "UseMagicDevice": 11}},
 		{"level":21, "class": "Ranger",	"feats": ["EpicProwess"], "skills": {"CraftWeapon": 10, "Heal": 14, "Hide": 24, "Intimidate": 4, "MoveSilently": 24, "Spellcraft": 23, "Spot": 22, "Tumble": 24, "UseMagicDevice": 11}},
 		{"level":22, "class": "WeaponMaster", "skills": {"CraftWeapon": 10, "Heal": 14, "Hide": 24, "Intimidate": 4, "MoveSilently": 24, "Spellcraft": 24, "Spot": 22, "Tumble": 24, "UseMagicDevice": 12}},

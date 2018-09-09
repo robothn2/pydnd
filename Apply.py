@@ -46,9 +46,10 @@ def abilities_apply(unit):
     unit.modifier.updateSource(('HitPoint', 'Con', 'Ability:Con'), modCon)
 
     # todo: apply abilities to skills
+    unit.modifier.updateSource(('Skills', 'Tumble', 'Modifier', 'Ability:Dex'), modDex)
 
 def skills_apply(unit):
     tumbleLevel = unit.modifier.sumSource(('Skills', 'Tumble'))
-    SpellcraftLevel = unit.modifier.sumSource(('Skills', 'Spellcraft'))
+    spellcraftLevel = unit.modifier.sumSource(('Skills', 'Spellcraft'))
     unit.modifier.updateSource(('ArmorClass', 'Tumble', 'Skills:Tumble'), int(tumbleLevel / 10))
-    unit.modifier.updateSource(('SavingThrow', 'All', 'Skills:Spellcraft'), int(SpellcraftLevel / 5))
+    unit.modifier.updateSource(('SavingThrow', 'All', 'Skills:Spellcraft'), int(spellcraftLevel / 5))

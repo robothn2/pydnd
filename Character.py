@@ -28,7 +28,7 @@ class Character(Unit):
         self.props.update({**props, **abilities_parse(abilities)})
         self.setProp('classes', {cls: {'level': 1, 'proto': self.ctx['protosClass'][cls]}})
         self.setProp('skills', skills_parse(skills))
-        self.addFeat(feats)
+        self.addFeats(feats)
 
         self._applyAll()
         return True

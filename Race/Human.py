@@ -8,4 +8,6 @@ proto = {
 
 def apply(unit):
     print('apply feat %s' % proto['name'])
-    unit.addFeat(['QuickToMaster', 'Skilled', 'Favored Class(Any)'])
+    unit.addFeat('QuickToMaster')
+    unit.addFeat('Skilled')
+    unit.addFeat('FavoredClass', 'Any')

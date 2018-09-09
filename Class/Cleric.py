@@ -25,7 +25,5 @@ def applyLevelUp(unit, level, levelInfo):
             domainProto = unit.ctx['protosDomain'][domainName]
             domainProto.apply(unit)
 
-        unit.addFeat(['Domains'], featsHint)
-        unit.addFeat(['TurnUndead'])
-        unit.addFeat(['SpontaneousCasting'])
-        unit.grantSpellClass('divine', proto['name'])
+        unit.addFeats(['TurnUndead', 'SpontaneousCasting'])
+        unit.grantSpellClass('Divine', proto['name'])

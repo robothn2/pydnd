@@ -9,5 +9,5 @@ proto = {
 
 def apply(unit):
     print('apply cleric domain %s' % proto['name'])
-    unit.addFeat(['LuckOfHeroes'])
+    unit.addFeat('LuckOfHeroes')
     unit.grantSpells('Divine', 'Cleric', ['FreedomOfMovement', 'GreaterSpellMantle'])

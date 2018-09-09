@@ -16,6 +16,6 @@ def apply(unit):
         if weapon == 'UnarmedStrike':
             unit.addFeat('ImprovedUnarmedStrike')
         else:
-            unit.addFeat(['WeaponFocus(%s)' % weapon])
+            unit.addFeat('WeaponFocus(%s)' % weapon)
 
     unit.grantSpells('Divine', 'Cleric', ['FlameStrike', 'PowerWordStun'])

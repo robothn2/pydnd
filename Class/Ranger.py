@@ -19,26 +19,26 @@ def applyLevelUp(unit, level, levelInfo):
 
     print('%s apply level %d, featsHint: %s' % (proto['name'], level, featsHint))
     if level == 1:
-        unit.addFeat(['Track'])
-        unit.addFeat(['FavoredEnemy'], featsHint)
+        unit.addFeat('Track')
+        unit.addFeat('FavoredEnemy', featsHint)
     elif level == 2:
-        unit.addFeat(['CombatStyle'], featsHint)
+        unit.addFeat('CombatStyle', featsHint)
     elif level == 3:
-        unit.addFeat(['Toughness'])
+        unit.addFeat('Toughness')
     elif level == 4:
-        unit.addFeat(['AnimalCompanion'], featsHint)
-        unit.grantSpellClass('divine', proto['name'])
+        unit.addFeat('AnimalCompanion', featsHint)
+        unit.grantSpellClass('Divine', proto['name'])
     elif level == 6:
-        unit.addFeat(['ImprovedCombatStyle'], featsHint)
+        unit.addFeat('ImprovedCombatStyle', featsHint)
     elif level == 7:
-        unit.addFeat(['WoodlandStride'])
+        unit.addFeat('WoodlandStride')
     elif level == 8:
-        unit.addFeat(['SwiftTracker'])
+        unit.addFeat('SwiftTracker')
     elif level == 9:
-        unit.addFeat(['Evasion'])
+        unit.addFeat('Evasion')
     elif level == 11:
-        unit.addFeat(['CombatMastery'])
+        unit.addFeat('CombatMastery')
     elif level == 13:
-        unit.addFeat(['Camouflage'])
+        unit.addFeat('Camouflage')
     elif level == 17:
-        unit.addFeat(['HideInPlainSight'])
+        unit.addFeat('HideInPlainSight')

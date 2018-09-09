@@ -25,7 +25,7 @@ def matchRequirements(unit):
         return False
 
     # feats check
-    if not unit.props.hasKeyList(['WeaponFocus', 'Dodge', 'Mobility', 'CombatExpertise', 'SpringAttack', 'WhirlwindAttack']):
+    if not unit.hasFeats(['WeaponFocus', 'Dodge', 'Mobility', 'CombatExpertise', 'SpringAttack', 'WhirlwindAttack']):
         return False
 
     #todo: check Weapon Focus on melee weapon
@@ -36,9 +36,9 @@ def applyLevelUp(unit, level, levelInfo):
 
     print('%s apply level %d, featsHint: %s' % (proto['name'], level, featsHint))
     if level == 1:
-        unit.addFeat(['WeaponOfChoice'], featsHint)
-        unit.addFeat(['KiDamage'])
+        unit.addFeat('WeaponOfChoice', featsHint)
+        unit.addFeat('KiDamage')
     elif level == 5:
-        unit.addFeat(['IncreaseMultiplier', 'SuperiorWeaponFocus'])
+        unit.addFeats(['IncreaseMultiplier', 'SuperiorWeaponFocus'])
     elif level == 7:
-        unit.addFeat(['Ki Critical'])
+        unit.addFeat('KiCritical')

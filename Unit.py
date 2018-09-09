@@ -28,29 +28,45 @@ class Unit:
         self.setProp('ab', self.modifier.sumSource(('AttackBonus')))
         self.setProp('hp', self.modifier.sumSource(('HitPoint')))
 
-    def addFeat(self, feats, featsHint = []):
-        for _, featName in enumerate(feats):
-            if featName not in self.ctx['protosFeat']:
-                warnings.warn('unknown feat: %s' % featName)
-                continue
+    def addFeat(self, featName, featParam = None):
+        if featName not in self.ctx['protosFeat']:
+            warnings.warn('unknown feat: %s' % featName)
+            return False
 
+        if type(featParam) == str:
+            self.modifier.updateListParam(('Feats', featName), [featParam])
+            return True
+        if type(featParam) == list:
+            self.modifier.updateListParam(('Feats', featName), featParam)
+            return True
+        self.modifier.updateListParam(('Feats', featName), [])
+        return True
+
+    def addFeats(self, feats, featsHint = []):
+        for _, featName in enumerate(feats):
             hitHint = False
             for _, featHintName in enumerate(featsHint):
-                '''
-                result = re.match(r'%s(?P<param>\w+)' % featName, featHintName)
-                if not result:
-                    continue
-
-                result.group('param'), result.group('osver'), result.group('cid'), fileFullPath)
-                '''
-                if len(featHintName) > len(featName) and featName == featHintName[0:len(featName)]:
-                    #todo: store extra param into list
-                    self.props['feats'][featHintName] = []
-                    hitHint = True
+                if len(featName) < len(featHintName) and featName == featHintName[0:len(featName)]:
+                    featParam = featHintName[len(featName)+1:-1]
+                    self.addFeat(featName, featParam)
                     break
 
             if not hitHint:
-                self.props['feats'][featName] = []
+                self.addFeat(featName)
+
+    def hasFeats(self, feats):
+        featsExist = self.modifier['Feats'].keys()
+        for _, featName in enumerate(feats):
+            if featName not in featsExist:
+                return False
+        return True
+
+    def getClassLevel(self, className = None):
+        if type(className) == str:
+            if className in self.props['classes']:
+                return self.props['classes'][className]['level']
+            return 0
+        return self.props.sumFieldValue('classes', 'level')
 
     def grantSpellClass(self, spellClass, className):
         if 'spells' not in self.props:
