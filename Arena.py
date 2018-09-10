@@ -47,9 +47,10 @@ if __name__ == '__main__':
     player.buildByBuilder(builder, 30)
     weapon = Weapon(ctx, {'BaseItem': 'Kukri', 'Enhancement': 2})
     player.setProp('WeaponMainHand', weapon)
+    weapon_apply(player)
     player.statistic()
 
-    monster = Creature(ctx, 'zombie')
+    monster = Creature(ctx, 'adult red dragon')
 
     room = Room()
     room.addUnit(player)

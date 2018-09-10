@@ -44,6 +44,7 @@ def abilities_apply(unit):
     unit.modifier.updateSource(('AttackBonus', 'Str', 'Ability:Str'), modStr)
     unit.modifier.updateSource(('ArmorClass', 'Dex', 'Ability:Dex'), modDex)
     unit.modifier.updateSource(('HitPoint', 'Con', 'Ability:Con'), modCon)
+    unit.modifier.updateSource(('MeleeDamage', 'Additional', 'Ability:Str'), modStr)
 
     # todo: apply abilities to skills
     unit.modifier.updateSource(('Skills', 'Tumble', 'Modifier', 'Ability:Dex'), modDex)
@@ -53,3 +54,23 @@ def skills_apply(unit):
     spellcraftLevel = unit.modifier.sumSource(('Skills', 'Spellcraft'))
     unit.modifier.updateSource(('ArmorClass', 'Tumble', 'Skills:Tumble'), int(tumbleLevel / 10))
     unit.modifier.updateSource(('SavingThrow', 'All', 'Skills:Spellcraft'), int(spellcraftLevel / 5))
+
+def weapon_apply(unit):
+    weaponMH = unit.getProp('WeaponMainHand')
+    if weaponMH:
+        print(weaponMH.proto)
+        unit.modifier.updateSource(('MeleeDamage', 'MainHand', 'BaseDamage'), weaponMH.proto['BaseDamage']['params'])
+        unit.modifier.updateSource(('MeleeDamage', 'MainHand', 'CriticalThreat'), weaponMH.proto['BaseCriticalThreat']['params'])
+        unit.modifier.updateSource(('MeleeDamage', 'MainHand', 'DamageType'), weaponMH.proto['BaseDamageType'][0])
+    weaponOH = unit.getProp('WeaponOffHand')
+    if weaponOH:
+        unit.modifier.updateSource(('MeleeDamage', 'OffHand', 'BaseDamage'), weaponOH.proto['BaseDamage']['params'])
+        unit.modifier.updateSource(('MeleeDamage', 'OffHand', 'CriticalThreat'), weaponOH.proto['BaseCriticalThreat']['params'])
+        unit.modifier.updateSource(('MeleeDamage', 'OffHand', 'DamageType'), weaponOH.proto['BaseDamageType'][0])
+
+    if weaponOH == None and weaponMH.proto['WeaponSize'] == 'Large':
+        unit.modifier.updateSource(('MeleeDamage', 'FinalFactor'), 1.5)
+    else:
+        unit.modifier.updateSource(('MeleeDamage', 'FinalFactor'), 1.0)
+
+    #todo: apply weapon 'Enhancement'

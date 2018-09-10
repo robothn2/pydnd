@@ -32,6 +32,18 @@ class CombatManager:
         if enemy not in self.enemies:
             self.enemies.append(enemy)
 
+    def meleeAttackCheck(self, caster, target):
+        roll = rollDice(1, 20, 1)
+        if roll == 1:
+            return False
+
+        dcCaster = roll + caster.getProp('ab')
+        dcTarget = int(target.getProp('ac'))
+        if roll < 20:
+            if dcCaster < dcTarget:
+                return False
+        return True
+
     def meleeAttack(self, caster, target):
         roll = rollDice(1, 20, 1)
         if roll == 1:
@@ -47,7 +59,7 @@ class CombatManager:
                       ', missing')
                 return
 
-        damagesByType = self.calcMeleeDamage(caster, target)
+        damagesByType = self.calcMeleeDamage(caster, target, roll)
         print(caster.getProp('name'), 'melee attack', target.getProp('name'),
               ', dc: ', dcCaster, 'against', dcTarget,
               ', damage: ', damagesByType)
@@ -58,8 +70,15 @@ class CombatManager:
 
         target.applyDamage(damageTotal)
 
-    def calcMeleeDamage(self, caster, target):
-        dmgParams = caster.modifier.getSource(('Weapon', 'Base'), [1,4,2])
-        dmgBase = rollDice(dmgParams[0], dmgParams[1], dmgParams[2])
-        dmg = dmgBase + caster.modifier.sumSource(('MeleeDamage'))
-        return {'Piercing': 0, 'Slashing': dmg, 'Bludgeoning': 0}
+    def calcMeleeDamage(self, caster, target, roll):
+        dmgParams = caster.modifier.getSource(('MeleeDamage', 'MainHand', 'BaseDamage'), [1,4,2])
+        #print(dmgParams)
+        dmg = rollDice(dmgParams[0], dmgParams[1], dmgParams[2])
+        dmg += caster.modifier.sumSource('MeleeDamage', ['Additional'])
+        criticalParams = caster.modifier.getSource(('MeleeDamage', 'MainHand', 'CriticalThreat'), [20,20,2])
+        if roll >= criticalParams[0]:
+            if self.meleeAttackCheck(caster, target):
+                dmg *= criticalParams[2]
+
+        dmg *= caster.modifier.getSource(('MeleeDamage', 'FinalFactor'), 1.0)
+        return {caster.modifier.getSource(('MeleeDamage', 'MainHand', 'DamageType'), 'Bludgeoning'): dmg}

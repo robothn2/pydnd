@@ -12,7 +12,4 @@ class Weapon(Item):
         super(Weapon, self).__init__(ctx, props)
         self.props['Type'] = 'Weapon'
         protoName = self.props['BaseItem']
-        self.proto = self.ctx['protosWeapon']
-
-    def apply(self, unit):
-        unit.modifier.updateSource(('MeleeDamage', 'Base'), self.proto['BaseDamage']['params'])
+        self.proto = self.ctx['protosWeapon'][protoName].proto
