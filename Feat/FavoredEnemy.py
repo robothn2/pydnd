@@ -11,16 +11,17 @@ proto = {
 def matchRequirements(unit):
     return True
 
+def condition(caster, target, params):
+    race = target.getProp('race')
+    if race not in params:
+        return None
+
+    bonus = int(caster.getClassLevel('Ranger') / 5)
+    if bonus == 0:
+        bonus = 1
+    return { 'Physical': bonus }
+
 def apply(unit, featParams):
     print('apply feat', proto['name'], ', params', featParams)
 
-    rangerLevel = unit.props['classes']['Ranger']['level']
-    bonus = int(rangerLevel / 5)
-    if bonus == 0:
-        bonus = 1
-    for _, raceName in enumerate(featParams):
-        unit.modifier.updateSource(('MeleeDamage', 'Additional', 'Racial', 'Feat:' + proto['name']), bonus)
-        unit.modifier.updateSource(('RangeDamage', 'Additional', 'Racial', 'Feat:' + proto['name']), bonus)
-
-def applyAgainstTarget(caster, target):
-    return True
+    unit.modifier.updateSource(('Damage', 'Condition', 'Feat:' + proto['name']), (condition, featParams))

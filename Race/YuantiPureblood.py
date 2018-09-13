@@ -16,12 +16,14 @@ proto = {
 
 def apply(unit):
     print('apply race %s' % proto['name'])
+    source = 'Race:' + proto['name']
     unit.setProp('LevelAdjustment', 2)
-    unit.modifier.updateSource(('Abilities', 'Dex', 'Adjustment', 'Race:' + proto['name']), 2)
-    unit.modifier.updateSource(('Abilities', 'Int', 'Adjustment', 'Race:' + proto['name']), 2)
-    unit.modifier.updateSource(('Abilities', 'Cha', 'Adjustment', 'Race:' + proto['name']), 2)
-    unit.modifier.updateSource(('ArmorClass', 'Natural', 'Race:' + proto['name']), 1)
-    unit.modifier.updateSource(('SpellResistance', 'Race', 'Race:' + proto['name']), 11 + unit.getClassLevel())
+    unit.modifier.updateSource(('Abilities', 'Dex', 'Adjustment', source), 2)
+    unit.modifier.updateSource(('Abilities', 'Int', 'Adjustment', source), 2)
+    unit.modifier.updateSource(('Abilities', 'Cha', 'Adjustment', source), 2)
+    unit.modifier.updateSource(('ArmorClass', 'Natural', source), 1)
+    unit.modifier.updateSource(('SpellResistance', 'Race', source), 11 + unit.getClassLevel())
+
     unit.addFeat('Darkvision')
     unit.addFeat('Alertness')
     unit.addFeat('BlindFight')

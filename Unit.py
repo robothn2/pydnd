@@ -83,10 +83,19 @@ class Unit:
     def grantSpells(self, spellClass, className, spells):
         pass
 
+    def hasBuff(self, buffName):
+        return False
+
     def addEnemy(self, enemy):
         self.combat.addEnemy(enemy)
 
-    def applyDamage(self, damageTotal):
+    def applyDamages(self, damages):
+        damageTotal = 0
+        for dmg in damages.values():
+            damageTotal += int(dmg)
+        self._applyDamage(damageTotal)
+
+    def _applyDamage(self, damageTotal):
         hpOld = int(self.getProp('hp'))
         hpNew = hpOld - damageTotal
         if hpNew < 0:

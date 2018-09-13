@@ -28,6 +28,7 @@ ctx['protosClass'] = loadScriptsFolder('Class')
 ctx['protosRace'] = loadScriptsFolder('Race')
 ctx['protosWeapon'] = loadScriptsFolder('Weapon')
 ctx['protosCreature'] = CsvLoader.loadCsvFile(r'data/beastiary.csv')
+ctx['secondsPerTurn'] = 8.0
 
 class Room:
     def __init__(self):
@@ -58,7 +59,7 @@ if __name__ == '__main__':
     player.addEnemy(monster)
     monster.addEnemy(player)
 
-    deltaInSeconds = 2.0
+    deltaInSeconds = 0.2
     while not player.getProp('dead') and not monster.getProp('dead'):
         room.update(deltaInSeconds)
         time.sleep(deltaInSeconds)

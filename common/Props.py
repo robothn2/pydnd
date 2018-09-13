@@ -59,6 +59,9 @@ class Modifier(dict):
                 if type(excludeBranchNames) == list and key not in excludeBranchNames:
                     continue
                 # sum sources under branch
+                if type(branchSub) == int:
+                    sumValue += branchSub
+                    continue
                 for v in branchSub.values():
                     sumValue += sumIntValue(v)
 

@@ -1,17 +1,24 @@
 #coding: utf-8
-
 from Dice import rollDice
+from Apply import *
 
 class CombatManager:
     def __init__(self, unit):
         self.owner = unit
         self.enemies = []
         self.enemyCur = None
+        self.deltaInTurn = 0.0
+
+    def addEnemy(self, enemy):
+        if enemy not in self.enemies:
+            self.enemies.append(enemy)
 
     def update(self, deltaTime):
         if self.owner.getProp('dead'):
             return
 
+        if len(self.enemies) == 0:
+            return
         # search a living enemy
         enemy = None
         if self.enemyCur and not self.enemyCur.getProp('dead'):
@@ -21,18 +28,57 @@ class CombatManager:
                 if not u.getProp('dead'):
                     enemy = u
                     break
+        if not enemy:
+            self.deltaInTurn = 0.0
+            self.enemies = []
+            print('no living enemy for', self.owner.getProp('name'))
+            return
+
+        print('time in turn', self.deltaInTurn)
+        tsBegin = self.deltaInTurn
+        tsEnd = tsBegin + deltaTime
+        self.deltaInTurn += deltaTime
+        if self.deltaInTurn >= self.owner.ctx['secondsPerTurn']:
+            self.deltaInTurn -= self.owner.ctx['secondsPerTurn']
+            print('new turn for', self.owner.getProp('name'))
 
         # attack enemy
-        if enemy:
-            self.meleeAttack(self.owner, enemy)
-        else:
-            print('no enemy for', self.owner.getProp('name'))
+        for attack in enumerate(self.owner.modifier.getSource('Attacks')):
+            if attack[0] >= tsBegin and attack[0] < tsEnd:
+                self.meleeAttack(self.owner, enemy, attack)
 
-    def addEnemy(self, enemy):
-        if enemy not in self.enemies:
-            self.enemies.append(enemy)
+    def meleeAttack(self, caster, target, attack):
+        info = '{} attack:turnOffset({}) bab({}) mainhand({}) weapon({}) {}'\
+            .format(caster.getProp('name'),
+                    attack[0], attack[1], attack[2], attack[3].proto['name'],
+                    target.getProp('name'))
+        roll = rollDice(1, 20, 1)
+        info += ', roll: ' + str(roll)
+        if roll == 1:
+            print(info, ', missing')
+            return
 
-    def meleeAttackCheck(self, caster, target):
+        dcCaster = roll + caster.getProp('ab')
+        dcTarget = int(target.getProp('ac'))
+        info += ', dc:{} against {}'.format(dcCaster, dcTarget)
+        if roll < 20:
+            if dcCaster < dcTarget:
+                print(info, ', missing')
+                return
+
+        damages = self.weapon_calc_damage(caster, target, roll, attack)
+        target.applyDamages(damages)
+
+    def weapon_calc_damage(self, caster, target, roll, attack):
+        weaponParams = attack[3].proto['BaseDamage']['params']
+        dmg = rollDice(weaponParams[0], weaponParams[1], weaponParams[2])
+        dmg += caster.modifier.getSource('Damage', ['Additional'])
+        criticalParams = attack[3].proto['CriticalThreat']['params']
+        if roll >= criticalParams[0]:
+            if self.criticalCheck(caster, target):
+                dmg *= criticalParams[2]
+
+    def criticalCheck(self, caster, target):
         roll = rollDice(1, 20, 1)
         if roll == 1:
             return False
@@ -43,42 +89,3 @@ class CombatManager:
             if dcCaster < dcTarget:
                 return False
         return True
-
-    def meleeAttack(self, caster, target):
-        roll = rollDice(1, 20, 1)
-        if roll == 1:
-            print(caster.getProp('name'), 'melee attack', target.getProp('name'), ', roll: ', roll, ', missing')
-            return
-
-        dcCaster = roll + caster.getProp('ab')
-        dcTarget = int(target.getProp('ac'))
-        if roll < 20:
-            if dcCaster < dcTarget:
-                print(caster.getProp('name'), 'melee attack', target.getProp('name'),
-                      ', dc: ', dcCaster, 'against', dcTarget,
-                      ', missing')
-                return
-
-        damagesByType = self.calcMeleeDamage(caster, target, roll)
-        print(caster.getProp('name'), 'melee attack', target.getProp('name'),
-              ', dc: ', dcCaster, 'against', dcTarget,
-              ', damage: ', damagesByType)
-
-        damageTotal = 0
-        for dmg in damagesByType.values():
-            damageTotal += int(dmg)
-
-        target.applyDamage(damageTotal)
-
-    def calcMeleeDamage(self, caster, target, roll):
-        dmgParams = caster.modifier.getSource(('MeleeDamage', 'MainHand', 'BaseDamage'), [1,4,2])
-        #print(dmgParams)
-        dmg = rollDice(dmgParams[0], dmgParams[1], dmgParams[2])
-        dmg += caster.modifier.sumSource('MeleeDamage', ['Additional'])
-        criticalParams = caster.modifier.getSource(('MeleeDamage', 'MainHand', 'CriticalThreat'), [20,20,2])
-        if roll >= criticalParams[0]:
-            if self.meleeAttackCheck(caster, target):
-                dmg *= criticalParams[2]
-
-        dmg *= caster.modifier.getSource(('MeleeDamage', 'FinalFactor'), 1.0)
-        return {caster.modifier.getSource(('MeleeDamage', 'MainHand', 'DamageType'), 'Bludgeoning'): dmg}

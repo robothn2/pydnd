@@ -1,4 +1,5 @@
 #coding: utf-8
+from Dice import rollDice
 
 def race_apply(unit):
     if 'race' not in unit.props:
@@ -55,22 +56,48 @@ def skills_apply(unit):
     unit.modifier.updateSource(('ArmorClass', 'Tumble', 'Skills:Tumble'), int(tumbleLevel / 10))
     unit.modifier.updateSource(('SavingThrow', 'All', 'Skills:Spellcraft'), int(spellcraftLevel / 5))
 
+def calc_attackbonus_list(baseAttackBonus, babDecValue):
+    bab = int(baseAttackBonus)
+    abList = []
+    while 1:
+        abList.append(bab)
+        bab -= babDecValue
+        if bab <= 0:
+            break
+    return abList
+
+def calc_attacks_in_turn(baseAttackBonus, babDecValue, secondsPerTurn, delaySecondsToFirstAttack,
+                         weapon, hasHasteBuff, isMainhand):
+    abList = calc_attackbonus_list(baseAttackBonus, babDecValue)
+    if hasHasteBuff:
+        abList.insert(0, abList[0])
+
+    durationAttack = (secondsPerTurn - delaySecondsToFirstAttack) / len(abList)
+    tsOffset = delaySecondsToFirstAttack
+    attacks = []
+    for _,ab in enumerate(abList):
+        attacks.append((tsOffset, ab, isMainhand, weapon))
+        tsOffset += durationAttack
+    return attacks
+
 def weapon_apply(unit):
+    attacks = []
+    print(unit.modifier.getSource(('AttackBonus', 'Base')))
+    baseAttackBonus = unit.modifier.sumSource(('AttackBonus', 'Base'))
     weaponMH = unit.getProp('WeaponMainHand')
     if weaponMH:
-        print(weaponMH.proto)
-        unit.modifier.updateSource(('MeleeDamage', 'MainHand', 'BaseDamage'), weaponMH.proto['BaseDamage']['params'])
-        unit.modifier.updateSource(('MeleeDamage', 'MainHand', 'CriticalThreat'), weaponMH.proto['BaseCriticalThreat']['params'])
-        unit.modifier.updateSource(('MeleeDamage', 'MainHand', 'DamageType'), weaponMH.proto['BaseDamageType'][0])
+        #todo: apply weapon 'Enhancement'
+        attacks += calc_attacks_in_turn(baseAttackBonus, 5, unit.ctx['secondsPerTurn'], 0.0,
+                                       weaponMH, unit.hasBuff('Haste'), True)
+        print('attacks 1:', attacks)
+
+    if not unit.hasFeats(['TwoWeaponFighting']):
+        return
     weaponOH = unit.getProp('WeaponOffHand')
     if weaponOH:
-        unit.modifier.updateSource(('MeleeDamage', 'OffHand', 'BaseDamage'), weaponOH.proto['BaseDamage']['params'])
-        unit.modifier.updateSource(('MeleeDamage', 'OffHand', 'CriticalThreat'), weaponOH.proto['BaseCriticalThreat']['params'])
-        unit.modifier.updateSource(('MeleeDamage', 'OffHand', 'DamageType'), weaponOH.proto['BaseDamageType'][0])
+        attacks += calc_attacks_in_turn(False, baseAttackBonus, 5, unit.ctx['secondsPerTurn'], 0.3)
+        print('attacks 2:', attacks)
 
-    if weaponOH == None and weaponMH.proto['WeaponSize'] == 'Large':
-        unit.modifier.updateSource(('MeleeDamage', 'FinalFactor'), 1.5)
-    else:
-        unit.modifier.updateSource(('MeleeDamage', 'FinalFactor'), 1.0)
-
-    #todo: apply weapon 'Enhancement'
+    attacks.sort(key=lambda att: att[0], reverse=False)
+    print('attacks 3:', attacks)
+    unit.modifier.updateListParam(tuple('Attacks'), attacks)
