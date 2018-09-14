@@ -1,4 +1,5 @@
 #coding: utf-8
+import warnings
 
 def sumIntValue(value):
     sumValue = 0
@@ -11,6 +12,13 @@ def sumIntValue(value):
 
 class Modifier(dict):
     def updateSource(self, paths, value):
+        if type(paths) == str:
+            self[paths] = value
+            return
+        if type(paths) != list and type(paths) != tuple:
+            warnings.warn('wrong parameter type for updateSource(paths)', paths)
+            return
+
         d = self
         cnt = len(paths)
         for i in range(cnt):
@@ -22,6 +30,40 @@ class Modifier(dict):
             if key not in d:
                 d[key] = {}
             d = d[key]
+
+    def makeBranch(self, paths):
+        d = self
+        if type(paths) == str:
+            if paths not in d:
+                d[paths] = {}
+            return d[paths]
+
+        if type(paths) != list and type(paths) != tuple:
+            warnings.warn('wrong parameter type for updateSource(paths)', paths)
+            return {}
+        cnt = len(paths)
+        if cnt == 0:
+            warnings.warn('paths is empty for updateSource')
+            return {}
+
+        for i in range(cnt):
+            key = paths[i]
+            if i == cnt -1:
+                if key not in d:
+                    d[key] = {}
+                return d[key]
+
+            if key not in d:
+                d[key] = {}
+            d = d[key]
+
+    def mergeBranch(self, paths, branchNew):
+        if type(branchNew) != dict:
+            warnings.warn('wrong parameter type for mergeBranch(branchNew)')
+            return
+
+        branch = self.makeBranch(paths)
+        branch.update(branchNew)
 
     def getSource(self, paths, defaultValue = {}):
         d = self

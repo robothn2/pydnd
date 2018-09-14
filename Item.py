@@ -13,3 +13,5 @@ class Weapon(Item):
         self.props['Type'] = 'Weapon'
         protoName = self.props['BaseItem']
         self.proto = self.ctx['protosWeapon'][protoName].proto
+        if 'name' not in self.props:
+            self.props['name'] = self.proto['name']

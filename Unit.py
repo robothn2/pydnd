@@ -90,9 +90,13 @@ class Unit:
         self.combat.addEnemy(enemy)
 
     def applyDamages(self, damages):
+        print(self.getProp('name'), 'accept damages', damages)
         damageTotal = 0
-        for dmg in damages.values():
-            damageTotal += int(dmg)
+        for dmgType, dmgSources in damages.items():
+            damageTotal += Props.sumIntValue(dmgSources)
+        multiplier = damages.sumSource('Multiplier')
+        if multiplier > 0.01:
+            damageTotal = int(damageTotal * multiplier)
         self._applyDamage(damageTotal)
 
     def _applyDamage(self, damageTotal):

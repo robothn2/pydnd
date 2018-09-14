@@ -45,7 +45,7 @@ def abilities_apply(unit):
     unit.modifier.updateSource(('AttackBonus', 'Str', 'Ability:Str'), modStr)
     unit.modifier.updateSource(('ArmorClass', 'Dex', 'Ability:Dex'), modDex)
     unit.modifier.updateSource(('HitPoint', 'Con', 'Ability:Con'), modCon)
-    unit.modifier.updateSource(('MeleeDamage', 'Additional', 'Ability:Str'), modStr)
+    unit.modifier.updateSource(('Damage', 'Additional', 'Physical', 'Ability:Str'), modStr)
 
     # todo: apply abilities to skills
     unit.modifier.updateSource(('Skills', 'Tumble', 'Modifier', 'Ability:Dex'), modDex)
@@ -83,21 +83,19 @@ def calc_attacks_in_turn(baseAttackBonus, babDecValue, secondsPerTurn, delaySeco
 def weapon_apply(unit):
     attacks = []
     print(unit.modifier.getSource(('AttackBonus', 'Base')))
-    baseAttackBonus = unit.modifier.sumSource(('AttackBonus', 'Base'))
+    bab = unit.modifier.sumSource(('AttackBonus', 'Base'))
     weaponMH = unit.getProp('WeaponMainHand')
     if weaponMH:
         #todo: apply weapon 'Enhancement'
-        attacks += calc_attacks_in_turn(baseAttackBonus, 5, unit.ctx['secondsPerTurn'], 0.0,
-                                       weaponMH, unit.hasBuff('Haste'), True)
-        print('attacks 1:', attacks)
+        #enhance = weaponMH.getProp('Enhancement')
+        #unit.modifier.updateSource(['AttackBonus'], attacks)
+        attacks.extend(calc_attacks_in_turn(bab, 5, unit.ctx['secondsPerTurn'], 0.0,
+                                       weaponMH, unit.hasBuff('Haste'), True))
 
-    if not unit.hasFeats(['TwoWeaponFighting']):
-        return
+    #if unit.hasFeats(['TwoWeaponFighting']):
     weaponOH = unit.getProp('WeaponOffHand')
     if weaponOH:
-        attacks += calc_attacks_in_turn(False, baseAttackBonus, 5, unit.ctx['secondsPerTurn'], 0.3)
-        print('attacks 2:', attacks)
+        attacks.extend(calc_attacks_in_turn(bab, 5, unit.ctx['secondsPerTurn'], 0.3, weaponOH, False, False))
 
     attacks.sort(key=lambda att: att[0], reverse=False)
-    print('attacks 3:', attacks)
-    unit.modifier.updateListParam(tuple('Attacks'), attacks)
+    unit.modifier.updateSource(['Attacks'], attacks)

@@ -127,3 +127,4 @@ class Character(Unit):
         self.printModifier('Reduction')
         self.printModifier('SpellCasting')
         print('BAB:', self.modifier.sumSource(('AttackBonus', 'Base')))
+        print('Attacks:', self.modifier.getSource('Attacks'))

@@ -46,8 +46,8 @@ if __name__ == '__main__':
     #print(builder)
     player = Character(ctx)
     player.buildByBuilder(builder, 30)
-    weapon = Weapon(ctx, {'BaseItem': 'Kukri', 'Enhancement': 2})
-    player.setProp('WeaponMainHand', weapon)
+    player.setProp('WeaponMainHand', Weapon(ctx, {'name': 'DemoWeapon','BaseItem': 'Kukri', 'Enhancement': 3}))
+    player.setProp('WeaponOffHand', Weapon(ctx, {'name': 'DemoOffhandWeapon','BaseItem': 'Kukri', 'Enhancement': 2}))
     weapon_apply(player)
     player.statistic()
 
@@ -59,7 +59,7 @@ if __name__ == '__main__':
     player.addEnemy(monster)
     monster.addEnemy(player)
 
-    deltaInSeconds = 0.2
+    deltaInSeconds = 0.05
     while not player.getProp('dead') and not monster.getProp('dead'):
         room.update(deltaInSeconds)
         time.sleep(deltaInSeconds)

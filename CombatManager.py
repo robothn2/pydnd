@@ -1,6 +1,7 @@
 #coding: utf-8
 from Dice import rollDice
 from Apply import *
+from common import Props
 
 class CombatManager:
     def __init__(self, unit):
@@ -34,18 +35,21 @@ class CombatManager:
             print('no living enemy for', self.owner.getProp('name'))
             return
 
-        print('time in turn', self.deltaInTurn)
         tsBegin = self.deltaInTurn
         tsEnd = tsBegin + deltaTime
         self.deltaInTurn += deltaTime
         if self.deltaInTurn >= self.owner.ctx['secondsPerTurn']:
             self.deltaInTurn -= self.owner.ctx['secondsPerTurn']
-            print('new turn for', self.owner.getProp('name'))
+            print('new turn for', self.owner.getProp('name'), 'Attacks', self.owner.modifier.getSource('Attacks'))
 
         # attack enemy
-        for attack in enumerate(self.owner.modifier.getSource('Attacks')):
-            if attack[0] >= tsBegin and attack[0] < tsEnd:
-                self.meleeAttack(self.owner, enemy, attack)
+        attacks = self.owner.modifier.getSource('Attacks')
+        for _, attack in enumerate(attacks):
+            if attack[0] < tsBegin:
+                continue
+            if attack[0] > tsEnd:
+                break
+            self.meleeAttack(self.owner, enemy, attack)
 
     def meleeAttack(self, caster, target, attack):
         info = '{} attack:turnOffset({}) bab({}) mainhand({}) weapon({}) {}'\
@@ -70,13 +74,26 @@ class CombatManager:
         target.applyDamages(damages)
 
     def weapon_calc_damage(self, caster, target, roll, attack):
-        weaponParams = attack[3].proto['BaseDamage']['params']
-        dmg = rollDice(weaponParams[0], weaponParams[1], weaponParams[2])
-        dmg += caster.modifier.getSource('Damage', ['Additional'])
-        criticalParams = attack[3].proto['CriticalThreat']['params']
+        damages = Props.Modifier()
+
+        # weapon base damage
+        weaponProto = attack[3].proto
+        weaponParams = weaponProto['BaseDamage']['params']
+        weaponDmgType = weaponProto['BaseDamageType'][0] #todo: consider multi type
+        weaponName = attack[3].props['name'] #todo: use weapon name, not base name
+        damages.updateSource((weaponDmgType, weaponName), rollDice(weaponParams[0], weaponParams[1], weaponParams[2]))
+
+        # multiplier
+        criticalParams = attack[3].proto['BaseCriticalThreat']['params']
         if roll >= criticalParams[0]:
             if self.criticalCheck(caster, target):
-                dmg *= criticalParams[2]
+                damages.updateSource(('Multiplier', 'Weapon'), criticalParams[2])
+
+        # additional damage
+        addtionalSources = caster.modifier.getSource(['Damage', 'Additional'])
+        for dmgType, dmgSources in addtionalSources.items():
+            damages.mergeBranch(dmgType, dmgSources)
+        return damages
 
     def criticalCheck(self, caster, target):
         roll = rollDice(1, 20, 1)
