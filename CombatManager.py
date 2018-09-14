@@ -81,7 +81,7 @@ class CombatManager:
         weaponParams = weaponProto['BaseDamage']['params']
         weaponDmgType = weaponProto['BaseDamageType'][0] #todo: consider multi type
         weaponName = attack[3].props['name'] #todo: use weapon name, not base name
-        damages.updateSource((weaponDmgType, weaponName), rollDice(weaponParams[0], weaponParams[1], weaponParams[2]))
+        damages.updateSource(('Type', weaponDmgType, weaponName), rollDice(weaponParams[0], weaponParams[1], weaponParams[2]))
 
         # multiplier
         criticalParams = attack[3].proto['BaseCriticalThreat']['params']
@@ -92,7 +92,7 @@ class CombatManager:
         # additional damage
         addtionalSources = caster.modifier.getSource(['Damage', 'Additional'])
         for dmgType, dmgSources in addtionalSources.items():
-            damages.mergeBranch(dmgType, dmgSources)
+            damages.mergeBranch(('Type', dmgType), dmgSources)
         return damages
 
     def criticalCheck(self, caster, target):

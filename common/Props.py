@@ -68,6 +68,8 @@ class Modifier(dict):
     def getSource(self, paths, defaultValue = {}):
         d = self
         if type(paths) == str:
+            if len(paths) == 0:
+                return d
             return d[paths] if paths in d else defaultValue
         if (type(paths) != list and type(paths) != tuple):
             return defaultValue
@@ -87,7 +89,6 @@ class Modifier(dict):
 
     def sumSource(self, pathsList, includeBranchNames = None, excludeBranchNames = None):
         branch = self.getSource(pathsList, {})
-        #print('got branch:', branch)
         sumValue = 0
         if type(includeBranchNames) == list:
             for _, name in enumerate(includeBranchNames):

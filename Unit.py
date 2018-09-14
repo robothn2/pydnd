@@ -91,9 +91,7 @@ class Unit:
 
     def applyDamages(self, damages):
         print(self.getProp('name'), 'accept damages', damages)
-        damageTotal = 0
-        for dmgType, dmgSources in damages.items():
-            damageTotal += Props.sumIntValue(dmgSources)
+        damageTotal = damages.sumSource('Type')
         multiplier = damages.sumSource('Multiplier')
         if multiplier > 0.01:
             damageTotal = int(damageTotal * multiplier)
