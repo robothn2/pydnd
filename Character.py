@@ -112,14 +112,19 @@ class Character(Unit):
         feats_apply(self)
         abilities_apply(self)
         skills_apply(self)
-        Unit._postApplyAll(self)
+
+        self.setProp('ac', self.modifier.sumSource(('ArmorClass')))
+        self.setProp('ab', self.modifier.sumSource(('AttackBonus')))
+        self.setProp('hp', self.modifier.sumSource(('HitPoint')))
+
+        self.statistic()
         print(self.modifier)
-        #print(self.props)
 
     def printModifier(self, key):
         print(key, ':', self.modifier.sumSource(key), ',', self.modifier.getSource(key))
 
     def statistic(self):
+        print('== statistics for character', self.getProp('name'))
         self.printModifier('AttackBonus')
         self.printModifier('ArmorClass')
         self.printModifier('HitPoint')

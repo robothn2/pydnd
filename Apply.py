@@ -76,7 +76,7 @@ def calc_attacks_in_turn(baseAttackBonus, babDecValue, secondsPerTurn, delaySeco
     tsOffset = delaySecondsToFirstAttack
     attacks = []
     for _,ab in enumerate(abList):
-        attacks.append((tsOffset, ab, isMainhand, weapon))
+        attacks.append((round(tsOffset,3), ab, isMainhand, weapon))
         tsOffset += durationAttack
     return attacks
 

@@ -23,11 +23,6 @@ class Unit:
             return self.props[key]
         return None
 
-    def _postApplyAll(self):
-        self.setProp('ac', self.modifier.sumSource(('ArmorClass')))
-        self.setProp('ab', self.modifier.sumSource(('AttackBonus')))
-        self.setProp('hp', self.modifier.sumSource(('HitPoint')))
-
     def addFeat(self, featName, featParam = None):
         if featName not in self.ctx['protosFeat']:
             warnings.warn('unknown feat: %s' % featName)
@@ -90,11 +85,11 @@ class Unit:
         self.combat.addEnemy(enemy)
 
     def applyDamages(self, damages):
-        print(self.getProp('name'), 'accept damages', damages)
         damageTotal = damages.sumSource('Type')
         multiplier = damages.sumSource('Multiplier')
         if multiplier > 0.01:
             damageTotal = int(damageTotal * multiplier)
+        print(self.getProp('name'), 'accept damage', damageTotal, ' info', damages)
         self._applyDamage(damageTotal)
 
     def _applyDamage(self, damageTotal):
@@ -102,7 +97,7 @@ class Unit:
         hpNew = hpOld - damageTotal
         if hpNew < 0:
             hpNew = 0
-        print('hp of', self.getProp('name'), 'changed:', hpOld, '->', hpNew)
+        print(self.getProp('name'), 'hp changed:', hpOld, '->', hpNew)
         self.setProp('hp', hpNew)
         if hpNew == 0:
             self.setProp('dead', True)
