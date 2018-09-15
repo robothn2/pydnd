@@ -27,7 +27,7 @@ def buffs_apply(unit):
     pass
 
 def feats_apply(unit):
-    feats = unit.props['feats']
+    feats = unit.modifier.getSource('Feats')
     protos = unit.ctx['protosFeat']
     for featName in feats.keys():
         if featName not in protos:
@@ -37,7 +37,7 @@ def feats_apply(unit):
         proto.apply(unit, feats[featName])
 
 def abilities_modifier(unit, ability):
-    return int( (unit.modifier.sumSource(('Abilities', ability), ['Base']) - 10) / 2 )
+    return int( (unit.modifier.sumSource(('Abilities', ability)) - 10) / 2 )
 def abilities_apply(unit):
     modStr = abilities_modifier(unit, 'Str')
     modDex = abilities_modifier(unit, 'Dex')
@@ -81,9 +81,11 @@ def calc_attacks_in_turn(baseAttackBonus, babDecValue, secondsPerTurn, delaySeco
     return attacks
 
 def weapon_apply(unit):
+    conditions = unit.modifier.getSource(['Conditional', 'Weapon'])
+
     attacks = []
-    print(unit.modifier.getSource(('AttackBonus', 'Base')))
     bab = unit.modifier.sumSource(('AttackBonus', 'Base'))
+    #print(calc_attackbonus_list(bab, 5))
     weaponMH = unit.getProp('WeaponMainHand')
     if weaponMH:
         #todo: apply weapon 'Enhancement'
@@ -92,10 +94,21 @@ def weapon_apply(unit):
         attacks.extend(calc_attacks_in_turn(bab, 5, unit.ctx['secondsPerTurn'], 0.0,
                                        weaponMH, unit.hasBuff('Haste'), True))
 
+        # apply weapon based condition,
+        for sourceName, cond in conditions.items():
+            condition, featParams = cond  # @see Feat/WeaponFocus.py
+            condition(unit, weaponMH, featParams)
+
     #if unit.hasFeats(['TwoWeaponFighting']):
     weaponOH = unit.getProp('WeaponOffHand')
     if weaponOH:
         attacks.extend(calc_attacks_in_turn(bab, 5, unit.ctx['secondsPerTurn'], 0.3, weaponOH, False, False))
 
+        # apply weapon based condition,
+        for sourceName, cond in conditions.items():
+            condition, featParams = cond  # @see Feat/WeaponFocus.py
+            condition(unit, weaponMH, featParams)
+
+    #print(attacks)
     attacks.sort(key=lambda att: att[0], reverse=False)
     unit.modifier.updateSource(['Attacks'], attacks)

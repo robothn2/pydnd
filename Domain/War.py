@@ -13,9 +13,10 @@ def apply(unit):
     if deityName in unit.ctx['protosDeity']:
         deityProto = unit.ctx['protosDeity'][deityName]
         weapon = deityProto.proto['FavoredWeapon']
+        print('deity:', deityName, 'weapon:', weapon)
         if weapon == 'UnarmedStrike':
             unit.addFeat('ImprovedUnarmedStrike')
         else:
-            unit.addFeat('WeaponFocus(%s)' % weapon)
+            unit.addFeat('WeaponFocus', weapon)
 
     unit.grantSpells('Divine', 'Cleric', ['FlameStrike', 'PowerWordStun'])

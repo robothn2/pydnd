@@ -48,7 +48,6 @@ if __name__ == '__main__':
     player.buildByBuilder(builder, 30)
     player.setProp('WeaponMainHand', Weapon(ctx, {'name': 'DemoWeapon','BaseItem': 'Kukri', 'Enhancement': 3}))
     player.setProp('WeaponOffHand', Weapon(ctx, {'name': 'DemoOffhandWeapon','BaseItem': 'Kukri', 'Enhancement': 2}))
-    weapon_apply(player)
     player.statistic()
 
     monster = Creature(ctx, 'adult red dragon')

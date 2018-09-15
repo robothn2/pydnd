@@ -92,7 +92,14 @@ class CombatManager:
         # additional damage
         addtionalSources = caster.modifier.getSource(['Damage', 'Additional'])
         for dmgType, dmgSources in addtionalSources.items():
-            damages.mergeBranch(('Type', dmgType), dmgSources)
+            damages.mergeBranchDict(('Type', dmgType), dmgSources)
+
+        # conditional damage
+        conditionalSources = caster.modifier.getSource(['Damage', 'Conditional'])
+        for dmgSourceName, dmgCond in conditionalSources.items():
+            condition, featParams = dmgCond
+            dmgCond[0](caster, target, featParams, damages)
+
         return damages
 
     def criticalCheck(self, caster, target):

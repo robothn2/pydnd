@@ -1,6 +1,52 @@
 #coding: utf-8
 import warnings
 
+def makeBranch(dictExist, paths, branchDefaultValue={}):
+    d = dictExist
+    if type(paths) == str:
+        if paths not in d:
+            d[paths] = branchDefaultValue
+        return d[paths]
+
+    if type(paths) != list and type(paths) != tuple:
+        raise RuntimeError('wrong parameter type for updateSource(paths)')
+    cnt = len(paths)
+    if cnt == 0:
+        raise RuntimeError('paths is empty for updateSource')
+
+    for i in range(cnt):
+        key = paths[i]
+        if i == cnt - 1:
+            if key not in d:
+                d[key] = branchDefaultValue
+            return d[key]
+
+        if key not in d:
+            d[key] = {}
+        d = d[key]
+
+def getBranch(dictExist, paths, defaultValue = {}):
+    d = dictExist
+    if type(paths) == str:
+        if len(paths) == 0:
+            return d
+        return d[paths] if paths in d else defaultValue
+    if (type(paths) != list and type(paths) != tuple):
+        return defaultValue
+
+    cnt = len(paths)
+    if cnt == 0:
+        return defaultValue
+
+    for i in range(cnt):
+        key = paths[i]
+        if i == cnt -1:
+            return d[key] if key in d else defaultValue
+
+        if key not in d:
+            return defaultValue
+        d = d[key]
+
 def sumIntValue(value):
     sumValue = 0
     if type(value) == int:
@@ -10,85 +56,51 @@ def sumIntValue(value):
             sumValue += int(subValue)
     return sumValue
 
+def mergeList(listExist, paramsToMerge):
+    if type(paramsToMerge) == str:
+        listExist.append(paramsToMerge)
+        return
+    if type(paramsToMerge) != list and type(paramsToMerge) != tuple:
+        return
+    cnt = len(paramsToMerge)
+    if cnt == 0:
+        return
+
+    for i in range(cnt):
+        value = paramsToMerge[i]
+        if value not in listExist:
+            listExist.append(value)
+
 class Modifier(dict):
+    # Source is a key-value pair under dict based Branch
+    # Source is unique by key, updateSource has replace semantics
     def updateSource(self, paths, value):
         if type(paths) == str:
             self[paths] = value
             return
-        if type(paths) != list and type(paths) != tuple:
-            warnings.warn('wrong parameter type for updateSource(paths)', paths)
+        if len(paths) == 1:
+            self[paths[0]] = value
             return
 
-        d = self
-        cnt = len(paths)
-        for i in range(cnt):
-            key = paths[i]
-            if i == cnt -1:
-                d[key] = value
-                return
+        branch = makeBranch(self, paths[:-1], {})
+        branch[paths[-1]] = value
 
-            if key not in d:
-                d[key] = {}
-            d = d[key]
-
-    def makeBranch(self, paths):
-        d = self
-        if type(paths) == str:
-            if paths not in d:
-                d[paths] = {}
-            return d[paths]
-
-        if type(paths) != list and type(paths) != tuple:
-            warnings.warn('wrong parameter type for updateSource(paths)', paths)
-            return {}
-        cnt = len(paths)
-        if cnt == 0:
-            warnings.warn('paths is empty for updateSource')
-            return {}
-
-        for i in range(cnt):
-            key = paths[i]
-            if i == cnt -1:
-                if key not in d:
-                    d[key] = {}
-                return d[key]
-
-            if key not in d:
-                d[key] = {}
-            d = d[key]
-
-    def mergeBranch(self, paths, branchNew):
+    def mergeBranchDict(self, paths, branchNew):
         if type(branchNew) != dict:
             warnings.warn('wrong parameter type for mergeBranch(branchNew)')
             return
 
-        branch = self.makeBranch(paths)
+        branch = makeBranch(self, paths, {})
         branch.update(branchNew)
 
-    def getSource(self, paths, defaultValue = {}):
-        d = self
-        if type(paths) == str:
-            if len(paths) == 0:
-                return d
-            return d[paths] if paths in d else defaultValue
-        if (type(paths) != list and type(paths) != tuple):
-            return defaultValue
+    def mergeBranchList(self, paths, params):
+        mergeList(makeBranch(self, paths, []), params)
 
-        cnt = len(paths)
-        if cnt == 0:
-            return defaultValue
-
-        for i in range(cnt):
-            key = paths[i]
-            if i == cnt -1:
-                return d[key] if key in d else defaultValue
-
-            if key not in d:
-                return defaultValue
-            d = d[key]
+    def getSource(self, paths, defaultValue={}):
+        return getBranch(self, paths, defaultValue)
 
     def sumSource(self, pathsList, includeBranchNames = None, excludeBranchNames = None):
-        branch = self.getSource(pathsList, {})
+        branch = getBranch(self, pathsList, {})
         sumValue = 0
         if type(includeBranchNames) == list:
             for _, name in enumerate(includeBranchNames):
@@ -109,25 +121,6 @@ class Modifier(dict):
                     sumValue += sumIntValue(v)
 
         return sumValue
-
-    def updateListParam(self, paths, params):
-        d = self
-        cnt = len(paths)
-        for i in range(cnt):
-            key = paths[i]
-            if i == cnt -1:
-                if key not in d:
-                    d[key] = params
-                else:
-                    #merge params and d[key]
-                    for _, param in params:
-                        if param not in d[key]:
-                            d[key].append(param)
-                return
-
-            if key not in d:
-                d[key] = {}
-            d = d[key]
 
 class Props(dict):
     def incValue(self, key, value):
@@ -162,26 +155,21 @@ class Props(dict):
         return sumField
 
 if __name__ == '__main__':
-    modifier = Modifier({})
-    modifier.updateSource(('ArmorClass', 'Tumble'), 1)
-    print(modifier)
+    modifier = Modifier()
+    """
+    modifier.mergeBranchList(('F', 'FavoredEnemy'), 'Human')
+    modifier.mergeBranchList(('F', 'FavoredEnemy'), 'Dragon')
+    modifier.mergeBranchList(('F', 'FavoredEnemy'), ['Undead', 'Demon'])
+    print(modifier.getSource(['F']))
 
-    modifier = Modifier({'ArmorClass': {}})
-    modifier.updateSource(('ArmorClass', 'Tumble', 'Skills:Tumble'), 2)
-    print(modifier)
+    modifier.updateSource(('A', 'Stt', 'Base', 'B'), 5)
+    modifier.updateSource(('A', 'Stt', 'Base', 'B'), 9)
+    print(modifier.getSource('A'))
+    """
 
-    modifier = Modifier({'ArmorClass': {'Dodge': {'Dex': 2}}})
-    modifier.updateSource(('ArmorClass', 'Tumble', 'Skills:Tumble'), 3)
+    modifier.updateSource('B', [(0.0, 1, 2), (1.0, 3, 5)])
+    print(modifier.getSource('B'))
 
-    modifier.updateSource(('AttackBonus', 'Racial', 'Undead', 'Feat:FavoredEnemy'), 3)
-
-    modifier.updateSource(('Str', 'Race', 'Orc'), 2)
-    print(modifier.getSource(['Str'], {}))
-    print(modifier.getSource(('Str'), {}))
-    print(modifier.getSource([], {}))
-    print(modifier.getSource(['Str', 'Race'], {}))
-    print(modifier.getSource(['Str', 'NotExist'], {}))
-    print(modifier.getSource(['NotExist', 'NotExist'], {}))
-
-    modifier = Modifier({'ArmorClass': {'Natural': {'BaseArmor': 10, 'Race:YuantiPureblood': 1}, 'Dodge': {'Feat:Dodge': 1}, 'Dex': {'Ability:Dex': 3}, 'Tumble': {'Skills:Tumble': 3}}})
-    print(modifier.sumSource('ArmorClass', {}))
+    modifier.updateSource(('AB', 'Base', 'CLS'), 20)
+    print(modifier.getSource(('AB', 'Base')))
+    print(modifier.sumSource(('AB', 'Base')))

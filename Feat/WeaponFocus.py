@@ -9,6 +9,7 @@ proto = {
     'Use': '''Automatic. This feat may be selected multiple times, but the effects do not stack. It applies to a new weapon in each case.''',
     'Special': '''Halflings and gnomes are small creatures and as such they can never use the following large weapons: greataxes, greatswords, halberds, scythes, spears, and warmaces.'''
 }
+source = 'Feat:' + proto['name']
 
 def matchRequirements(unit):
     if unit.modifier.sumSource('AttackBonus', ['Base']) < 1:
@@ -25,11 +26,17 @@ def availableParams(unit):
     # todo: Halflings and gnomes cant use large weapons
     return []
 
+def condition(caster, weapon, params):
+    print('condition of', proto['name'], ': weapon', weapon.proto['name'], ', params', params)
+    if not params or weapon.proto['name'] not in params:
+        return
+
+    weapon.modifier.updateSource(('AttackBonus', 'Additional', source), 1)
+    print('modifier for weapon', weapon.props['name'], weapon.modifier)
+
 def apply(unit, featParams):
     print('apply feat %s' % proto['name'])
-
-    unit.modifier.updateSource(('SavingThrow', 'All', 'Feat:' + proto['name']), 1)
-    unit.modifier.updateSource(('ArmorClass', 'Luck', 'Feat:' + proto['name']), 1)
+    unit.modifier.updateSource(('Conditional', 'Weapon', source), (condition, featParams))
 
 def applyAgainstTarget(caster, target):
     return True

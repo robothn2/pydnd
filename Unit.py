@@ -23,18 +23,12 @@ class Unit:
             return self.props[key]
         return None
 
-    def addFeat(self, featName, featParam = None):
+    def addFeat(self, featName, featParam = []):
         if featName not in self.ctx['protosFeat']:
             warnings.warn('unknown feat: %s' % featName)
             return False
 
-        if type(featParam) == str:
-            self.modifier.updateListParam(('Feats', featName), [featParam])
-            return True
-        if type(featParam) == list:
-            self.modifier.updateListParam(('Feats', featName), featParam)
-            return True
-        self.modifier.updateListParam(('Feats', featName), [])
+        self.modifier.mergeBranchList(('Feats', featName), featParam)
         return True
 
     def addFeats(self, feats, featsHint = []):

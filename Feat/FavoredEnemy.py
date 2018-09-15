@@ -13,6 +13,7 @@ def matchRequirements(unit):
 
 def condition(caster, target, params):
     race = target.getProp('race')
+    print('taget race', race, ', params', params)
     if race not in params:
         return None
 
@@ -24,4 +25,4 @@ def condition(caster, target, params):
 def apply(unit, featParams):
     print('apply feat', proto['name'], ', params', featParams)
 
-    unit.modifier.updateSource(('Damage', 'Condition', 'Feat:' + proto['name']), (condition, featParams))
+    unit.modifier.updateSource(('Conditional', 'Target', 'Feat:' + proto['name']), (condition, featParams))

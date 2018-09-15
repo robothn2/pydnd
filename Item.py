@@ -11,6 +11,7 @@ class Weapon(Item):
     def __init__(self, ctx, props):
         super(Weapon, self).__init__(ctx, props)
         self.props['Type'] = 'Weapon'
+        self.modifier = Props.Modifier()
         protoName = self.props['BaseItem']
         if protoName in self.ctx['protosWeapon']:
             self.proto = self.ctx['protosWeapon'][protoName].proto

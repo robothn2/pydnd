@@ -96,13 +96,13 @@ class Character(Unit):
             if 'feats' in levelEntry:
                 for _, featName in enumerate(levelEntry['feats']):
                     if featName in self.ctx['protosFeat']:
+                        self.addFeat(featName, levelEntry.get('featsHint'))
                         self.props['feats'][featName] = self.ctx['protosFeat'][featName]
 
             # update skills
             for skillName,skillLevel in levelEntry['skills'].items():
                 self.modifier.updateSource(('Skills', skillName, 'Base', 'Builder'), skillLevel)
 
-        self._applyAll()
         return True
 
     def _applyAll(self):
@@ -112,19 +112,19 @@ class Character(Unit):
         feats_apply(self)
         abilities_apply(self)
         skills_apply(self)
+        weapon_apply(self)
 
         self.setProp('ac', self.modifier.sumSource(('ArmorClass')))
         self.setProp('ab', self.modifier.sumSource(('AttackBonus')))
         self.setProp('hp', self.modifier.sumSource(('HitPoint')))
 
-        self.statistic()
-        print(self.modifier)
-
     def printModifier(self, key):
         print(key, ':', self.modifier.sumSource(key), ',', self.modifier.getSource(key))
 
     def statistic(self):
+        self._applyAll()
         print('== statistics for character', self.getProp('name'))
+        print('Feats:', self.modifier.getSource('Feats'))
         self.printModifier('AttackBonus')
         self.printModifier('ArmorClass')
         self.printModifier('HitPoint')

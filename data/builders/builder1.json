@@ -11,7 +11,7 @@
 	"abilities":{"Str": 16, "Dex": 12, "Con":10, "Int": 14, "Wis": 8, "Cha":  16},
 	
 	"levels": [
-		{"level": 1, "class": "Ranger",	"feats": ["Dodge"], "featsHint": ["FavoredEnemy(Humans)"], "skills": {"CraftWeapon": 4, "Heal": 4, "Hide": 4, "Intimidate": 2, "MoveSilently": 4, "Spellcraft": 1, "Spot": 4, "Tumble": 2, "UseMagicDevice": 2}},
+		{"level": 1, "class": "Ranger",	"feats": ["Dodge"], "featsHint": ["FavoredEnemy(Dragon)"], "skills": {"CraftWeapon": 4, "Heal": 4, "Hide": 4, "Intimidate": 2, "MoveSilently": 4, "Spellcraft": 1, "Spot": 4, "Tumble": 2, "UseMagicDevice": 2}},
 		{"level": 2, "class": "Ranger",	"featsHint": ["CombatStyle(TwoWeaponFighting)"], "skills": {"CraftWeapon": 5, "Heal": 5, "Hide": 5, "Intimidate": 2, "MoveSilently": 5, "Spellcraft": 2, "Spot": 5, "Tumble": 2, "UseMagicDevice": 2}},
 		{"level": 3, "class": "Ranger",	"feats": ["PowerAttack"], "skills": {"CraftWeapon": 6, "Heal": 6, "Hide": 6, "Intimidate": 3, "MoveSilently": 6, "Spellcraft": 2, "Spot": 6, "Tumble": 3, "UseMagicDevice": 3}},
 		{"level": 4, "class": "Ranger", "ability": "Str", "animalCompanion": "Panther", "skills": {"CraftWeapon": 7, "Heal": 7, "Hide": 7, "Intimidate": 3, "MoveSilently": 7, "Spellcraft": 3, "Spot": 7, "Tumble": 3, "UseMagicDevice": 3}},

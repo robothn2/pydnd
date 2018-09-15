@@ -22,12 +22,14 @@ proto = {
 def apply(unit):
     print('apply race %s' % proto['name'])
     source = 'Race:' + proto['name']
-    unit.setProp('LevelAdjustment', 2)
 
-    unit.modifier.updateSource(('Abilities', 'Dex', 'Adjustment', source), 2)
-    unit.modifier.updateSource(('Abilities', 'Int', 'Adjustment', source), 2)
-    unit.modifier.updateSource(('Abilities', 'Cha', 'Adjustment', source), 2)
-    unit.modifier.updateSource(('Abilities', 'Con', 'Adjustment', source), -2)
+    # todo: affect XP requirement on level up
+    unit.modifier.updateSource(('Level', 'Adjustment', source), 2)
+
+    unit.modifier.updateSource(('Abilities', 'Dex', 'Base', source), 2)
+    unit.modifier.updateSource(('Abilities', 'Int', 'Base', source), 2)
+    unit.modifier.updateSource(('Abilities', 'Cha', 'Base', source), 2)
+    unit.modifier.updateSource(('Abilities', 'Con', 'Base', source), -2)
 
     unit.modifier.updateSource(('Skills', 'Listen', source), 2)
     unit.modifier.updateSource(('Skills', 'Search', source), 2)
