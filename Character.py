@@ -133,3 +133,10 @@ class Character(Unit):
         self.printModifier('SpellCasting')
         print('BAB:', self.modifier.sumSource(('AttackBonus', 'Base')))
         print('Attacks:', self.modifier.getSource('Attacks'))
+
+    def getAttackBonus(self, target):
+        # todo: ab from Buff, Feats, Str
+        return self.getProp('ab')
+    def getArmorClass(self, target):
+        # todo: ac from Buff, Feats, Dex, Armor, Shield
+        return self.getProp('ac')

@@ -119,7 +119,6 @@ class Modifier(dict):
                     continue
                 for v in branchSub.values():
                     sumValue += sumIntValue(v)
-
         return sumValue
 
 class Props(dict):
@@ -165,11 +164,16 @@ if __name__ == '__main__':
     modifier.updateSource(('A', 'Stt', 'Base', 'B'), 5)
     modifier.updateSource(('A', 'Stt', 'Base', 'B'), 9)
     print(modifier.getSource('A'))
-    """
 
     modifier.updateSource('B', [(0.0, 1, 2), (1.0, 3, 5)])
     print(modifier.getSource('B'))
 
-    modifier.updateSource(('AB', 'Base', 'CLS'), 20)
-    print(modifier.getSource(('AB', 'Base')))
-    print(modifier.sumSource(('AB', 'Base')))
+    modifier.updateSource(('D', 'Additional', 'CLS'), 20)
+    print(modifier.getSource(('D', 'Additional')))
+    print(modifier.sumSource(('D', 'Additional')))
+    """
+
+    modifier.updateSource(('Dmg', 'Add', 'Magical', 'Enhance'), 2)
+    modifier.updateSource(('Dmg', 'Add', 'Sonic', 'DamageBonus'), 5)
+    dmgs = {'Magical': 1}
+    print(dmgs)

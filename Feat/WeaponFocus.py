@@ -37,6 +37,3 @@ def condition(caster, weapon, params):
 def apply(unit, featParams):
     print('apply feat %s' % proto['name'])
     unit.modifier.updateSource(('Conditional', 'Weapon', source), (condition, featParams))
-
-def applyAgainstTarget(caster, target):
-    return True

@@ -10,15 +10,20 @@ class Item:
 class Weapon(Item):
     def __init__(self, ctx, props):
         super(Weapon, self).__init__(ctx, props)
-        self.props['Type'] = 'Weapon'
         self.modifier = Props.Modifier()
+
+        if 'Enhancement' in props:
+            self.modifier.updateSource(('AttackBonus', 'Addtional', 'Enhancement'), int(props['Enhancement']))
+            self.modifier.updateSource(('Damage', 'Addtional', 'Magical', 'Enhancement'), int(props['Enhancement']))
+
+        self.props['Type'] = 'Weapon'
         protoName = self.props['BaseItem']
         if protoName in self.ctx['protosWeapon']:
             self.proto = self.ctx['protosWeapon'][protoName].proto
         else:
             # for a virtual weapon, we need following keys in |props|:
             #   BaseCriticalThreat, default is [20, 20, 2], also named as 20/x2
-            #   BaseDamage, default is [1,6,1], also named as 1d6
+            #   BaseDamage, default is [1,4,1], also named as 1d4
             #   BaseDamageType, default is ['Bludgeoning']
             self.proto = {'BaseDamageType': ['Bludgeoning'], 'WeaponSize': 'Tiny', 'Weight': 0.0,
                           'BaseCriticalThreat': {'desc': '20-20/x2', 'params': [20, 20, 2]}}
@@ -38,4 +43,25 @@ class Weapon(Item):
                     self.proto['BaseCriticalThreat']['desc'] = '%d-%d/x%d'.format(params[0], params[1], params[2])
 
         if 'name' not in self.props:
-            self.props['name'] = self.proto['name']
+            # make weapon name if not provided
+            nameWithEnhancement = self.proto['name']
+            if 'Enhancement' in props:
+                nameWithEnhancement += str(props['Enhancement'])
+            self.props['name'] = nameWithEnhancement
+
+        criticalParams = self.proto['BaseCriticalThreat']['params']
+        self.modifier.updateSource(('CriticalRange', 'Base', self.props['name']), criticalParams[1] - criticalParams[0])
+        self.modifier.updateSource(('CriticalMultiplier', 'Base', self.props['name']), criticalParams[2])
+
+    def __str__(self):
+        return self.props['name']
+
+    def getAttackBonus(self, target):
+        abAdditional = self.modifier.sumSource(('AttackBonus', 'Addtional'))
+        # todo: ab from weapon's Buff(MagicWeapon etc.), VS alignment
+        return abAdditional
+
+    def getCriticalThreat(self):
+        minMaxDiff = self.modifier.sumSource('CriticalRange')
+        multiplierSources = self.modifier.getSource('CriticalMultiplier')
+        return (minMaxDiff, multiplierSources)

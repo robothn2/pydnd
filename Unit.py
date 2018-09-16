@@ -23,10 +23,32 @@ class Unit:
             return self.props[key]
         return None
 
+    def grantSpellClass(self, spellClass, className):
+        if 'spells' not in self.props:
+            self.props['spells'] = {}
+
+        spellsEntry = self.props['spells']
+        if spellClass not in spellsEntry:
+            spellsEntry[spellClass] = {}
+
+        spellsClassEntry = spellsEntry[spellClass]
+        if className not in spellsClassEntry:
+            spellsClassEntry[className] = {}
+
+    def grantSpells(self, spellClass, className, spells):
+        pass
+
     def addFeat(self, featName, featParam = []):
         if featName not in self.ctx['protosFeat']:
             warnings.warn('unknown feat: %s' % featName)
             return False
+
+        if type(featParam) == list and len(featParam) > 0:
+            for _, featHintName in enumerate(featParam):
+                if len(featName) < len(featHintName) and featName == featHintName[0:len(featName)]:
+                    param = featHintName[len(featName)+1:-1]
+                    self.modifier.mergeBranchList(('Feats', featName), param)
+                    return True
 
         self.modifier.mergeBranchList(('Feats', featName), featParam)
         return True
@@ -57,20 +79,10 @@ class Unit:
             return 0
         return self.props.sumFieldValue('classes', 'level')
 
-    def grantSpellClass(self, spellClass, className):
-        if 'spells' not in self.props:
-            self.props['spells'] = {}
-
-        spellsEntry = self.props['spells']
-        if spellClass not in spellsEntry:
-            spellsEntry[spellClass] = {}
-
-        spellsClassEntry = spellsEntry[spellClass]
-        if className not in spellsClassEntry:
-            spellsClassEntry[className] = {}
-
-    def grantSpells(self, spellClass, className, spells):
-        pass
+    def getAttackBonus(self, target):
+        return self.getProp('ab') # for Creature
+    def getArmorClass(self, target):
+        return self.getProp('ac') # for Creature
 
     def hasBuff(self, buffName):
         return False
@@ -79,10 +91,7 @@ class Unit:
         self.combat.addEnemy(enemy)
 
     def applyDamages(self, damages):
-        damageTotal = damages.sumSource('Type')
-        multiplier = damages.sumSource('Multiplier')
-        if multiplier > 0.01:
-            damageTotal = int(damageTotal * multiplier)
+        damageTotal = damages.calcTotal()
         print(self.getProp('name'), 'accept damage', damageTotal, ' info', damages)
         self._applyDamage(damageTotal)
 
@@ -96,3 +105,21 @@ class Unit:
         if hpNew == 0:
             self.setProp('dead', True)
             print(self.getProp('name'), 'dead')
+
+if __name__ == '__main__':
+    unit = Unit()
+    """
+    """
+    modifierChar = Props.Modifier()
+    modifierChar.updateSource(('Damage', 'Additional', 'Physical', 'Ability:Str'), 4)
+    modifierWeapon = Props.Modifier()
+    modifierWeapon.updateSource(('Damage', 'Additional', 'Magical', 'WeaponEnhancement'), 2)
+    modifierWeapon.updateSource(('Damage', 'Additional', 'Sonic', 'WeaponDamageBonus'), 5)
+
+    dmgs.addSingleSource('Physical', 'WeaponBaseDamage', 6)
+    dmgs.addModifierSources(modifierChar, ('Damage', 'Additional'))
+    dmgs.addModifierSources(modifierWeapon, ('Damage', 'Additional'))
+    dmgs.addMultiplier('WeaponBaseMultiplier', 2)
+    dmgs.addMultiplier('Feat:IncreaseMultiplier', 2)
+    dmgs.addMultiplier('Buff:Keen', 1)
+    print(dmgs.calcTotal(), dmgs.modifier)

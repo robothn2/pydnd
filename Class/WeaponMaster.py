@@ -37,8 +37,8 @@ def applyLevelUp(unit, level, levelInfo):
     print('%s apply level %d, featsHint: %s' % (proto['name'], level, featsHint))
     if level == 1:
         unit.addFeat('WeaponOfChoice', featsHint)
-        unit.addFeat('KiDamage')
+        unit.addFeat('WeaponOfChoice', 'KiDamage')
     elif level == 5:
-        unit.addFeats(['IncreaseMultiplier', 'SuperiorWeaponFocus'])
+        unit.addFeat('WeaponOfChoice', ['IncreasedMultiplier', 'SuperiorWeaponFocus'])
     elif level == 7:
-        unit.addFeat('KiCritical')
+        unit.addFeat('WeaponOfChoice', 'KiCritical')

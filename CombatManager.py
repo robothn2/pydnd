@@ -2,6 +2,7 @@
 from Dice import rollDice
 from Apply import *
 from common import Props
+import Damages
 
 class CombatManager:
     def __init__(self, unit):
@@ -62,8 +63,12 @@ class CombatManager:
             print(info, ', missing')
             return
 
-        dcCaster = roll + caster.getProp('ab')
-        dcTarget = int(target.getProp('ac'))
+        abFinal = attack[1] # bab from attack
+        abFinal += caster.getAttackBonus(target) # ab from caster's Buff, Feats, Str
+        weapon = attack[3]
+        abFinal += weapon.getAttackBonus(target) # ab from weapon's Buff(MagicWeapon etc.), VS alignment, Enhancement
+        dcCaster = roll + abFinal
+        dcTarget = int(target.getArmorClass(caster))
         info += ', dc:{} against {}'.format(dcCaster, dcTarget)
         if roll < 20:
             if dcCaster < dcTarget:
@@ -74,30 +79,31 @@ class CombatManager:
         target.applyDamages(damages)
 
     def weapon_calc_damage(self, caster, target, roll, attack):
-        damages = Props.Modifier()
+        damages = Damages.Damages()
 
         # weapon base damage
-        weaponProto = attack[3].proto
+        weapon = attack[3]
+        weaponProto = weapon.proto
         weaponParams = weaponProto['BaseDamage']['params']
-        weaponDmgType = weaponProto['BaseDamageType'][0] #todo: consider multi type
-        weaponName = attack[3].props['name'] #todo: use weapon name, not base name
-        damages.updateSource(('Type', weaponDmgType, weaponName), rollDice(weaponParams[0], weaponParams[1], weaponParams[2]))
+        weaponDmgType = weaponProto['BaseDamageType'][0] #todo: consider multi damage type
+        weaponName = weapon.props['name']
+        damages.addSingleSource(weaponDmgType, weaponName, rollDice(weaponParams[0], weaponParams[1], weaponParams[2]))
 
         # multiplier
-        criticalParams = attack[3].proto['BaseCriticalThreat']['params']
-        if roll >= criticalParams[0]:
+        rangeDiff, multipliers = weapon.getCriticalThreat()
+        #print(rangeDiff, multipliers)
+        if roll >= 20 - rangeDiff:
             if self.criticalCheck(caster, target):
-                damages.updateSource(('Multiplier', 'Weapon'), criticalParams[2])
+                damages.addMultipliers(multipliers)
 
         # additional damage
-        addtionalSources = caster.modifier.getSource(['Damage', 'Additional'])
-        for dmgType, dmgSources in addtionalSources.items():
-            damages.mergeBranchDict(('Type', dmgType), dmgSources)
+        damages.addModifierSources(caster.modifier, ['Damage', 'Additional'])
 
         # conditional damage
-        conditionalSources = caster.modifier.getSource(['Damage', 'Conditional'])
+        conditionalSources = caster.modifier.getSource(['Conditional', 'Target', 'Damage'])
         for dmgSourceName, dmgCond in conditionalSources.items():
             condition, featParams = dmgCond
+            #print('conditional', condition, featParams)
             dmgCond[0](caster, target, featParams, damages)
 
         return damages
