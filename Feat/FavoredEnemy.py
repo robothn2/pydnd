@@ -14,7 +14,7 @@ def matchRequirements(unit):
 
 def conditionDamage(caster, target, params, damages):
     race = target.getProp('race')
-    print('taget race', race, ', params', params)
+    #print('taget race', race, ', params', params)
     if race not in params:
         return
 

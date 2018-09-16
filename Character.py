@@ -97,7 +97,6 @@ class Character(Unit):
                 for _, featName in enumerate(levelEntry['feats']):
                     if featName in self.ctx['protosFeat']:
                         self.addFeat(featName, levelEntry.get('featsHint'))
-                        self.props['feats'][featName] = self.ctx['protosFeat'][featName]
 
             # update skills
             for skillName,skillLevel in levelEntry['skills'].items():
@@ -125,6 +124,7 @@ class Character(Unit):
         self._applyAll()
         print('== statistics for character', self.getProp('name'))
         print('Feats:', self.modifier.getSource('Feats'))
+        print('Abilities:', self.modifier.getSource('Abilities'))
         self.printModifier('AttackBonus')
         self.printModifier('ArmorClass')
         self.printModifier('HitPoint')
@@ -140,3 +140,13 @@ class Character(Unit):
     def getArmorClass(self, target):
         # todo: ac from Buff, Feats, Dex, Armor, Shield
         return self.getProp('ac')
+
+
+if __name__ == '__main__':
+    builder = loadJsonFile(r'data/builders/builder1.json')
+    player = Character(__import__('Context').ctx)
+    #player.buildByBuilder(builder, 30)
+    player.addFeat('FavoredEnemy', ['FavoredEnemy(Dragons)'])
+    player.addFeats(['FavoredEnemy'], ['FavoredEnemy(Elves)'])
+    player.addFeats(['Dodge'], ['FavoredEnemy(Elves)'])
+    print('Feats:', player.modifier.getSource('Feats'))

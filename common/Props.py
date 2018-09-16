@@ -58,6 +58,8 @@ def sumIntValue(value):
 
 def mergeList(listExist, paramsToMerge):
     if type(paramsToMerge) == str:
+        if paramsToMerge.find('(') > 0:
+            raise RuntimeError('wrong parameter type for mergeList', paramsToMerge)
         listExist.append(paramsToMerge)
         return
     if type(paramsToMerge) != list and type(paramsToMerge) != tuple:
@@ -69,6 +71,8 @@ def mergeList(listExist, paramsToMerge):
     for i in range(cnt):
         value = paramsToMerge[i]
         if value not in listExist:
+            if value.find('(') > 0:
+                raise RuntimeError('wrong parameter type for mergeList', value)
             listExist.append(value)
 
 class Modifier(dict):

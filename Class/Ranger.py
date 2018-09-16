@@ -20,7 +20,6 @@ def applyLevelUp(unit, level, levelInfo):
     print('%s apply level %d, featsHint: %s' % (proto['name'], level, featsHint))
     if level == 1:
         unit.addFeat('Track')
-        unit.addFeat('FavoredEnemy', featsHint)
     elif level == 2:
         unit.addFeat('CombatStyle', featsHint)
     elif level == 3:
@@ -28,8 +27,6 @@ def applyLevelUp(unit, level, levelInfo):
     elif level == 4:
         unit.addFeat('AnimalCompanion', featsHint)
         unit.grantSpellClass('Divine', proto['name'])
-    elif level == 5:
-        unit.addFeat('FavoredEnemy', featsHint)
     elif level == 6:
         unit.addFeat('ImprovedCombatStyle', featsHint)
     elif level == 7:
@@ -45,5 +42,5 @@ def applyLevelUp(unit, level, levelInfo):
     elif level == 17:
         unit.addFeat('HideInPlainSight')
 
-    if level % 5 == 0:
+    if level % 5 == 0 or level == 1:
         unit.addFeat('FavoredEnemy', featsHint)
