@@ -43,16 +43,19 @@ class Unit:
             warnings.warn('unknown feat: %s' % featName)
             return False
 
-        if type(featParam) == str:
+        if type(featParam) == str or type(featParam) == int:
             self.modifier.mergeBranchList(('Feats', featName), featParam)
             return True
 
         if type(featParam) == list:
             for _, featHintName in enumerate(featParam):
-                if len(featName) < len(featHintName) and featName == featHintName[0:len(featName)]:
-                    param = featHintName[len(featName)+1:-1]
-                    self.modifier.mergeBranchList(('Feats', featName), param)
+                if type(featHintName) == str: #support addFeat('FavoredEnemy', ['Dragons'])
+                    self.modifier.mergeBranchList(('Feats', featName), featHintName)
                     return True
+                if type(featHintName) == list and len(featHintName) == 2: #support addFeat('FavoredEnemy', [['FavoredEnemy','Dragons']])
+                    if featHintName[0] == featName:
+                        self.modifier.mergeBranchList(('Feats', featName), featHintName[1])
+                        return True
 
         self.modifier.mergeBranchList(('Feats', featName), [])
         return True
@@ -89,6 +92,10 @@ class Unit:
     def getArmorClass(self, target):
         return self.getProp('ac') # for Creature
 
+    def addBuff(self, buffName, source, duration):
+
+        return True
+
     def hasBuff(self, buffName):
         return False
 
@@ -110,4 +117,3 @@ class Unit:
         if hpNew == 0:
             self.setProp('dead', True)
             print(self.getProp('name'), 'dead')
-

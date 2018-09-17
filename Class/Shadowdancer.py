@@ -34,13 +34,17 @@ def applyLevelUp(unit, level, levelInfo):
     if level == 1:
         unit.addFeat('HideInPlainSight')
     elif level == 2:
-        unit.addFeats(['Darkvision', 'Evasion', 'UncannyDodge'])
+        unit.addFeat('Darkvision')
+        unit.addFeat('Evasion')
+        unit.addFeat('UncannyDodge')
     elif level == 3:
-        unit.addFeats(['SummonShadow', 'ShadowDaze'])
+        unit.addFeat('SummonShadow')
+        unit.addFeat('ShadowDaze')
     elif level == 4:
         unit.addFeat('ShadowEvade')
     elif level == 5:
-        unit.addFeats(['DefensiveRoll', 'ImprovedUncannyDodge'])
+        unit.addFeat('DefensiveRoll')
+        unit.addFeat('ImprovedUncannyDodge')
     elif level == 7:
         unit.addFeat('SlipperyMind')
     elif level == 10:

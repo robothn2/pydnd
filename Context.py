@@ -24,5 +24,6 @@ ctx['protosFeat'] = loadScriptsFolder('Feat')
 ctx['protosClass'] = loadScriptsFolder('Class')
 ctx['protosRace'] = loadScriptsFolder('Race')
 ctx['protosWeapon'] = loadScriptsFolder('Weapon')
+ctx['protosSpell'] = loadScriptsFolder('Spell')
 ctx['protosCreature'] = CsvLoader.loadCsvFile(r'data/beastiary.csv')
 ctx['secondsPerTurn'] = 8.0

@@ -94,9 +94,11 @@ class Character(Unit):
 
             # add feats
             if 'feats' in levelEntry:
-                for _, featName in enumerate(levelEntry['feats']):
-                    if featName in self.ctx['protosFeat']:
-                        self.addFeat(featName, levelEntry.get('featsHint'))
+                for _, featEntry in enumerate(levelEntry['feats']):
+                    if type(featEntry) == str:
+                        self.addFeat(featEntry, levelEntry.get('featsHint'))
+                    elif len(featEntry) == 2:
+                        self.addFeat(featEntry[0], featEntry[1])
 
             # update skills
             for skillName,skillLevel in levelEntry['skills'].items():
@@ -145,8 +147,8 @@ class Character(Unit):
 if __name__ == '__main__':
     builder = loadJsonFile(r'data/builders/builder1.json')
     player = Character(__import__('Context').ctx)
-    #player.buildByBuilder(builder, 30)
-    player.addFeat('FavoredEnemy', ['FavoredEnemy(Dragons)'])
-    player.addFeats(['FavoredEnemy'], ['FavoredEnemy(Elves)'])
-    player.addFeats(['Dodge'], ['FavoredEnemy(Elves)'])
+    player.buildByBuilder(builder, 30)
+    player.addFeat('FavoredEnemy', [['FavoredEnemy', 'Dragons']])
+    player.addFeat('FavoredEnemy', 'Elves')
+    player.addFeat('Dodge', 'Elves')
     print('Feats:', player.modifier.getSource('Feats'))
