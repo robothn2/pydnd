@@ -142,7 +142,11 @@ class Character(Unit):
     def getArmorClass(self, target):
         # todo: ac from Buff, Feats, Dex, Armor, Shield
         return self.getProp('ac')
-
+    def addXP(self, xp):
+        xpOld = self.getProp('xp')
+        xpNew = xpOld + xp
+        self.setProp('xp', xpNew)
+        print(self.props['name'], 'received xp', xp, ',total', xpNew)
 
 if __name__ == '__main__':
     builder = loadJsonFile(r'data/builders/builder1.json')

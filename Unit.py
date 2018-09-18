@@ -6,9 +6,8 @@ from CombatManager import CombatManager
 class Unit:
     def __init__(self, ctx):
         self.ctx = ctx
-        self.props = Props.Props({'dead': False, 'weapon': 'unarmed',
-                                  'ac': 0, 'ab': 0, 'hp': 0,
-                                  'buffs': {}})
+        self.props = Props.Props({'dead': False,
+                                  'ac': 0, 'ab': 0, 'hp': 0, 'xp': 0})
         self.modifier = Props.Modifier({'ArmorClass': {'Natural': {'BaseArmor': 10}}, 'HitPoint': {}})
         self.combat = CombatManager(self)
 
@@ -22,6 +21,8 @@ class Unit:
         if key in self.props:
             return self.props[key]
         return None
+    def isDead(self):
+        return self.props['dead']
 
     def grantSpellClass(self, spellClass, className):
         if 'spells' not in self.props:
@@ -116,4 +117,4 @@ class Unit:
         self.setProp('hp', hpNew)
         if hpNew == 0:
             self.setProp('dead', True)
-            print(self.getProp('name'), 'dead')
+            print(self.getProp('name'), 'die')

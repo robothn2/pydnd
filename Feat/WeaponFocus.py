@@ -14,17 +14,24 @@ source = 'Feat:' + proto['name']
 def matchRequirements(unit):
     if unit.modifier.sumSource('AttackBonus', ['Base']) < 1:
         return False
-    if not unit.hasFeats(['WeaponProficiency']):
-        return False
-    # todo: Halflings and gnomes cant use large weapons
-    return True
+    return unit.hasFeats(['WeaponProficiency'])
 
 def availableParams(unit):
     if not unit.hasFeats(['WeaponProficiency']):
         return []
 
-    # todo: Halflings and gnomes cant use large weapons
-    return []
+    weapons = unit.modifier.getSource(['Feats', 'WeaponProficiency'])
+    race = unit.getProp('race')
+    if race not in ['Gnomes', 'Halflings']:
+        return weapons;
+
+    # Halflings and gnomes cant use large weapons
+    weaponsAvailable = []
+    for _, weaponBaseName in weapons:
+        weaponProto = unit.ctx['protosWeapon'][weaponBaseName]
+        if weaponProto.proto['WeaponSize'] != 'Large':
+            weaponsAvailable.append(weaponBaseName)
+    return weaponsAvailable
 
 def condition(caster, weapon, params):
     print('condition of', proto['name'], ': weapon', weapon.proto['name'], ', params', params)

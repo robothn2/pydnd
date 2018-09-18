@@ -8,5 +8,6 @@ proto = {
     'BaseDamageType': ['Bludgeoning'],
     'WeaponSize': 'Small',
     'FeatRequired': 'Simple',
+    'Ranged': True,
     'Weight': 0.1
 }

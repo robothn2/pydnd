@@ -1,5 +1,4 @@
 TODO:
-<p>kill monster and gain exp, also need exp gain table
 <p>apply armors to Character 
 <p>apply buffs to Unit, support buff script
 <p>cast a spell to Unit, spell effect against Saves

@@ -16,18 +16,18 @@ class CombatManager:
             self.enemies.append(enemy)
 
     def update(self, deltaTime):
-        if self.owner.getProp('dead'):
+        if self.owner.isDead():
             return
 
         if len(self.enemies) == 0:
             return
         # search a living enemy
         enemy = None
-        if self.enemyCur and not self.enemyCur.getProp('dead'):
+        if self.enemyCur and not self.enemyCur.isDead():
             enemy = self.enemyCur
         else:
             for u in self.enemies:
-                if not u.getProp('dead'):
+                if not u.isDead():
                     enemy = u
                     break
         if not enemy:
@@ -77,6 +77,10 @@ class CombatManager:
 
         damages = self.weapon_calc_damage(caster, target, roll, attack)
         target.applyDamages(damages)
+        if target.isDead() and 'proto' in dir(target):
+            xp = int(target.proto['xp'])
+            # todo: XP penalty
+            caster.addXP(xp)
 
     def weapon_calc_damage(self, caster, target, roll, attack):
         damages = Damages.Damages()

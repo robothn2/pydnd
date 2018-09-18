@@ -28,8 +28,13 @@ def matchRequirements(unit):
     if not unit.hasFeats(['WeaponFocus', 'Dodge', 'Mobility', 'CombatExpertise', 'SpringAttack', 'WhirlwindAttack']):
         return False
 
-    #todo: check Weapon Focus on melee weapon
-    return True
+    # check Weapon Focus on melee weapon
+    weapons = unit.modifier.getSource(['Feats', 'WeaponFocus'])
+    for _, weaponBaseName in weapons:
+        weaponProto = unit.ctx['protosWeapon'][weaponBaseName]
+        if not weaponProto.proto.get('Ranged'):
+            return True
+    return False
 
 def applyLevelUp(unit, level, levelInfo):
     featsHint = levelInfo['featsHint'] if 'featsHint' in levelInfo else []

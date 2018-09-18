@@ -8,5 +8,6 @@ proto = {
     'BaseDamageType': ['Piercing'],
     'WeaponSize': 'Medium',
     'FeatRequired': 'Simple',
+    'Ranged': True,
     'Weight': 8.0
 }
