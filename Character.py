@@ -4,6 +4,7 @@ from Skills import *
 from Unit import *
 from Apply import *
 from Abilities import *
+import Damages
 import json
 import warnings
 
@@ -137,11 +138,20 @@ class Character(Unit):
         print('Attacks:', self.modifier.getSource('Attacks'))
 
     def getAttackBonus(self, target):
-        # todo: ab from Buff, Feats, Str
-        return self.getProp('ab')
+        # ab from Buff, Feats, Str, except Weapon, Base
+        result = Damages.Result('AttackBonus')
+        result.addAddtionalSources(self.modifier)
+        result.addConditionalTargetSources(self.modifier, self, target)
+        return result.calcTotal()
+
     def getArmorClass(self, target):
-        # todo: ac from Buff, Feats, Dex, Armor, Shield
-        return self.getProp('ac')
+        # ac from Buff, Feats, Dex, Armor, Shield
+        result = Damages.Result('ArmorClass')
+        result.addBaseSources(self.modifier)
+        result.addAddtionalSources(self.modifier)
+        result.addConditionalTargetSources(self.modifier, self, target)
+        return result.calcTotal()
+
     def addXP(self, xp):
         xpOld = self.getProp('xp')
         xpNew = xpOld + xp

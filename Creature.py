@@ -72,3 +72,4 @@ class Creature(Unit):
         print('ArmorClass', self.props['ac'])
         print('HitPoint', self.props['hp'])
         print('Attacks:', self.modifier.getSource('Attacks'))
+        print('== statistics end')

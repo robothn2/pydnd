@@ -97,28 +97,22 @@ class CombatManager:
         rangeDiff, multipliers = weapon.getCriticalThreat()
         #print(rangeDiff, multipliers)
         if roll >= 20 - rangeDiff:
-            if self.criticalCheck(caster, target):
+            if self.criticalCheck(caster, target, attack[0]):
                 damages.addMultipliers(multipliers)
 
         # additional damage
         damages.addModifierSources(caster.modifier, ['Damage', 'Additional'])
-
         # conditional damage
-        conditionalSources = caster.modifier.getSource(['Conditional', 'Target', 'Damage'])
-        for dmgSourceName, dmgCond in conditionalSources.items():
-            condition, featParams = dmgCond
-            #print('conditional', condition, featParams)
-            dmgCond[0](caster, target, featParams, damages)
-
+        damages.addConditionalTargetSources(caster.modifier, caster, target)
         return damages
 
-    def criticalCheck(self, caster, target):
+    def criticalCheck(self, caster, target, bab):
         roll = rollDice(1, 20, 1)
         if roll == 1:
             return False
 
-        dcCaster = roll + caster.getProp('ab')
-        dcTarget = int(target.getProp('ac'))
+        dcCaster = roll + bab + caster.getAttackBonus(target)
+        dcTarget = target.getArmorClass(target)
         if roll < 20:
             if dcCaster < dcTarget:
                 return False

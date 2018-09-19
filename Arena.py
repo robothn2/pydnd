@@ -13,7 +13,7 @@ class Arena:
         self.units.append(unit)
 
     def update(self, deltaTime):
-        self.units = [x for x in self.units if not x.isDead()]
+        self.units = [x for x in self.units if not x.isDead()] # remove dead units
         for unit in self.units:
             unit.update(deltaTime)
 

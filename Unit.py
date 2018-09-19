@@ -81,6 +81,11 @@ class Unit:
                 return False
         return True
 
+    def getFeatParams(self, featName):
+        if featName not in self.modifier['Feats']:
+            return []
+        return self.modifier['Feats'][featName]
+
     def getClassLevel(self, className = None):
         if type(className) == str:
             if className in self.props['classes']:

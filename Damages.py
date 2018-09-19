@@ -16,9 +16,14 @@ class Damages:
             self.modifier.updateSource(('Multiplier', k), v)
 
     def addModifierSources(self, modifier, sourcePaths):
-        addtionalSources = modifier.getSource(['Damage', 'Additional'])
+        addtionalSources = modifier.getSource(sourcePaths)
         for dmgType, dmgSources in addtionalSources.items():
             self.modifier.mergeBranchDict(('Type', dmgType), dmgSources)
+
+    def addConditionalTargetSources(self, modifier, caster, target):
+        sources = modifier.getSource(['Conditional', 'Target', 'Damage'])
+        for sourceName, cond in sources.items():
+            cond[0](caster, target, cond[1], self)
 
     def calcTotal(self):
         damageTotal = self.modifier.sumSource('Type')
@@ -26,6 +31,32 @@ class Damages:
         if multiplier > 0.01:
             damageTotal = int(damageTotal * multiplier)
         return damageTotal
+
+class Result:
+    def __init__(self, name):
+        self.modifier = Props.Modifier()
+        self.name = name
+
+    def addSingleSource(self, source, value):
+        self.modifier[source] = value
+
+    def addBaseSources(self, modifier):
+        sources = modifier.getSource([self.name, 'Base'])
+        for sourceName, value in sources.items():
+            self.modifier[sourceName] = value
+
+    def addAddtionalSources(self, modifier):
+        sources = modifier.getSource([self.name, 'Additional'])
+        for sourceName, value in sources.items():
+            self.modifier[sourceName] = value
+
+    def addConditionalTargetSources(self, modifier, caster, target):
+        sources = modifier.getSource(['Conditional', 'Target', self.name])
+        for sourceName, cond in sources.items():
+            cond[0](caster, target, cond[1], self)
+
+    def calcTotal(self):
+        return Props.sumIntValue(self.modifier)
 
 if __name__ == '__main__':
     dmgs = Damages()
