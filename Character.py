@@ -140,7 +140,7 @@ class Character(Unit):
     def getAttackBonus(self, target):
         # ab from Buff, Feats, Str, except Weapon, Base
         result = Damages.Result('AttackBonus')
-        result.addAddtionalSources(self.modifier)
+        result.addAdditionalSources(self.modifier)
         result.addConditionalTargetSources(self.modifier, self, target)
         return result.calcTotal()
 
@@ -148,7 +148,7 @@ class Character(Unit):
         # ac from Buff, Feats, Dex, Armor, Shield
         result = Damages.Result('ArmorClass')
         result.addBaseSources(self.modifier)
-        result.addAddtionalSources(self.modifier)
+        result.addAdditionalSources(self.modifier)
         result.addConditionalTargetSources(self.modifier, self, target)
         return result.calcTotal()
 

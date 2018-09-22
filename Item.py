@@ -13,8 +13,8 @@ class Weapon(Item):
         self.modifier = Props.Modifier()
 
         if 'Enhancement' in props:
-            self.modifier.updateSource(('AttackBonus', 'Addtional', 'Enhancement'), int(props['Enhancement']))
-            self.modifier.updateSource(('Damage', 'Addtional', 'Magical', 'Enhancement'), int(props['Enhancement']))
+            self.modifier.updateSource(('AttackBonus', 'Additional', 'Enhancement'), int(props['Enhancement']))
+            self.modifier.updateSource(('Damage', 'Additional', 'Magical', 'WeaponEnhancement'), int(props['Enhancement']))
 
         self.props['Type'] = 'Weapon'
         protoName = self.props['BaseItem']
@@ -46,7 +46,7 @@ class Weapon(Item):
             # make weapon name if not provided
             nameWithEnhancement = self.proto['name']
             if 'Enhancement' in props:
-                nameWithEnhancement += str(props['Enhancement'])
+                nameWithEnhancement += '+' + str(props['Enhancement'])
             self.props['name'] = nameWithEnhancement
 
         criticalParams = self.proto['BaseCriticalThreat']['params']
@@ -57,8 +57,8 @@ class Weapon(Item):
         return self.props['name']
 
     def getAttackBonus(self, target):
-        abAdditional = self.modifier.sumSource(('AttackBonus', 'Addtional'))
-        # todo: ab from weapon's Buff(MagicWeapon etc.), VS alignment
+        abAdditional = self.modifier.sumSource(('AttackBonus', 'Additional'))
+        # todo: ab from weapon's Buff(MagicWeapon etc.), VS alignment, VS racial
         return abAdditional
 
     def getCriticalThreat(self):

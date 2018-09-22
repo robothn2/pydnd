@@ -16,8 +16,7 @@ class Damages:
             self.modifier.updateSource(('Multiplier', k), v)
 
     def addModifierSources(self, modifier, sourcePaths):
-        addtionalSources = modifier.getSource(sourcePaths)
-        for dmgType, dmgSources in addtionalSources.items():
+        for dmgType, dmgSources in modifier.getSource(sourcePaths).items():
             self.modifier.mergeBranchDict(('Type', dmgType), dmgSources)
 
     def addConditionalTargetSources(self, modifier, caster, target):
@@ -45,9 +44,8 @@ class Result:
         for sourceName, value in sources.items():
             self.modifier[sourceName] = value
 
-    def addAddtionalSources(self, modifier):
-        sources = modifier.getSource([self.name, 'Additional'])
-        for sourceName, value in sources.items():
+    def addAdditionalSources(self, modifier):
+        for sourceName, value in modifier.getSource([self.name, 'Additional']).items():
             self.modifier[sourceName] = value
 
     def addConditionalTargetSources(self, modifier, caster, target):

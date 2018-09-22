@@ -87,14 +87,14 @@ class Modifier(dict):
 
     def mergeBranchDict(self, paths, branchNew):
         if type(branchNew) != dict:
-            warnings.warn('wrong parameter type for mergeBranch(branchNew)')
+            assert 'wrong parameter type for mergeBranch(branchNew)'
             return
 
         branch = makeBranch(self, paths, {})
         branch.update(branchNew)
 
     def mergeBranchList(self, paths, params):
-        print('mergeBranchList', paths, params)
+        #print('mergeBranchList', paths, params)
         mergeList(makeBranch(self, paths, []), params)
 
     def getSource(self, paths, defaultValue={}):
@@ -176,5 +176,4 @@ if __name__ == '__main__':
 
     modifier.updateSource(('Dmg', 'Add', 'Magical', 'Enhance'), 2)
     modifier.updateSource(('Dmg', 'Add', 'Sonic', 'DamageBonus'), 5)
-    dmgs = {'Magical': 1}
-    print(dmgs)
+    print(modifier.getSource(('Dmg', 'Add')))

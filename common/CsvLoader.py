@@ -12,5 +12,5 @@ def loadCsvFile(csvPath):
             if 'name' in obj:
                 props[obj['name']] = obj
     except Exception as e:
-        warnings.warn('csv load error: {}, for path: {}'.format(str(e), csvPath))
+        assert 'csv load error: {}, for path: {}'.format(str(e), csvPath)
     return props

@@ -100,10 +100,13 @@ class CombatManager:
             if self.criticalCheck(caster, target, attack[0]):
                 damages.addMultipliers(multipliers)
 
-        # additional damage
+        # additional damage from caster & weapon
         damages.addModifierSources(caster.modifier, ['Damage', 'Additional'])
-        # conditional damage
+        damages.addModifierSources(weapon.modifier, ['Damage', 'Additional'])
+
+        # conditional damage from caster & weapon
         damages.addConditionalTargetSources(caster.modifier, caster, target)
+        damages.addConditionalTargetSources(weapon.modifier, caster, target)
         return damages
 
     def criticalCheck(self, caster, target, bab):
@@ -117,3 +120,20 @@ class CombatManager:
             if dcCaster < dcTarget:
                 return False
         return True
+
+    def castSpell(self, spellName, target):
+        # spell failure check
+
+        # spell concentration check
+
+        # spell resistence check
+
+        # instant spell, or spell channeling
+        # apply spell effects
+        #   spell dc against target saving throw
+        #   effect immunity
+        #   damage reduction
+
+        # decrease spell charges
+
+        pass
