@@ -55,6 +55,8 @@ class Weapon(Item):
 
     def __str__(self):
         return self.props['name']
+    def __repr__(self):
+        return self.props['name']
 
     def getAttackBonus(self, target):
         abAdditional = self.modifier.sumSource(('AttackBonus', 'Additional'))

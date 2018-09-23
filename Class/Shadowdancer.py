@@ -33,6 +33,8 @@ def applyLevelUp(unit, level, levelInfo):
     print('%s apply level %d, featsHint: %s' % (proto['name'], level, featsHint))
     if level == 1:
         unit.addFeat('HideInPlainSight')
+        unit.addFeat('WeaponProficiency', ['Simple'])
+        unit.addFeat('ArmorProficiency', ['Light'])
     elif level == 2:
         unit.addFeat('Darkvision')
         unit.addFeat('Evasion')

@@ -25,6 +25,8 @@ def applyLevelUp(unit, level, levelInfo):
             domainProto = unit.ctx['protosDomain'][domainName]
             domainProto.apply(unit)
 
+        unit.addFeat('WeaponProficiency', ['Simple'])
+        unit.addFeat('ArmorProficiency', ['Light', 'Medium', 'Heavy', 'Shield'])
         unit.addFeat('TurnUndead')
         unit.addFeat('SpontaneousCasting')
         unit.grantSpellClass('Divine', proto['name'])

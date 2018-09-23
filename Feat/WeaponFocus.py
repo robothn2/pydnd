@@ -34,12 +34,12 @@ def availableParams(unit):
     return weaponsAvailable
 
 def condition(caster, weapon, params):
-    print('condition of', proto['name'], ': weapon', weapon.proto['name'], ', params', params)
+    #print('condition of', proto['name'], ': weapon', weapon.proto['name'], ', params', params)
     if not params or weapon.proto['name'] not in params:
         return
 
     weapon.modifier.updateSource(('AttackBonus', 'Additional', source), 1)
-    print('modifier for weapon', weapon.props['name'], weapon.modifier)
+    #print('modifier for weapon', weapon.props['name'], weapon.modifier)
 
 def apply(unit, featParams):
     print('apply feat %s' % proto['name'])

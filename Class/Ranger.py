@@ -20,6 +20,8 @@ def applyLevelUp(unit, level, levelInfo):
     print('%s apply level %d, featsHint: %s' % (proto['name'], level, featsHint))
     if level == 1:
         unit.addFeat('Track')
+        unit.addFeat('WeaponProficiency', ['Martial', 'Simple'])
+        unit.addFeat('ArmorProficiency', ['Light', 'Shield'])
     elif level == 2:
         unit.addFeat('CombatStyle', featsHint)
     elif level == 3:
