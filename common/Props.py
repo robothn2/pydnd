@@ -58,7 +58,8 @@ def sumIntValue(value):
 
 def mergeList(listExist, paramsToMerge):
     if type(paramsToMerge) == str or type(paramsToMerge) == int:
-        listExist.append(paramsToMerge)
+        if paramsToMerge not in listExist:
+            listExist.append(paramsToMerge)
         return
     if type(paramsToMerge) != list and type(paramsToMerge) != tuple:
         return
@@ -172,8 +173,11 @@ if __name__ == '__main__':
     modifier.updateSource(('D', 'Additional', 'CLS'), 20)
     print(modifier.getSource(('D', 'Additional')))
     print(modifier.sumSource(('D', 'Additional')))
-    """
 
     modifier.updateSource(('Dmg', 'Add', 'Magical', 'Enhance'), 2)
     modifier.updateSource(('Dmg', 'Add', 'Sonic', 'DamageBonus'), 5)
     print(modifier.getSource(('Dmg', 'Add')))
+    """
+    modifier.mergeBranchList(('F', 'FavoredEnemy'), 'Human')
+    modifier.mergeBranchList(('F', 'FavoredEnemy'), 'Human')
+    print(modifier)

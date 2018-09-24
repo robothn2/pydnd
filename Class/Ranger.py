@@ -8,8 +8,8 @@ proto = {
     'FortitudePerLevel': 0.5,
     'ReflexPerLevel': 0.5,
     'WillPerLevel': 0.25,
-    'WeaponProficiencies': ['simple', 'martial'],
-    'ArmorProficiencies': ['light', 'shields(except tower shields)'],
+    'WeaponProficiency': ['Simple', 'Martial'],
+    'ArmorProficiency': ['Light', 'Shield'],
     'SkillPoints': 6,
     'ClassSkills': ['Concentration', 'CraftAlchemy', 'CraftArmor', 'CraftTrap', 'CraftWeapon', 'Heal', 'Hide', 'Listen', 'Lore', 'MoveSilently', 'Parry', 'Search', 'SetTrap', 'Spot', 'Survival']
 }
@@ -20,8 +20,8 @@ def applyLevelUp(unit, level, levelInfo):
     print('%s apply level %d, featsHint: %s' % (proto['name'], level, featsHint))
     if level == 1:
         unit.addFeat('Track')
-        unit.addFeat('WeaponProficiency', ['Martial', 'Simple'])
-        unit.addFeat('ArmorProficiency', ['Light', 'Shield'])
+        unit.addFeat('WeaponProficiency', proto['WeaponProficiency'])
+        unit.addFeat('ArmorProficiency', proto['ArmorProficiency'])
     elif level == 2:
         unit.addFeat('CombatStyle', featsHint)
     elif level == 3:

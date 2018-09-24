@@ -8,8 +8,8 @@ proto = {
     'FortitudePerLevel': 0.5,
     'ReflexPerLevel': 0.25,
     'WillPerLevel': 0.5,
-    'WeaponProficiencies': ['simple'],
-    'ArmorProficiencies': ['light', 'medium', 'heavy', 'shields(except tower shields)'],
+    'WeaponProficiencies': ['Simple'],
+    'ArmorProficiencies': ['Light', 'Medium', 'Heavy', 'Shield'],
     'SkillPoints': 2,
     'ClassSkills': ['Concentration', 'CraftAlchemy', 'CraftArmor', 'CraftTrap', 'CraftWeapon', 'Diplomacy', 'Heal', 'Lore', 'Parry', 'Spellcraft']
 }
@@ -25,8 +25,8 @@ def applyLevelUp(unit, level, levelInfo):
             domainProto = unit.ctx['protosDomain'][domainName]
             domainProto.apply(unit)
 
-        unit.addFeat('WeaponProficiency', ['Simple'])
-        unit.addFeat('ArmorProficiency', ['Light', 'Medium', 'Heavy', 'Shield'])
+        unit.addFeat('WeaponProficiency', proto['WeaponProficiency'])
+        unit.addFeat('ArmorProficiency', proto['ArmorProficiency'])
         unit.addFeat('TurnUndead')
         unit.addFeat('SpontaneousCasting')
         unit.grantSpellClass('Divine', proto['name'])
