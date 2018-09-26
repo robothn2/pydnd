@@ -16,9 +16,6 @@ class CombatManager:
             self.enemies.append(enemy)
 
     def update(self, deltaTime):
-        if self.owner.isDead():
-            return
-
         if len(self.enemies) == 0:
             return
         # search a living enemy

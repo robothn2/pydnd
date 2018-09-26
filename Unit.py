@@ -2,6 +2,7 @@
 import warnings
 from common import Props
 from CombatManager import CombatManager
+from BuffManager import BuffManager
 
 class Unit:
     def __init__(self, ctx):
@@ -9,9 +10,16 @@ class Unit:
         self.props = Props.Props({'dead': False,
                                   'ac': 0, 'ab': 0, 'hp': 0, 'xp': 0})
         self.modifier = Props.Modifier({'ArmorClass': {'Natural': {'BaseArmor': 10}}, 'HitPoint': {}})
+        self.modifierBuff = Props.Modifier()
+        self.modifierWeapon = Props.Modifier()
         self.combat = CombatManager(self)
+        self.buffs = BuffManager(self)
 
     def update(self, deltaTime):
+        if self.isDead():
+            return
+
+        self.buffs.update(deltaTime)
         self.combat.update(deltaTime)
 
     def setProp(self, key, value):
@@ -98,8 +106,8 @@ class Unit:
     def getArmorClass(self, target):
         return self.getProp('ac') # for Creature
 
-    def addBuff(self, buffName, source, duration):
-
+    def addBuff(self, caster, buffProto):
+        self.buffs.addBuff(caster, buffProto)
         return True
 
     def hasBuff(self, buffName):

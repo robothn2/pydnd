@@ -47,6 +47,24 @@ def getBranch(dictExist, paths, defaultValue = {}):
             return defaultValue
         d = d[key]
 
+def removeBranch(dictExist, paths):
+    d = dictExist
+    if type(paths) == str:
+        return d.pop(paths)
+    if (type(paths) != list and type(paths) != tuple):
+        return
+    cnt = len(paths)
+    if cnt == 0:
+        return
+
+    for i in range(cnt):
+        key = paths[i]
+        if i == cnt -1:
+            return d.pop(key)
+        if key not in d:
+            return
+        d = d[key]
+
 def sumIntValue(value):
     sumValue = 0
     if type(value) == int:
@@ -123,6 +141,9 @@ class Modifier(dict):
                     sumValue += sumIntValue(v)
         return sumValue
 
+    def removeSource(self, paths):
+        removeBranch(self, paths)
+
 class Props(dict):
     def incValue(self, key, value):
         if key not in self:
@@ -177,7 +198,16 @@ if __name__ == '__main__':
     modifier.updateSource(('Dmg', 'Add', 'Magical', 'Enhance'), 2)
     modifier.updateSource(('Dmg', 'Add', 'Sonic', 'DamageBonus'), 5)
     print(modifier.getSource(('Dmg', 'Add')))
+
+    modifier.mergeBranchList(('F', 'FavoredEnemy'), 'Human')
+    modifier.mergeBranchList(('F', 'FavoredEnemy'), 'Human')
+    print(modifier)
     """
-    modifier.mergeBranchList(('F', 'FavoredEnemy'), 'Human')
-    modifier.mergeBranchList(('F', 'FavoredEnemy'), 'Human')
+    modifier.updateSource(('Dmg', 'Add', 'Magical', 'Enhance'), 2)
+    modifier.updateSource(('Dmg', 'Add', 'Sonic', 'DamageBonus'), 5)
+    modifier.removeSource(('Dmg', 'Add', 'Sonic'))
+    print(modifier)
+    modifier.removeSource(('Dmg', 'Add'))
+    print(modifier)
+    modifier.removeSource(('Dmg'))
     print(modifier)

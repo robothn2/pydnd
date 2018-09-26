@@ -15,6 +15,13 @@ proto = {
 }
 source = proto['name']
 
-def apply(caster, target):
-    print('apply spell', source)
-    caster.addBuff(proto['name'], )
+def calcDuration(caster, metaMagics):
+    return 60.0
+
+def applyModifier(caster, targetModifier, metaMagics):
+    print('apply buffer', source)
+    value = int(caster.getCasterLevel() / 3)
+    targetModifier.updateSource(('AttackBonus', 'Additional', source), value)
+
+def removeModifier(targetModifier):
+    targetModifier.removeSource(('AttackBonus', 'Additional', source))

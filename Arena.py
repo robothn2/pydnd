@@ -23,6 +23,7 @@ if __name__ == '__main__':
     player.buildByBuilder(builder, 30)
     player.setProp('WeaponMainHand', Weapon(Context.ctx, {'BaseItem': 'Kukri', 'Enhancement': 3}))
     player.setProp('WeaponOffHand', Weapon(Context.ctx, {'name': 'OHWeapon','BaseItem': 'Kukri', 'Enhancement': 2}))
+    player.addBuff('DivineFavor', player)
     player.statistic()
 
     arena = Arena()
