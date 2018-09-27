@@ -8,8 +8,9 @@ proto = {
     'FortitudePerLevel': 0.5,
     'ReflexPerLevel': 0.25,
     'WillPerLevel': 0.5,
-    'WeaponProficiencies': ['Simple'],
-    'ArmorProficiencies': ['Light', 'Medium', 'Heavy', 'Shield'],
+    'WeaponProficiency': ['Simple'],
+    'ArmorProficiency': ['Light', 'Medium', 'Heavy', 'Shield'],
+    'SpellType': 'Divine',
     'SkillPoints': 2,
     'ClassSkills': ['Concentration', 'CraftAlchemy', 'CraftArmor', 'CraftTrap', 'CraftWeapon', 'Diplomacy', 'Heal', 'Lore', 'Parry', 'Spellcraft']
 }

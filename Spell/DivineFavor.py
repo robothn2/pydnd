@@ -20,8 +20,12 @@ def calcDuration(caster, metaMagics):
 
 def applyModifier(caster, targetModifier, metaMagics):
     print('apply buffer', source)
-    value = int(caster.getCasterLevel() / 3)
+    level = caster.getCasterLevel()
+    print('CasterLevel', level)
+    value = max(1, min(3, int(level / 3)))
     targetModifier.updateSource(('AttackBonus', 'Additional', source), value)
+    targetModifier.updateSource(('Damage', 'Additional', 'Magical', source), value)
 
 def removeModifier(targetModifier):
     targetModifier.removeSource(('AttackBonus', 'Additional', source))
+    targetModifier.removeSource(('Damage', 'Additional', 'Magical', source))

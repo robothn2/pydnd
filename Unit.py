@@ -9,11 +9,14 @@ class Unit:
         self.ctx = ctx
         self.props = Props.Props({'dead': False,
                                   'ac': 0, 'ab': 0, 'hp': 0, 'xp': 0})
-        self.modifier = Props.Modifier({'ArmorClass': {'Natural': {'BaseArmor': 10}}, 'HitPoint': {}})
+        self.modifier = Props.Modifier({'ArmorClass': {'Base': {'Natural': {'BaseArmor': 10}}}, 'HitPoint': {}})
         self.modifierBuff = Props.Modifier()
         self.modifierWeapon = Props.Modifier()
         self.combat = CombatManager(self)
         self.buffs = BuffManager(self)
+
+    def __repr__(self):
+        return self.props['name']
 
     def update(self, deltaTime):
         if self.isDead():
@@ -100,6 +103,15 @@ class Unit:
                 return self.props['classes'][className]['level']
             return 0
         return self.props.sumFieldValue('classes', 'level')
+
+    def getCasterLevel(self, classSpellType = 'Divine'):
+        level = 0
+        if 'classes' in self.props:
+            for className, classInfo in self.props.get('classes', {}).items():
+                if not classSpellType or classSpellType == classInfo['proto'].proto.get('SpellType'):
+                    level += classInfo['level']
+
+        return level
 
     def getAttackBonus(self, target):
         return self.getProp('ab') # for Creature

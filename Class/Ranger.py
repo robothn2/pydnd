@@ -10,6 +10,7 @@ proto = {
     'WillPerLevel': 0.25,
     'WeaponProficiency': ['Simple', 'Martial'],
     'ArmorProficiency': ['Light', 'Shield'],
+    'SpellType': 'Divine',
     'SkillPoints': 6,
     'ClassSkills': ['Concentration', 'CraftAlchemy', 'CraftArmor', 'CraftTrap', 'CraftWeapon', 'Heal', 'Hide', 'Listen', 'Lore', 'MoveSilently', 'Parry', 'Search', 'SetTrap', 'Spot', 'Survival']
 }

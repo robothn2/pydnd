@@ -58,7 +58,7 @@ class CombatManager:
         info += ', roll: ' + str(roll)
         if roll == 1:
             print(info, ', missing')
-            return
+            return False
 
         abFinal = attack[1] # bab from attack
         abFinal += caster.getAttackBonus(target) # ab from caster's Buff, Feats, Str
@@ -70,14 +70,16 @@ class CombatManager:
         if roll < 20:
             if dcCaster < dcTarget:
                 print(info, ', missing')
-                return
+                return False
 
+        print(info, ', hit', end=' ')
         damages = self.weapon_calc_damage(caster, target, roll, attack)
         target.applyDamages(damages)
         if target.isDead() and 'proto' in dir(target):
             xp = int(target.proto['xp'])
             # todo: XP penalty
             caster.addXP(xp)
+        return True
 
     def weapon_calc_damage(self, caster, target, roll, attack):
         damages = Damages.Damages()
@@ -99,6 +101,7 @@ class CombatManager:
 
         # additional damage from caster & weapon
         damages.addModifierSources(caster.modifier, ['Damage', 'Additional'])
+        damages.addModifierSources(caster.modifierBuff, ['Damage', 'Additional'])
         damages.addModifierSources(weapon.modifier, ['Damage', 'Additional'])
 
         # conditional damage from caster & weapon

@@ -21,7 +21,7 @@ def apply(unit):
     unit.modifier.updateSource(('Abilities', 'Dex', 'Base', source), 2)
     unit.modifier.updateSource(('Abilities', 'Int', 'Base', source), 2)
     unit.modifier.updateSource(('Abilities', 'Cha', 'Base', source), 2)
-    unit.modifier.updateSource(('ArmorClass', 'Natural', source), 1)
+    unit.modifier.updateSource(('ArmorClass', 'Additional', 'Natural', source), 1)
     unit.modifier.updateSource(('SpellResistance', 'Race', source), 11 + unit.getClassLevel())
 
     unit.addFeat('Darkvision')

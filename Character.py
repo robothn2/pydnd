@@ -141,6 +141,7 @@ class Character(Unit):
         # ab from Buff, Feats, Str, except Weapon, Base
         result = Damages.Result('AttackBonus')
         result.addAdditionalSources(self.modifier)
+        result.addAdditionalSources(self.modifierBuff)
         result.addConditionalTargetSources(self.modifier, self, target)
         return result.calcTotal()
 
@@ -149,8 +150,11 @@ class Character(Unit):
         result = Damages.Result('ArmorClass')
         result.addBaseSources(self.modifier)
         result.addAdditionalSources(self.modifier)
+        result.addAdditionalSources(self.modifierBuff)
         result.addConditionalTargetSources(self.modifier, self, target)
+        print('getArmorClass', result.modifier)
         return result.calcTotal()
+
 
     def addXP(self, xp):
         xpOld = self.getProp('xp')

@@ -11,17 +11,21 @@ class BuffManager:
         self.tsInMs = 0
 
     def addBuff(self, buffCaster, buffProto, buffMetaMagics = []):
-        expired = buffProto.calcDuration(buffCaster, buffMetaMagics) * 1000 + time.now
-        if buffProto.name not in self.buffs:
-            self.buffs.append([buffCaster, expired, buffProto, buffMetaMagics, False])
+        expired = int(1000 * (buffProto.calcDuration(buffCaster, buffMetaMagics))) + self.tsInMs
+        buffName = buffProto.proto['name']
+        if buffName not in self.buffs:
+            self.buffs.append([buffCaster, expired, buffProto, buffMetaMagics])
         else:
-            buffExist = self.buffs[self.buffs.index(buffProto.name)]
+            buffExist = self.buffs[self.buffs.index(buffName)]
             if buffExist[1] > expired:
-                print('weak buff', buffProto.name, 'cast from', repr(buffCaster))
+                print('weak buff', buffName, 'cast from', repr(buffCaster))
                 return False
 
-            buffExist = [buffCaster, expired, buffProto, buffMetaMagics, False]
-        print('buff', buffProto.name, 'cast from', repr(buffCaster))
+            buffExist = [buffCaster, expired, buffProto, buffMetaMagics]
+
+        # apply buff to owner
+        buffProto.applyModifier(buffCaster, self.owner.modifierBuff, buffMetaMagics)
+        print(repr(self.owner), 'applied buff', buffProto.proto['name'], ', cast from', repr(buffCaster))
         return True
 
     def update(self, deltaTime):
@@ -31,14 +35,9 @@ class BuffManager:
 
         # remove expired buff, one per update call
         for i, buff in enumerate(self.buffs):
-            if not buff[4]:
-                buff[4] = True
-                buff[2].applyModifier(buff[0], self.owner.modifierBuff, buff[3])
-                print('buff', buff[2].name, 'applied for', repr(self.owner))
-
             if buff[1] <= self.tsInMs:
                 self.buffs.pop(i)
                 buff[2].removeModifier(self.owner.modifierBuff)
-                print('buff', buff[2].name, 'expired, cast from', repr(buff[0]))
+                print('buff', buff[2].proto['name'], 'expired, cast from', repr(buff[0]))
                 break
 

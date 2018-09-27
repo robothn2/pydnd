@@ -71,7 +71,7 @@ def sumIntValue(value):
         sumValue += value
     elif type(value) == dict:
         for subValue in value.values():
-            sumValue += int(subValue)
+            sumValue += sumIntValue(subValue)
     return sumValue
 
 def mergeList(listExist, paramsToMerge):
