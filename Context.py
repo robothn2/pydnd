@@ -28,3 +28,4 @@ ctx['protosSpell'] = loadScriptsFolder('Spell')
 ctx['protosCreature'] = CsvLoader.loadCsvFile(r'data/beastiary.csv')
 ctx['secondsPerTurn'] = 8.0
 ctx['secondsPerRound'] = 8.0
+ctx['Abilities'] = ['Str', 'Dex', 'Con', 'Int', 'Wis', 'Cha']

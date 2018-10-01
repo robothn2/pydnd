@@ -91,6 +91,8 @@ class Unit:
             if featName not in featsExist:
                 return False
         return True
+    def hasFeat(self, feat):
+        return feat in self.modifier['Feats']
 
     def getFeatParams(self, featName):
         if featName not in self.modifier['Feats']:
