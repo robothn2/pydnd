@@ -1,6 +1,8 @@
 #coding: utf-8
 from common import Props
 
+def calc_post_mainhand_weapon(value):
+    return value
 def calc_post_ability_modifier(value):
     return int((value - 10) / 2)
 def calc_upstream_sum(sourceValue, oldValue):
@@ -16,14 +18,13 @@ class PropSourceUpstream(PropSource):
     def __init__(self, **kwargs):
         super(PropSourceUpstream, self).__init__(**kwargs)
         self.upstream = kwargs.get('upstream')
-        self.calcUpstream = kwargs.get('calcUpstream')
         self.calcPost = kwargs.get('calcPost')
     def __repr__(self):
         return self.upstream.name
     def __call__(self, caster, target):
         if not hasattr(self.upstream, 'calcValue'):
             return 0 # unbound upstream, skip this source
-        value = self.upstream.calcValue(caster, target, self.calcUpstream)
+        value = self.upstream.calcValue(caster, target)
         if self.calcPost:
             value = self.calcPost(value)
         return int(value)
@@ -86,10 +87,11 @@ class PropSourceIntMax(PropSource):
         raise RuntimeError('Found invalid source', self.args)
 
 class PropNode:
-    def __init__(self, name):
+    def __init__(self, name, calculator):
         self.name = name
-        self.recalc = True
+        self.recalc = True # True if need recalc
         self.value = 0
+        self.calculator = calculator if calculator else calc_upstream_sum # default calculator is sum
         self.sourcesInt = {}
         self.sourcesUpstream = []
         self.sourcesDisable = []
@@ -133,15 +135,13 @@ class PropNode:
         else:
             self.sourcesInt[name] = PropSourceInt(**kwargs)
 
-    def calcValue(self, caster, target, calculator = None):
+    def calcValue(self, caster, target):
         if not self.recalc:
             return self.value
 
-        print('begin calc Prop:', self.name)
+        #print('begin calc Prop:', self.name)
         self.recalc = True
         self.value = 0
-        if not calculator:
-            calculator = calc_upstream_sum #default is sum
 
         sourceEnable = None
         for _,source in enumerate(self.sourcesEnable):
@@ -151,28 +151,65 @@ class PropNode:
         for _,sourceDisable in enumerate(self.sourcesDisable):
             if sourceEnable and sourceEnable.priority > sourceDisable.priority:
                 print('  Prop %s enabled by %s' % (self.name, sourceEnable.name))
-                break
+                break # highest priority disable source is lower than effecting enable source
             if sourceDisable(caster, target):
                 print('  Prop %s disabled by %s' % (self.name, sourceDisable.name))
                 return 0
 
         for name,sourceCalculator in self.sourcesInt.items():
             sourceInt = sourceCalculator(caster, target)
-            self.value = calculator(sourceInt, self.value)
+            self.value = self.calculator(sourceInt, self.value)
 
         for _,upstreamCalculator in enumerate(self.sourcesUpstream):
             sourceInt = upstreamCalculator(caster, target)
-            self.value = calculator(sourceInt, self.value)
+            self.value = self.calculator(sourceInt, self.value)
 
         if self.sourceIntMax:
-            valueNew = min(self.sourceIntMax(), self.value)
+            valueNew = min(self.sourceIntMax(caster, target), self.value)
             if valueNew != self.value:
                 print('  Prop %s cap by %s, %d -> %d' % (self.name, self.sourceIntMax.name, self.value, valueNew))
                 self.value = valueNew
         print('  Prop', self.name, '=', self.value)
         return self.value
 
-class PropManager:
+    def getValueSource(self, caster, target):
+        self.recalc = False
+        self.value = 0
+
+        result = {}
+        sourceEnable = None
+        for _,source in enumerate(self.sourcesEnable):
+            if source(caster, target):
+                sourceEnable = source
+                break
+        for _,sourceDisable in enumerate(self.sourcesDisable):
+            if sourceEnable and sourceEnable.priority > sourceDisable.priority:
+                result[sourceEnable.name] = True
+                break # highest priority disable source is lower than effecting enable source
+            if sourceDisable(caster, target):
+                result[sourceDisable.name] = False
+                return (0, result)
+
+        for name,sourceEval in self.sourcesInt.items():
+            sourceInt = sourceEval(caster, target)
+            if sourceInt != 0:
+                self.value = self.calculator(sourceInt, self.value)
+                result[name] = sourceInt
+
+        for _,upstreamEval in enumerate(self.sourcesUpstream):
+            sourceInt = upstreamEval(caster, target)
+            if sourceInt != 0:
+                self.value = self.calculator(sourceInt, self.value)
+                result[upstreamEval.upstream.name] = sourceInt
+
+        if self.sourceIntMax:
+            valueNew = min(self.sourceIntMax(caster, target), self.value)
+            if valueNew != self.value:
+                self.value = valueNew
+                result[self.sourceIntMax.name] = 'max to ' + valueNew
+        return (self.value, result)
+
+class PropCalculator:
     def __init__(self, ctx):
         self.ctx = ctx
         self.props = {}
@@ -189,8 +226,8 @@ class PropManager:
 
         self.addProp('ArmorClass.Dex', [
             {'upstream': 'Modifier.Dex'},
-            #{'name': 'ArmorDexCap', 'calcMax': 1000}, # armor can replace this cap
-            #{'name': 'Buff:TargetInvisible', 'calcDisable': (lambda caster, target: target.hasBuff('Invisible'))} # using normal priority 0, UncannyDodge can overwrite it
+            {'name': 'ArmorDexCap', 'calcMax': 1000}, # armor can replace this cap
+            {'name': 'Buff:TargetInvisible', 'calcDisable': (lambda caster, target: target.hasBuff('Invisible'))} # using normal priority 0, UncannyDodge can overwrite it
         ])
         self.addProp('ArmorClass', [
             {'upstream': 'ArmorClass.Armor', 'calcUpstream': calc_upstream_max},
@@ -203,19 +240,33 @@ class PropManager:
             {'upstream': 'ArmorClass.Aura'}
         ])
 
+        self.addProp('BaseAttackBonus', [])
+
+        self.addProp('Weapon.StrModifierMainHand', {'upstream': 'Modifier.Str', 'calcPost': calc_post_mainhand_weapon})
+
+        self.addProp('AttackBonus.MainHand', [
+            {'upstream': 'Weapon.StrModifierMainHand'},
+            {'upstream': 'Modifier.Str'},
+            {'name': 'ArmorDexCap', 'calcMax': 1000}, # armor can replace this cap
+            {'name': 'Buff:Disarm', 'calcDisable': (lambda caster, target: caster.hasBuff('Disarm'))},
+        ])
+
+        self.addProp('HitPoint', [])
+
     def __repr__(self):
         return repr(self.props)
 
-    def addProp(self, propName, sources = None):
+    def addProp(self, propName, sources = None, calculator = None):
         if propName in self.props:
             raise RuntimeError('found duplicate prop', propName)
 
-        prop = PropNode(propName)
+        prop = PropNode(propName, calculator)
         if sources == None:
             pass
         elif type(sources) == dict:
-            self.__replaceUpstreamField(sources)
-            prop.addSource(**sources)
+            src = sources
+            self.__replaceUpstreamField(src)
+            prop.addSource(**src)
         elif type(sources) == list:
             for _, src in enumerate(sources):
                 self.__replaceUpstreamField(src)
@@ -229,7 +280,7 @@ class PropManager:
         upstreamProp = self.props.get(upstream)
         if not upstreamProp:
             #if upstream Prop not found, create empty PropNode
-            upstreamProp = PropNode(upstream)
+            upstreamProp = PropNode(upstream, source.get('calcUpstrem'))
             self.props[upstream] = upstreamProp
         source['upstream'] = upstreamProp
 
@@ -243,21 +294,26 @@ class PropManager:
             return 0
         return self.props[propName].calcValue(caster, target)
 
+    def printPropValueSource(self, propName, caster, target):
+        if propName not in self.props:
+            return
+        print(self.props[propName].getValueSource(caster, target))
+
 if __name__ == '__main__':
     ctx = __import__('Context')
     player = __import__('Character')
     p1 = player.Character(ctx.ctx)
     p2 = player.Character(ctx.ctx)
-    m = PropManager(ctx.ctx)
-    """
-    """
+    m = p1.calc
+
     m.addSource('Ability.Dex.Base', name='Race:Elf', calcInt=2)
-    m.addSource('Ability.Dex.Base', name='Builder', calcInt=16)
+    m.addSource('Ability.Dex.Base', name='Builder', calcInt=18)
     m.addSource('Ability.Dex.Base', name='LevelUp:4', calcInt=1)
     m.addSource('Ability.Dex.Item', name='Item:Boot+4', calcInt=4)
     m.addSource('ArmorClass.Dex', name= 'Feat:UncannyDodge', calcEnable = True, priority = 100)
-    m.addSource('ArmorClass.Armor', name= 'Item:Leather+3', calcInt = 6)
+    m.addSource('ArmorClass.Armor', name= 'Item:Leather+3', calcInt = 7)
 
     print(m)
-    print(m.getPropValue('Modifier.Dex', p1, p2))
+    m.printPropValueSource('Ability.Dex', p1, p2)
+    m.printPropValueSource('Modifier.Dex', p1, p2)
     print(m.getPropValue('ArmorClass', p1, p2))

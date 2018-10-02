@@ -20,8 +20,11 @@ class Character(Unit):
     def __init__(self, ctx):
         super(Character, self).__init__(ctx)
         self.ctx = ctx
-        self.props.update({'name': 'NoName',
-                      **abilities_parse(10, 10, 10, 10, 10, 10)})
+        self.builder = {'name': '', **abilities_parse(8, 8, 8, 8, 8, 8)}
+        self.calc.addSource('ArmorClass.Natural', name='Character', calcInt=10)
+
+    def getName(self):
+        return self.builder['name']
 
     def buildLevel1(self, props, cls, abilities, skills, feats):
         if cls not in self.ctx['protosClass']:
@@ -40,9 +43,10 @@ class Character(Unit):
         if levelRequest < 1:
             return False
 
-        print('loading builder:', builder['name'])
+        self.builder = builder
+        print('loading builder:', builder['builderName'])
         '''
-        'charName': 'Lora',
+        'name': 'Lora',
         'race': 'Yuan-ti Pureblood',
         'gender': 'female',
         'age': 20,
@@ -51,9 +55,8 @@ class Character(Unit):
         'background': 'WildChild',
         'abilities': {'Str': 16, 'Dex': 12, 'Con': 10, 'Int': 14, 'Wis': 8, 'Cha': 16},
        '''
-        self.props.update({'name': builder['charName']})
         for key in builder.keys():
-            if key in ['race', 'gender', 'age', 'deity', 'alignment', 'background']:
+            if key in ['', 'race', 'gender', 'age', 'deity', 'alignment', 'background']:
                 self.props[key] = builder[key]
 
         race_apply(self)
@@ -120,20 +123,20 @@ class Character(Unit):
         self.setProp('ab', self.modifier.sumSource(('AttackBonus')))
         self.setProp('hp', self.modifier.sumSource(('HitPoint')))
 
-    def printModifier(self, key):
-        print(key, ':', self.modifier.sumSource(key), ',', self.modifier.getSource(key))
+    def printProp(self, key):
+        print(key, ':', self.calc.calcValue(key), ',', self.modifier.getSource(key))
 
     def statistic(self):
         self._applyAll()
-        print('== statistics for character', self.getProp('name'))
+        print('== statistics for character', self.getName())
         print('Feats:', self.modifier.getSource('Feats'))
         print('Abilities:', self.modifier.getSource('Abilities'))
-        self.printModifier('AttackBonus')
-        self.printModifier('ArmorClass')
-        self.printModifier('HitPoint')
-        self.printModifier('SpellResistance')
-        self.printModifier('Reduction')
-        self.printModifier('SpellCasting')
+        self.printProp('AttackBonus')
+        self.printProp('ArmorClass')
+        self.printProp('HitPoint')
+        self.printProp('SpellResistance')
+        self.printProp('Reduction')
+        self.printProp('SpellCasting')
         print('BAB:', self.modifier.sumSource(('AttackBonus', 'Base')))
         print('Attacks:', self.modifier.getSource('Attacks'))
 
@@ -160,7 +163,7 @@ class Character(Unit):
         xpOld = self.getProp('xp')
         xpNew = xpOld + xp
         self.setProp('xp', xpNew)
-        print(self.props['name'], 'received xp', xp, ',total', xpNew)
+        print(self.getName(), 'received xp', xp, ',total', xpNew)
 
 if __name__ == '__main__':
     builder = loadJsonFile(r'data/builders/builder1.json')

@@ -30,7 +30,7 @@ class CombatManager:
         if not enemy:
             self.deltaInTurn = 0.0
             self.enemies = []
-            print('no living enemy for', self.owner.getProp('name'))
+            print('no living enemy for', self.owner.getName())
             return
 
         tsBegin = self.deltaInTurn
@@ -38,7 +38,7 @@ class CombatManager:
         self.deltaInTurn += deltaTime
         if self.deltaInTurn >= self.owner.ctx['secondsPerTurn']:
             self.deltaInTurn -= self.owner.ctx['secondsPerTurn']
-            print('new turn for', self.owner.getProp('name'), ', Attacks', self.owner.modifier.getSource('Attacks'))
+            print('new turn for', self.owner.getName(), ', Attacks', self.owner.modifier.getSource('Attacks'))
 
         # attack enemy
         attacks = self.owner.modifier.getSource('Attacks')
@@ -51,9 +51,9 @@ class CombatManager:
 
     def meleeAttack(self, caster, target, attack):
         info = '{} attack:turnOffset({}) bab({}) mainhand({}) weapon({}) {}'\
-            .format(caster.getProp('name'),
-                    round(attack[0], 3), attack[1], attack[2], attack[3].proto['name'],
-                    target.getProp('name'))
+            .format(caster.getName(),
+                    round(attack[0], 3), attack[1], attack[2], attack[3].getName(),
+                    target.getName())
         roll = rollDice(1, 20, 1)
         info += ', roll: ' + str(roll)
         if roll == 1:

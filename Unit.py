@@ -3,10 +3,12 @@ import warnings
 from common import Props
 from CombatManager import CombatManager
 from BuffManager import BuffManager
+from PropCalculator import PropCalculator
 
 class Unit:
     def __init__(self, ctx):
         self.ctx = ctx
+        self.calc = PropCalculator(ctx)
         self.props = Props.Props({'dead': False,
                                   'ac': 0, 'ab': 0, 'hp': 0, 'xp': 0})
         self.modifier = Props.Modifier({'ArmorClass': {'Base': {'Natural': {'BaseArmor': 10}}}, 'HitPoint': {}})
@@ -16,7 +18,7 @@ class Unit:
         self.buffs = BuffManager(self)
 
     def __repr__(self):
-        return self.props['name']
+        return self.getName()
 
     def update(self, deltaTime):
         if self.isDead():
@@ -24,6 +26,9 @@ class Unit:
 
         self.buffs.update(deltaTime)
         self.combat.update(deltaTime)
+
+    def getName(self):
+        return self.props.get('name')
 
     def setProp(self, key, value):
         self.props[key] = value
@@ -132,7 +137,7 @@ class Unit:
 
     def applyDamages(self, damages):
         damageTotal = damages.calcTotal()
-        print(self.getProp('name'), 'accept damage', damageTotal, ' info', damages)
+        print(self.getName(), 'accept damage', damageTotal, ' info', damages)
         self._applyDamage(damageTotal)
 
     def _applyDamage(self, damageTotal):
@@ -140,8 +145,8 @@ class Unit:
         hpNew = hpOld - damageTotal
         if hpNew < 0:
             hpNew = 0
-        print(self.getProp('name'), 'hp changed:', hpOld, '->', hpNew)
+        print(self.getName(), 'hp changed:', hpOld, '->', hpNew)
         self.setProp('hp', hpNew)
         if hpNew == 0:
             self.setProp('dead', True)
-            print(self.getProp('name'), 'die')
+            print(self.getName(), 'die')

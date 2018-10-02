@@ -6,6 +6,8 @@ class Item:
         self.ctx = ctx
         self.props = Props.Props(props)
         self.modifier = Props.Modifier()
+    def getName(self):
+        return self.props.get('name')
 
 class Weapon(Item):
     def __init__(self, ctx, props):

@@ -55,7 +55,7 @@ class Creature(Unit):
                                            'BaseCriticalThreat': [20, 20, len(attack) - 2]
                                            })
                 weaponsCreated[weaponName] = weapon
-                #print(self.getProp('name'), 'create a virtual weapon', self.proto)
+                #print(self.getName(), 'create a virtual weapon', self.proto)
 
                 if not weaponFirst:
                     weaponFirst = weapon
@@ -67,7 +67,7 @@ class Creature(Unit):
         self.setProp('WeaponMainHand', weaponFirst)
 
     def statistic(self):
-        print('== statistics for creature', self.getProp('name'))
+        print('== statistics for creature', self.getName())
         print('AttackBonus', self.props['ab'])
         print('ArmorClass', self.props['ac'])
         print('HitPoint', self.props['hp'])
