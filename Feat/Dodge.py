@@ -14,5 +14,5 @@ def matchRequirements(unit):
 
 def apply(unit, featParams):
     print('apply feat %s' % proto['name'])
-    unit.modifier.updateSource(('ArmorClass', 'Additional', 'Dodge', 'Feat:' + proto['name']), 1)
+    unit.calc.addSource('ArmorClass.Dodge', name='Feat:' + proto['name'], calcInt=1)
 

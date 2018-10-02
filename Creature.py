@@ -19,16 +19,16 @@ class Creature(Unit):
         Unit.update(self, deltaTime)
 
     def _applyAll(self):
-        self.modifier.updateSource(('ArmorClass', 'Base', 'beastiary'), int(self.proto['armor_bonus']))
-        self.modifier.updateSource(('HitPoint', 'beastiary', 'expected_hp'), int(self.proto['expected_hp']))
-        self.modifier.updateSource(('HitPoint', 'beastiary', 'hp_fudge'), int(self.proto['hp_fudge']))
+        self.calc.addSource('ArmorClass.Base', name='beastiary', calcInt=int(self.proto['armor_bonus']))
+        self.calc.addSource('HitPoint', name='beastiary.expected_hp', calcInt=int(self.proto['expected_hp']))
+        self.calc.addSource('HitPoint', name='beastiary.hp_fudge', calcInt=int(self.proto['hp_fudge']))
 
-        for _,ability in enumerate(['Str', 'Dex', 'Con', 'Int', 'Wis', 'Cha']):
-            self.modifier.updateSource(('Abilities', ability, 'Base', 'beastiary'), int(self.proto[ability]))
+        for _,ability in self.ctx['Abilities']:
+            self.calc.addSource('Abilities.'+ ability + '.Base', name='beastiary', calcInt=int(self.proto[ability]))
 
         buffs_apply(self)
         #race_apply(self)
-        #feats_apply(self)
+        feats_apply(self)
         abilities_apply(self)
         self.__applyAttackParameters()
 

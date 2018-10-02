@@ -61,7 +61,7 @@ class Character(Unit):
 
         race_apply(self)
         for k, v in builder['abilities'].items():
-            self.modifier.updateSource(('Abilities', k, 'Base', 'Builder'), int(v))
+            self.calc.addSource('Abilities.%s.Base' % k, name='Builder', calcInt=int(v))
 
         '''
         'levels': [
@@ -83,15 +83,17 @@ class Character(Unit):
 
             # add ability
             if 'ability' in levelEntry:
-                self.modifier.updateSource(('Abilities', levelEntry['ability'], 'Base', 'LevelUp:%d'%level), 1)
+                self.calc.addSource('Abilities.%s.Base' % levelEntry['ability'], name='LevelUp:%d'%level, calcInt=1)
 
             if 'classes' not in self.props:
                 self.props['classes'] = {}
             classesEntry = self.props['classes']
             if cls not in classesEntry:
                 classesEntry[cls] = {'level': 0, 'proto': clsProto}
+
             clsEntry = classesEntry[cls]
             clsEntry['level'] += 1
+            self.calc.addSource('Class.Level', name=cls, calcInt=clsProto['HitDie'] * clsEntry['level'])
 
             # apply class feats/abilities by level
             clsProto.applyLevelUp(self, clsEntry['level'], levelEntry)
@@ -106,7 +108,7 @@ class Character(Unit):
 
             # update skills
             for skillName,skillLevel in levelEntry['skills'].items():
-                self.modifier.updateSource(('Skills', skillName, 'Base', 'Builder'), skillLevel)
+                self.calc.addSource('Skill.%s'% skillName, name='Builder', calcInt=skillLevel)
 
         return True
 

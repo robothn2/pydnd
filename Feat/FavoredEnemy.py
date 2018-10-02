@@ -35,8 +35,10 @@ def conditionSkill(caster, target, params):
 def apply(unit, featParams):
     print('apply feat', proto['name'], ', params', featParams)
 
+    # todo: custom calculator for damage(dict)
     unit.modifier.updateSource(('Conditional', 'Target', 'Damage', source), (conditionDamage, featParams))
 
-    unit.modifier.updateSource(('Conditional', 'Target', 'Listen', source), (conditionSkill, featParams))
-    unit.modifier.updateSource(('Conditional', 'Target', 'Spot', source), (conditionSkill, featParams))
-    unit.modifier.updateSource(('Conditional', 'Target', 'Taunt', source), (conditionSkill, featParams))
+    # todo: support calcParam=featParams in PropSourceInt
+    unit.calc.addSource('Skill.Listen', name=source, calcInt=conditionSkill, calcParam=featParams)
+    unit.calc.addSource('Skill.Spot', name=source, calcInt=conditionSkill, calcParam=featParams)
+    unit.calc.addSource('Skill.Taunt', name=source, calcInt=conditionSkill, calcParam=featParams)

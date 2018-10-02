@@ -8,6 +8,7 @@ def calc_post_ability_modifier(value):
 def calc_upstream_sum(sourceValue, oldValue):
     return sourceValue + oldValue
 def calc_upstream_max(sourceValue, oldValue):
+    #print(sourceValue, oldValue)
     return max(sourceValue, oldValue)
 
 class PropSource:
@@ -18,9 +19,10 @@ class PropSourceUpstream(PropSource):
     def __init__(self, **kwargs):
         super(PropSourceUpstream, self).__init__(**kwargs)
         self.upstream = kwargs.get('upstream')
+        self.name = kwargs['name'] if 'name' in kwargs else self.upstream.name
         self.calcPost = kwargs.get('calcPost')
     def __repr__(self):
-        return self.upstream.name
+        return self.name
     def __call__(self, caster, target):
         if not hasattr(self.upstream, 'calcValue'):
             return 0 # unbound upstream, skip this source
@@ -87,16 +89,18 @@ class PropSourceIntMax(PropSource):
         raise RuntimeError('Found invalid source', self.args)
 
 class PropNode:
-    def __init__(self, name, calculator):
+    def __init__(self, props, name, calculator):
         self.name = name
         self.recalc = True # True if need recalc
         self.value = 0
+        self.props = props
         self.calculator = calculator if calculator else calc_upstream_sum # default calculator is sum
         self.sourcesInt = {}
         self.sourcesUpstream = []
         self.sourcesDisable = []
         self.sourcesEnable = []
         self.sourceIntMax = None
+
     def __repr__(self):
         info = '{'
         if len(self.sourcesInt) > 0:
@@ -112,8 +116,22 @@ class PropNode:
     def needRecalc(self):
         self.recalc = True
 
+    def __replaceUpstreamField(self, source):
+        upstream = source.get('upstream')
+        if type(upstream) != str:
+            return
+        upstreamProp = self.props.get(upstream)
+        if not upstreamProp:
+            #if upstream Prop not found, create empty PropNode
+            upstreamProp = PropNode(self.props, upstream, source.get('calcUpstream'))
+            self.props[upstream] = upstreamProp
+        source['upstream'] = upstreamProp
+
     def addSource(self, **kwargs):
+        # todo: update upstream PropNode.recalc recursively
+
         if 'upstream' in kwargs:
+            self.__replaceUpstreamField(kwargs)
             self.sourcesUpstream.append(PropSourceUpstream(**kwargs))
             return
         if 'calcEnable' in kwargs:
@@ -127,8 +145,6 @@ class PropNode:
             return
 
         name = kwargs['name']
-        if name in self.sourcesInt:
-            raise RuntimeError('Found duplicate source', name)
 
         if 'calcMax' in kwargs:
             self.sourceIntMax = PropSourceIntMax(**kwargs)
@@ -200,7 +216,7 @@ class PropNode:
             sourceInt = upstreamEval(caster, target)
             if sourceInt != 0:
                 self.value = self.calculator(sourceInt, self.value)
-                result[upstreamEval.upstream.name] = sourceInt
+                result[upstreamEval.name] = sourceInt
 
         if self.sourceIntMax:
             valueNew = min(self.sourceIntMax(caster, target), self.value)
@@ -213,16 +229,9 @@ class PropCalculator:
     def __init__(self, ctx):
         self.ctx = ctx
         self.props = {}
-        for _,ability in enumerate(['Dex']): #ctx['Abilities']
-            ab = 'Ability.' + ability
-            self.addProp(ab, [
-                {'upstream': ab + '.Base'},
-                {'upstream': ab + '.Item', 'calcUpstream': calc_upstream_max},
-                {'upstream': ab + '.Buff'}
-            ])
-            self.addProp('Modifier.' + ability, [
-                {'upstream':  ab, 'calcPost':  calc_post_ability_modifier}
-            ])
+
+        self.__addAbilitySources()
+        self.__addSkillSources()
 
         self.addProp('ArmorClass.Dex', [
             {'upstream': 'Modifier.Dex'},
@@ -231,6 +240,7 @@ class PropCalculator:
         ])
         self.addProp('ArmorClass', [
             {'upstream': 'ArmorClass.Armor', 'calcUpstream': calc_upstream_max},
+            {'upstream': 'Skill.Tumble', 'calcPost': (lambda value: int(value/10))},
             {'upstream': 'ArmorClass.Natural'},
             {'upstream': 'ArmorClass.Luck'},
             {'upstream': 'ArmorClass.Deflection'},
@@ -240,49 +250,66 @@ class PropCalculator:
             {'upstream': 'ArmorClass.Aura'}
         ])
 
-        self.addProp('BaseAttackBonus', [])
+        self.addProp('SpellResistance')
+        self.addProp('BaseAttackBonus')
 
         self.addProp('Weapon.StrModifierMainHand', {'upstream': 'Modifier.Str', 'calcPost': calc_post_mainhand_weapon})
 
         self.addProp('AttackBonus.MainHand', [
             {'upstream': 'Weapon.StrModifierMainHand'},
             {'upstream': 'Modifier.Str'},
-            {'name': 'ArmorDexCap', 'calcMax': 1000}, # armor can replace this cap
+            {'name': 'ArmorDexCap', 'calcMax': 1000}, # armor can replace this max value
             {'name': 'Buff:Disarm', 'calcDisable': (lambda caster, target: caster.hasBuff('Disarm'))},
         ])
 
-        self.addProp('HitPoint', [])
+        self.addProp('HitPoint', [
+            {'upstream': 'Modifier.Con', 'calcPost': (lambda value, caster, target: value * caster.getPropValue('Level'))},
+            {'upstream': 'Class.Level'},
+        ])
 
     def __repr__(self):
         return repr(self.props)
+
+    def __addAbilitySources(self):
+        for _,ability in enumerate(self.ctx['Abilities']):
+            ab = 'Ability.' + ability
+            self.addProp(ab, [
+                {'upstream': ab + '.Base'},
+                {'upstream': ab + '.Item', 'calcUpstream': calc_upstream_max},
+                {'upstream': ab + '.Buff'}
+            ])
+            self.addProp('Modifier.' + ability, [
+                {'upstream':  ab, 'calcPost':  calc_post_ability_modifier}
+            ])
+    def __addSkillSources(self):
+        self.addProp('Skill.Tumble', {'upstream': 'Modifier.Dex'})
+        '''
+        for _,skill in enumerate(self.ctx['Skills']):
+            ab = 'Skill.' + skill
+            self.addProp(ab, [
+                {'name': 'Builder'},
+                {'upstream': 'Modifier.' + },
+                {'upstream': ab + '.Buff'}
+            ])
+            self.addProp('Modifier.' + ability, [
+                {'upstream':  ab, 'calcPost':  calc_post_ability_modifier}
+            ])
+        '''
 
     def addProp(self, propName, sources = None, calculator = None):
         if propName in self.props:
             raise RuntimeError('found duplicate prop', propName)
 
-        prop = PropNode(propName, calculator)
+        prop = PropNode(self.props, propName, calculator)
         if sources == None:
             pass
         elif type(sources) == dict:
             src = sources
-            self.__replaceUpstreamField(src)
             prop.addSource(**src)
         elif type(sources) == list:
             for _, src in enumerate(sources):
-                self.__replaceUpstreamField(src)
                 prop.addSource(**src)
         self.props[propName] = prop
-
-    def __replaceUpstreamField(self, source):
-        upstream = source.get('upstream')
-        if type(upstream) != str:
-            return
-        upstreamProp = self.props.get(upstream)
-        if not upstreamProp:
-            #if upstream Prop not found, create empty PropNode
-            upstreamProp = PropNode(upstream, source.get('calcUpstrem'))
-            self.props[upstream] = upstreamProp
-        source['upstream'] = upstreamProp
 
     def addSource(self, propName, **kwargs):
         if propName not in self.props:
@@ -306,14 +333,25 @@ if __name__ == '__main__':
     p2 = player.Character(ctx.ctx)
     m = p1.calc
 
+    # test multi source
     m.addSource('Ability.Dex.Base', name='Race:Elf', calcInt=2)
     m.addSource('Ability.Dex.Base', name='Builder', calcInt=18)
     m.addSource('Ability.Dex.Base', name='LevelUp:4', calcInt=1)
+
+    # test custom calculator calc_upstream_max() for 'Ability.Dex.Item'
     m.addSource('Ability.Dex.Item', name='Item:Boot+4', calcInt=4)
+    m.addSource('Ability.Dex.Item', name='Item:RingOfDexerity+4', calcInt=4)
+
     m.addSource('ArmorClass.Dex', name= 'Feat:UncannyDodge', calcEnable = True, priority = 100)
+
     m.addSource('ArmorClass.Armor', name= 'Item:Leather+3', calcInt = 7)
 
+    m.addSource('Class.Level', name='Ranger', calcInt=1)
+    m.addSource('Class.Level', name='Ranger', calcInt=7) # test source replaceable
+    m.addSource('Class.Level', name='Cleric', calcInt=2)
+    # test dynamic upstream, and custom name for upstream
+    m.addSource('SpellResistance', upstream = 'Class.Level', name = 'YuantiPureBlood', calcPost = lambda value: 11 + value)
+
     print(m)
-    m.printPropValueSource('Ability.Dex', p1, p2)
-    m.printPropValueSource('Modifier.Dex', p1, p2)
-    print(m.getPropValue('ArmorClass', p1, p2))
+    m.printPropValueSource('SpellResistance', p1, p2)
+    m.printPropValueSource('ArmorClass', p1, p2)

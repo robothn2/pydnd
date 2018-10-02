@@ -17,12 +17,16 @@ proto = {
 def apply(unit):
     print('apply race %s' % proto['name'])
     source = 'Race:' + proto['name']
-    unit.modifier.updateSource(('Level', 'Adjustment', source), 2)
-    unit.modifier.updateSource(('Abilities', 'Dex', 'Base', source), 2)
-    unit.modifier.updateSource(('Abilities', 'Int', 'Base', source), 2)
-    unit.modifier.updateSource(('Abilities', 'Cha', 'Base', source), 2)
-    unit.modifier.updateSource(('ArmorClass', 'Additional', 'Natural', source), 1)
-    unit.modifier.updateSource(('SpellResistance', 'Race', source), 11 + unit.getClassLevel())
+
+    unit.calc.addSource('Level.Adjustment', name=source, calcInt=2)
+
+    unit.calc.addSource('Ability.Dex.Base', name=source, calcInt=2)
+    unit.calc.addSource('Ability.Int.Base', name=source, calcInt=2)
+    unit.calc.addSource('Ability.Cha.Base', name=source, calcInt=2)
+
+    unit.calc.addSource('ArmorClass.Natural', name=source, calcInt=1)
+
+    unit.calc.addSource('SpellResistance', upstream='Class.Level', name=source, calcPost=lambda value: 11 + value)
 
     unit.addFeat('Darkvision')
     unit.addFeat('Alertness')

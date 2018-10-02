@@ -24,20 +24,20 @@ def apply(unit):
     source = 'Race:' + proto['name']
 
     # todo: affect XP requirement on level up
-    unit.modifier.updateSource(('Level', 'Adjustment', source), 2)
+    unit.calc.addSource('Level.Adjustment', name=source, calcInt=2)
 
-    unit.modifier.updateSource(('Abilities', 'Dex', 'Base', source), 2)
-    unit.modifier.updateSource(('Abilities', 'Int', 'Base', source), 2)
-    unit.modifier.updateSource(('Abilities', 'Cha', 'Base', source), 2)
-    unit.modifier.updateSource(('Abilities', 'Con', 'Base', source), -2)
+    unit.calc.addSource('Ability.Dex.Base', name=source, calcInt=2)
+    unit.calc.addSource('Ability.Int.Base', name=source, calcInt=2)
+    unit.calc.addSource('Ability.Cha.Base', name=source, calcInt=2)
+    unit.calc.addSource('Ability.Con.Base', name=source, calcInt=-2)
 
-    unit.modifier.updateSource(('Skills', 'Listen', source), 2)
-    unit.modifier.updateSource(('Skills', 'Search', source), 2)
-    unit.modifier.updateSource(('Skills', 'Spot', source), 2)
+    unit.calc.addSource('Skill.Listen', name=source, calcInt=2)
+    unit.calc.addSource('Skill.Search', name=source, calcInt=2)
+    unit.calc.addSource('Skill.Spot', name=source, calcInt=2)
 
-    unit.modifier.updateSource(('SavingThrow', 'Will', source), 2)
+    unit.calc.addSource('SavingThrow.Will', name=source, calcInt=2)
 
-    unit.modifier.updateSource(('SpellResistance', 'Race', source), 11 + unit.getClassLevel())
+    unit.calc.addSource('SpellResistance', upstream='Class.Level', name=source, calcPost=lambda value: 11 + value)
 
     unit.addFeat('Darkvision')
     unit.addFeat('WeaponProficiency', ['longsword', 'rapier', 'longbow', 'shortbow'])

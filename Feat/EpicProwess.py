@@ -15,4 +15,4 @@ def matchRequirements(unit):
 
 def apply(unit, featParams):
     print('apply feat', proto['name'], ', params', featParams)
-    unit.modifier.updateSource(('Additional', 'AttackBonus', source), 1)
+    unit.calc.addSource('AttackBonus.Additional', name=source, calcInt=1)

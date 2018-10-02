@@ -13,7 +13,6 @@ class Unit:
                                   'ac': 0, 'ab': 0, 'hp': 0, 'xp': 0})
         self.modifier = Props.Modifier({'ArmorClass': {'Base': {'Natural': {'BaseArmor': 10}}}, 'HitPoint': {}})
         self.modifierBuff = Props.Modifier()
-        self.modifierWeapon = Props.Modifier()
         self.combat = CombatManager(self)
         self.buffs = BuffManager(self)
 

@@ -42,13 +42,9 @@ def abilities_apply(unit):
     modStr = abilities_modifier(unit, 'Str')
     modDex = abilities_modifier(unit, 'Dex')
     modCon = abilities_modifier(unit, 'Con')
-    unit.modifier.updateSource(('AttackBonus', 'Additional', 'Ability:Str'), modStr)
-    unit.modifier.updateSource(('ArmorClass', 'Additional', 'Dex', 'Ability:Dex'), modDex)
     unit.modifier.updateSource(('HitPoint', 'Con', 'Ability:Con'), modCon)
     unit.modifier.updateSource(('Damage', 'Additional', 'Physical', 'Ability:Str'), modStr)
 
-    # todo: apply abilities to skills
-    unit.modifier.updateSource(('Skills', 'Tumble', 'Modifier', 'Ability:Dex'), modDex)
 
 def skills_apply(unit):
     tumbleLevel = unit.modifier.sumSource(('Skills', 'Tumble'))
