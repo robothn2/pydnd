@@ -33,6 +33,17 @@ class PropSourceUpstream(PropSource):
             value = self.calcPost(value)
         return int(value)
 
+class PropSourceMultiUpstream(PropSource):
+    def __init__(self, **kwargs):
+        super(PropSourceMultiUpstream, self).__init__(**kwargs)
+        self.upstreams = kwargs.get('upstreams')
+        self.name = kwargs['name'] if 'name' in kwargs else self.upstreams[0].name
+        self.calcMulti = kwargs.get('calcMulti')
+    def __repr__(self):
+        return self.name
+    def __call__(self, caster, target):
+        return self.calcMulti(self.upstreams, caster, target)
+
 class PropSourceDisable(PropSource):
     def __init__(self, **kwargs):
         super(PropSourceDisable, self).__init__(**kwargs)
@@ -99,6 +110,7 @@ class PropNode:
         self.calculator = calculator if calculator else calc_upstream_sum # default calculator is sum
         self.sourcesInt = {}
         self.sourcesUpstream = []
+        self.sourcesUpstreamMulti = []
         self.sourcesDisable = []
         self.sourcesEnable = []
         self.sourceIntMax = None
@@ -126,41 +138,52 @@ class PropNode:
         self.downstreams.append(downstreamProp)
         downstreamProp.needRecalc()
 
-    def __addUpstream(self, source):
-        upstream = source.get('upstream')
-        if type(upstream) != str:
-            return
-        upstreamProp = self.props.get(upstream)
+    def __addUpstream(self, upstreamName, upstreamDict):
+        upstreamProp = self.props.get(upstreamName)
         if not upstreamProp:
             #if upstream Prop not found, create empty PropNode
-            upstreamProp = PropNode(self.props, upstream, source.get('calcUpstream'))
-            self.props[upstream] = upstreamProp
+            upstreamProp = PropNode(self.props, upstreamName, upstreamDict.get('calcUpstream'))
+            self.props[upstreamName] = upstreamProp
 
-        source['upstream'] = upstreamProp
-        sourceUpstream = PropSourceUpstream(**source)
+        upstreamDict['upstream'] = upstreamProp
         upstreamProp.__addDownstream(self)
-        self.sourcesUpstream.append(sourceUpstream)
+        return upstreamProp
 
     def addSource(self, **kwargs):
         if 'upstream' in kwargs:
-            self.__addUpstream(kwargs)
-            return
-        if 'calcEnable' in kwargs:
+            self.__addUpstream(kwargs.get('upstream'), kwargs)
+            self.sourcesUpstream.append(PropSourceUpstream(**kwargs))
+        elif 'calcMulti' in kwargs:
+            upstreams = kwargs.get('upstreams')
+            upstreamsProp = []
+            for _,upstream in enumerate(upstreams):
+                upstreamDict = {}
+                if type(upstream) == str:
+                    upstreamsProp.append(self.__addUpstream(upstream, upstreamDict))
+                elif type(upstream) == dict:
+                    upstreamDict = upstream
+                    upstreamsProp.append(self.__addUpstream(upstream['upstream'], upstreamDict))
+            kwargs['upstreams'] = upstreamsProp # replace list of str/dict to list of Prop
+            self.sourcesUpstreamMulti.append(PropSourceMultiUpstream(**kwargs))
+            print(self.sourcesUpstreamMulti)
+
+        elif 'calcEnable' in kwargs:
             self.sourcesEnable.append(PropSourceEnable(**kwargs))
             # sort switch by priority
             self.sourcesEnable.sort(key=lambda source: source.priority, reverse=False)
-            return
-        if 'calcDisable' in kwargs:
+
+        elif 'calcDisable' in kwargs:
             self.sourcesDisable.append(PropSourceDisable(**kwargs))
             self.sourcesDisable.sort(key=lambda source: source.priority, reverse=False)
-            return
 
-        name = kwargs['name']
-
-        if 'calcMax' in kwargs:
-            self.sourceIntMax = PropSourceIntMax(**kwargs)
         else:
-            self.sourcesInt[name] = PropSourceInt(**kwargs)
+            name = kwargs['name']
+
+            if 'calcMax' in kwargs:
+                self.sourceIntMax = PropSourceIntMax(**kwargs)
+            else:
+                self.sourcesInt[name] = PropSourceInt(**kwargs)
+        self.needRecalc()
 
     def removeSource(self, sourceName):
         for i,source in enumerate(self.sourcesEnable):
@@ -228,6 +251,10 @@ class PropNode:
             sourceInt = upstreamCalculator(caster, target)
             self.value = self.calculator(sourceInt, self.value)
 
+        for _,upstreamCalculatorMulti in enumerate(self.sourcesUpstreamMulti):
+            sourceInt = upstreamCalculatorMulti(caster, target)
+            self.value = self.calculator(sourceInt, self.value)
+
         if self.sourceIntMax:
             valueNew = min(self.sourceIntMax(caster, target), self.value)
             if valueNew != self.value:
@@ -265,6 +292,12 @@ class PropNode:
             if sourceInt != 0:
                 self.value = self.calculator(sourceInt, self.value)
                 result[upstreamEval.name] = sourceInt
+
+        for _,upstreamMultiEval in enumerate(self.sourcesUpstreamMulti):
+            sourceInt = upstreamMultiEval(caster, target)
+            if sourceInt != 0:
+                self.value = self.calculator(sourceInt, self.value)
+                result[upstreamMultiEval.name] = sourceInt
 
         if self.sourceIntMax:
             valueNew = min(self.sourceIntMax(caster, target), self.value)
@@ -310,14 +343,14 @@ class PropCalculator:
             {'name': 'ArmorDexCap', 'calcMax': 1000}, # armor can replace this max value
             {'name': 'Buff:Disarm', 'calcDisable': (lambda caster, target: caster.hasBuff('Disarm'))},
         ])
-        '''
+
         self.addProp('HitPoint', [
-            {'upstreams': ['Modifier.Con', 'Class.Level'], 'calcMulti': (
+            {'name': 'ModifierCon_x_Level', 'upstreams': ['Modifier.Con', 'Class.Level'], 'calcMulti': (
                 lambda upstreams, caster, target:
-                    upstreams[0].calcValue() * upstreams[1].calcValue()
+                    upstreams[0].calcValue(caster, target) * upstreams[1].calcValue(caster, target)
             )},
         ])
-        '''
+
     def __repr__(self):
         return repr(self.props)
 
@@ -400,27 +433,43 @@ if __name__ == '__main__':
     m.addSource('Ability.Dex.Base', name='Race:Elf', calcInt=2)
     m.addSource('Ability.Dex.Base', name='Builder', calcInt=18)
     m.addSource('Ability.Dex.Base', name='LevelUp:4', calcInt=1)
+    assert (m.getPropValue('Ability.Dex.Base', p1, p2) == 21)
 
     # test custom calculator calc_upstream_max() for 'Ability.Dex.Item'
     m.addSource('Ability.Dex.Item', name='Item:Boot+2', calcInt=2)
     m.addSource('Ability.Dex.Item', name='Item:RingOfDexerity+6', calcInt=6)
+    assert (m.getPropValue('Ability.Dex.Item', p1, p2) == 6)
 
     m.addSource('ArmorClass.Dex', name='Feat:UncannyDodge', calcEnable = True, priority = 100)
+    assert (m.getPropValue('ArmorClass.Dex', p1, p2) == 8)
 
     m.addSource('ArmorClass.Armor', name='Item:Leather+3', calcInt = 7)
     m.addSource('ArmorClass.Armor', name='Item:RingOfProtection+3', calcInt=3)
+    assert (m.getPropValue('ArmorClass.Armor', p1, None) == 7)
 
+    # test source replaceable, and optional target
     m.addSource('Class.Level', name='Ranger', calcInt=1)
-    m.addSource('Class.Level', name='Ranger', calcInt=7) # test source replaceable
+    m.addSource('Class.Level', name='Ranger', calcInt=7)
+    assert(m.getPropValue('Class.Level', p1, None) == 7)
+
+    # test cached value discarded by new source
     m.addSource('Class.Level', name='Cleric', calcInt=2)
+    assert(m.getPropValue('Class.Level', p1, None) == 9)
+
     # test dynamic upstream, and custom name for upstream
     m.addSource('SpellResistance', upstream = 'Class.Level', name = 'YuantiPureBlood', calcPost = lambda value: 11 + value)
+    # test calcPost
+    assert(m.getPropValue('SpellResistance', p1, None) == 20)
 
-    print(m)
-    m.printPropValueSource('SpellResistance', p1, p2)
+    # test value cache
     m.printPropValueSource('ArmorClass', p1, p2)
-    m.printPropValueSource('ArmorClass', p1, p2) # test value cache
+    m.printPropValueSource('ArmorClass', p1, p2)
 
-    # test source(Int) removable and value call needRecalc() recursively
-    print(m.removeSource('Ability.Dex.Item', 'Item:RingOfDexerity+6'))
+    # test removable source(Int) and value call needRecalc() recursively
+    m.removeSource('Ability.Dex.Item', 'Item:RingOfDexerity+6')
+    # test recursive call downstream.needRecalc() triggered by removing source
     m.printPropValueSource('ArmorClass', p1, p2)
+
+    # test source calculated by multi upstream
+    m.addSource('Ability.Con.Base', name='Builder', calcInt=16)
+    assert (m.getPropValue('HitPoint', p1, None) == 27)
