@@ -23,6 +23,8 @@ class PropSourceUpstream(PropSource):
         self.calcPost = kwargs.get('calcPost')
     def __repr__(self):
         return self.name
+    def __str__(self):
+        return self.name
     def __call__(self, caster, target):
         if not hasattr(self.upstream, 'calcValue'):
             return 0 # unbound upstream, skip this source
@@ -100,6 +102,7 @@ class PropNode:
         self.sourcesDisable = []
         self.sourcesEnable = []
         self.sourceIntMax = None
+        self.downstreams = [] # list of PropNode
 
     def __repr__(self):
         info = '{'
@@ -114,9 +117,16 @@ class PropNode:
         return info + '}'
 
     def needRecalc(self):
+        #print(self.name, 'recalc set to True')
         self.recalc = True
+        for _,propDownstream in enumerate(self.downstreams):
+            propDownstream.needRecalc()
 
-    def __replaceUpstreamField(self, source):
+    def __addDownstream(self, downstreamProp):
+        self.downstreams.append(downstreamProp)
+        downstreamProp.needRecalc()
+
+    def __addUpstream(self, source):
         upstream = source.get('upstream')
         if type(upstream) != str:
             return
@@ -125,14 +135,15 @@ class PropNode:
             #if upstream Prop not found, create empty PropNode
             upstreamProp = PropNode(self.props, upstream, source.get('calcUpstream'))
             self.props[upstream] = upstreamProp
+
         source['upstream'] = upstreamProp
+        sourceUpstream = PropSourceUpstream(**source)
+        upstreamProp.__addDownstream(self)
+        self.sourcesUpstream.append(sourceUpstream)
 
     def addSource(self, **kwargs):
-        # todo: update upstream PropNode.recalc recursively
-
         if 'upstream' in kwargs:
-            self.__replaceUpstreamField(kwargs)
-            self.sourcesUpstream.append(PropSourceUpstream(**kwargs))
+            self.__addUpstream(kwargs)
             return
         if 'calcEnable' in kwargs:
             self.sourcesEnable.append(PropSourceEnable(**kwargs))
@@ -151,12 +162,49 @@ class PropNode:
         else:
             self.sourcesInt[name] = PropSourceInt(**kwargs)
 
+    def removeSource(self, sourceName):
+        for i,source in enumerate(self.sourcesEnable):
+            if source.name == sourceName:
+                self.sourcesEnable.pop(i)
+                self.needRecalc()
+                return True
+
+        for i,source in enumerate(self.sourcesDisable):
+            if source.name == sourceName:
+                self.sourcesDisable.pop(i)
+                self.needRecalc()
+                return True
+
+        if sourceName in self.sourcesInt:
+            self.sourcesInt.pop(sourceName)
+            self.needRecalc()
+            return True
+
+        for i,source in enumerate(self.sourcesUpstream):
+            if source.name == sourceName:
+                self.sourcesUpstream.pop(i)
+                print(self.downstreams)
+                self.needRecalc()
+                return True
+
+        if self.sourceIntMax and self.sourceIntMax.name == sourceName:
+            self.sourceIntMax = None
+            self.needRecalc()
+            return True
+        return False
+
+    def printDownstreams(self):
+        print(self.name, 'downstreams:', end=' ')
+        for _, d in enumerate(self.downstreams):
+            print(d.name, end=' ')
+        print('')
+
     def calcValue(self, caster, target):
         if not self.recalc:
             return self.value
 
         #print('begin calc Prop:', self.name)
-        self.recalc = True
+        self.recalc = False
         self.value = 0
 
         sourceEnable = None
@@ -240,7 +288,7 @@ class PropCalculator:
         ])
         self.addProp('ArmorClass', [
             {'upstream': 'ArmorClass.Armor', 'calcUpstream': calc_upstream_max},
-            {'upstream': 'Skill.Tumble', 'calcPost': (lambda value: int(value/10))},
+            {'upstream': 'Skill.Tumble', 'name': 'ArmorClass.Tumble', 'calcPost': (lambda value: int(value/10))},
             {'upstream': 'ArmorClass.Natural'},
             {'upstream': 'ArmorClass.Luck'},
             {'upstream': 'ArmorClass.Deflection'},
@@ -252,6 +300,7 @@ class PropCalculator:
 
         self.addProp('SpellResistance')
         self.addProp('BaseAttackBonus')
+        self.addProp('Class.Level')
 
         self.addProp('Weapon.StrModifierMainHand', {'upstream': 'Modifier.Str', 'calcPost': calc_post_mainhand_weapon})
 
@@ -261,12 +310,14 @@ class PropCalculator:
             {'name': 'ArmorDexCap', 'calcMax': 1000}, # armor can replace this max value
             {'name': 'Buff:Disarm', 'calcDisable': (lambda caster, target: caster.hasBuff('Disarm'))},
         ])
-
+        '''
         self.addProp('HitPoint', [
-            {'upstream': 'Modifier.Con', 'calcPost': (lambda value, caster, target: value * caster.getPropValue('Level'))},
-            {'upstream': 'Class.Level'},
+            {'upstreams': ['Modifier.Con', 'Class.Level'], 'calcMulti': (
+                lambda upstreams, caster, target:
+                    upstreams[0].calcValue() * upstreams[1].calcValue()
+            )},
         ])
-
+        '''
     def __repr__(self):
         return repr(self.props)
 
@@ -287,7 +338,7 @@ class PropCalculator:
         for _,skill in enumerate(self.ctx['Skills']):
             ab = 'Skill.' + skill
             self.addProp(ab, [
-                {'name': 'Builder'},
+                #{'name': 'Builder'},
                 {'upstream': 'Modifier.' + },
                 {'upstream': ab + '.Buff'}
             ])
@@ -312,14 +363,26 @@ class PropCalculator:
         self.props[propName] = prop
 
     def addSource(self, propName, **kwargs):
-        if propName not in self.props:
+        prop = self.props.get(propName)
+        if not prop:
             raise RuntimeError('prop not found', propName)
-        self.props[propName].addSource(**kwargs)
+        prop.addSource(**kwargs)
+
+    def removeSource(self, propName, sourceName):
+        prop = self.props.get(propName)
+        if not prop:
+            raise RuntimeError('prop not found', propName)
+        return prop.removeSource(sourceName)
 
     def getPropValue(self, propName, caster, target):
         if propName not in self.props:
             return 0
         return self.props[propName].calcValue(caster, target)
+
+    def getProp(self, propName, caster, target):
+        if propName not in self.props:
+            return 0
+        return self.props[propName]
 
     def printPropValueSource(self, propName, caster, target):
         if propName not in self.props:
@@ -339,12 +402,13 @@ if __name__ == '__main__':
     m.addSource('Ability.Dex.Base', name='LevelUp:4', calcInt=1)
 
     # test custom calculator calc_upstream_max() for 'Ability.Dex.Item'
-    m.addSource('Ability.Dex.Item', name='Item:Boot+4', calcInt=4)
-    m.addSource('Ability.Dex.Item', name='Item:RingOfDexerity+4', calcInt=4)
+    m.addSource('Ability.Dex.Item', name='Item:Boot+2', calcInt=2)
+    m.addSource('Ability.Dex.Item', name='Item:RingOfDexerity+6', calcInt=6)
 
-    m.addSource('ArmorClass.Dex', name= 'Feat:UncannyDodge', calcEnable = True, priority = 100)
+    m.addSource('ArmorClass.Dex', name='Feat:UncannyDodge', calcEnable = True, priority = 100)
 
-    m.addSource('ArmorClass.Armor', name= 'Item:Leather+3', calcInt = 7)
+    m.addSource('ArmorClass.Armor', name='Item:Leather+3', calcInt = 7)
+    m.addSource('ArmorClass.Armor', name='Item:RingOfProtection+3', calcInt=3)
 
     m.addSource('Class.Level', name='Ranger', calcInt=1)
     m.addSource('Class.Level', name='Ranger', calcInt=7) # test source replaceable
@@ -354,4 +418,9 @@ if __name__ == '__main__':
 
     print(m)
     m.printPropValueSource('SpellResistance', p1, p2)
+    m.printPropValueSource('ArmorClass', p1, p2)
+    m.printPropValueSource('ArmorClass', p1, p2) # test value cache
+
+    # test source(Int) removable and value call needRecalc() recursively
+    print(m.removeSource('Ability.Dex.Item', 'Item:RingOfDexerity+6'))
     m.printPropValueSource('ArmorClass', p1, p2)

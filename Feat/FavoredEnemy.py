@@ -36,7 +36,7 @@ def apply(unit, featParams):
     print('apply feat', proto['name'], ', params', featParams)
 
     # todo: custom calculator for damage(dict)
-    unit.modifier.updateSource(('Conditional', 'Target', 'Damage', source), (conditionDamage, featParams))
+    unit.calc.addSource('Damage.Target', name=source, calcInt=conditionDamage, calcParam=featParams, noCache=True)
 
     # todo: support calcParam=featParams in PropSourceInt
     unit.calc.addSource('Skill.Listen', name=source, calcInt=conditionSkill, calcParam=featParams)
