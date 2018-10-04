@@ -50,7 +50,7 @@ class CombatManager:
             self.meleeAttack(self.owner, enemy, attack)
 
     def meleeAttack(self, caster, target, attack):
-        info = '{} attack:turnOffset({}) bab({}) mainhand({}) weapon({}) {}'\
+        info = '{} attack:turnOffset({}) bab({}) {} weapon({}) {}'\
             .format(caster.getName(),
                     round(attack[0], 3), attack[1], attack[2], attack[3].getName(),
                     target.getName())

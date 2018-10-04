@@ -13,10 +13,8 @@ def matchRequirements(unit):
     return True
 
 def conditionDamage(caster, target, params, damages):
-    race = target.getProp('race')
-    #print('taget race', race, ', params', params)
-    if race not in params:
-        return
+    if not target.matchRaces(params):
+        return None
 
     bonus = int(caster.getClassLevel('Ranger') / 5)
     if bonus == 0:
@@ -24,9 +22,7 @@ def conditionDamage(caster, target, params, damages):
     damages.addSingleSource('Divine', source, bonus)
 
 def conditionSkill(caster, target, params):
-    race = target.getProp('race')
-    print('taget race', race, ', params', params)
-    if race not in params:
+    if not target.matchRaces(params):
         return None
 
     bonus = int(caster.getClassLevel('Ranger') / 5)
@@ -36,7 +32,7 @@ def apply(unit, featParams):
     print('apply feat', proto['name'], ', params', featParams)
 
     # todo: custom calculator for damage(dict)
-    unit.calc.addSource('Damage.Target', name=source, calcInt=lambda caster,target: conditionDamage(caster, target, featParams), noCache=True)
+    unit.calc.addSource('Damage.Additional', name=source, calcResult=lambda caster,target,damages: conditionDamage(caster, target, featParams, damages), noCache=True)
 
     unit.calc.addSource('Skill.Listen', name=source, calcInt=lambda caster,target: conditionSkill(caster, target, featParams), noCache=True)
     unit.calc.addSource('Skill.Spot', name=source, calcInt=lambda caster,target: conditionSkill(caster, target, featParams), noCache=True)

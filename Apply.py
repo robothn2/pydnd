@@ -34,44 +34,32 @@ def calc_attackbonus_list(baseAttackBonus, babDecValue):
     return abList
 
 def calc_attacks_in_turn(baseAttackBonus, babDecValue, secondsPerTurn, delaySecondsToFirstAttack,
-                         weapon, hasHasteBuff, isMainhand):
+                         weapon, weaponHand):
     babList = calc_attackbonus_list(baseAttackBonus, babDecValue)
-    if hasHasteBuff:
-        babList.insert(0, babList[0])
 
     durationAttack = (secondsPerTurn - delaySecondsToFirstAttack) / len(babList)
     tsOffset = delaySecondsToFirstAttack
     attacks = []
     for _,bab in enumerate(babList):
-        attacks.append((round(tsOffset,3), bab, isMainhand, weapon))
+        attacks.append((round(tsOffset,3), bab, weaponHand, weapon))
         tsOffset += durationAttack
     return attacks
 
 def weapon_apply(unit):
-    conditions = unit.modifier.getSource(['Conditional', 'Weapon'])
-
     attacks = []
-    bab = unit.modifier.sumSource(('AttackBonus', 'Base'))
+    bab = unit.calc.getPropValue('AttackBonus.Base', unit, None)
     #print(calc_attackbonus_list(bab, 5))
     weaponMH = unit.getProp('WeaponMainHand')
     if weaponMH:
-        attacks.extend(calc_attacks_in_turn(bab, 5, unit.ctx['secondsPerTurn'], 0.0,
-                                       weaponMH, unit.hasBuff('Haste'), True))
+        attacks.extend(calc_attacks_in_turn(bab, 5, unit.ctx['secondsPerTurn'], 0.0, weaponMH, 'MainHand'))
 
-        # apply weapon based conditions
-        for sourceName, cond in conditions.items():
-            condition, featParams = cond  # @see Feat/WeaponFocus.py
-            condition(unit, weaponMH, featParams)
-
-    #if unit.hasFeats(['TwoWeaponFighting']):
     weaponOH = unit.getProp('WeaponOffHand')
     if weaponOH:
-        attacks.extend(calc_attacks_in_turn(bab, 5, unit.ctx['secondsPerTurn'], 0.3, weaponOH, False, False))
+        attacks.extend(calc_attacks_in_turn(bab, 5, unit.ctx['secondsPerTurn'], 0.3, weaponOH, 'OffHand'))
 
-        # apply weapon based conditions
-        for sourceName, cond in conditions.items():
-            condition, featParams = cond
-            condition(unit, weaponOH, featParams)
+    weaponTH = unit.getProp('WeaponTwoHand')
+    if weaponTH:
+        attacks.extend(calc_attacks_in_turn(bab, 5, unit.ctx['secondsPerTurn'], 0.0, weaponTH, 'TwoHand'))
 
     #print(attacks)
     attacks.sort(key=lambda att: att[0], reverse=False)

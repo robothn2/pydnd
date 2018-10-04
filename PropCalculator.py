@@ -196,7 +196,7 @@ class PropNode:
         source = self.sourcesInt.get(sourceName)
         if source == None:
             return 0
-        return source.calcValue(caster, target)
+        return source(caster, target)
 
     def removeSource(self, sourceName):
         for i,source in enumerate(self.sourcesEnable):
@@ -329,7 +329,7 @@ class PropCalculator:
         self.addProp('ArmorClass.Dex', [
             {'upstream': 'Modifier.Dex'},
             {'name': 'ArmorDexCap', 'calcMax': 1000}, # armor can replace this cap
-            {'name': 'Buff:TargetInvisible', 'calcDisable': (lambda caster, target: target.hasBuff('Invisible'))} # using normal priority 0, UncannyDodge can overwrite it
+            {'name': 'Buff:TargetInvisible', 'calcDisable': (lambda caster, target: target and target.hasBuff('Invisible'))} # using normal priority 0, UncannyDodge can overwrite it
         ])
         self.addProp('ArmorClass', [
             {'upstream': 'ArmorClass.Armor', 'calcUpstream': calc_upstream_max},
@@ -346,6 +346,7 @@ class PropCalculator:
         self.addProp('SpellResistance')
         self.addProp('BaseAttackBonus')
         self.addProp('Class.Level')
+        self.addProp('Level.Adjustment')
 
         self.addProp('HitPoint', [
             {'name': 'ModifierCon_x_Level', 'upstreams': ['Modifier.Con', 'Class.Level'], 'calcMulti': (
@@ -354,6 +355,8 @@ class PropCalculator:
             )},
         ])
 
+        self.addProp('AttackBonus.Base')
+        self.addProp('AttackBonus.Additional')
         self.addProp('AttackBonus.MainHand', [
             {'upstream': 'Modifier.Str'},
             {'upstream': 'AttackBonus.Additional'},
@@ -402,24 +405,16 @@ class PropCalculator:
                 {'upstream':  ab, 'calcPost':  calc_post_ability_modifier}
             ])
     def __addSkillSources(self):
-        self.addProp('Skill.Tumble', {'upstream': 'Modifier.Dex'})
-        self.addProp('Skill.Spellcraft', {'upstream': 'Modifier.Int'})
+        for skill,skillProto in self.ctx['protosSkill'].items():
+            sk = 'Skill.' + skill
+            self.addProp(sk, [
+                {'upstream': 'Modifier.' + skillProto['Ability']},
+                {'upstream': sk + '.Buff'}
+            ])
+
         self.addProp('SavingThrow.Fortitude', {'upstream': 'Skill:Spellcraft', 'calcPost': lambda value: int(value / 5)})
         self.addProp('SavingThrow.Reflex', {'upstream': 'Skill:Spellcraft', 'calcPost': lambda value: int(value / 5)})
         self.addProp('SavingThrow.Will', {'upstream': 'Skill:Spellcraft', 'calcPost': lambda value: int(value / 5)})
-
-        '''
-        for _,skill in enumerate(self.ctx['Skills']):
-            ab = 'Skill.' + skill
-            self.addProp(ab, [
-                #{'name': 'Builder'},
-                {'upstream': 'Modifier.' + },
-                {'upstream': ab + '.Buff'}
-            ])
-            self.addProp('Modifier.' + ability, [
-                {'upstream':  ab, 'calcPost':  calc_post_ability_modifier}
-            ])
-        '''
 
     def addProp(self, propName, sources = None, calculator = None):
         if propName in self.props:
@@ -473,6 +468,7 @@ if __name__ == '__main__':
     # test multi source
     m.addSource('Ability.Dex.Base', name='Race:Elf', calcInt=2)
     m.addSource('Ability.Dex.Base', name='Builder', calcInt=18)
+    m.addSource('Ability.Str.Base', name='Builder', calcInt=14)
     m.addSource('Ability.Dex.Base', name='LevelUp:4', calcInt=1)
     assert (m.getPropValue('Ability.Dex.Base', p1, p2) == 21)
 
@@ -515,8 +511,9 @@ if __name__ == '__main__':
     m.addSource('Ability.Con.Base', name='Builder', calcInt=16)
     assert (m.getPropValue('HitPoint', p1, None) == 27)
 
+    bab = m.getPropValue('AttackBonus.Base')
+
     # noCache flag affect upstream Props recursively
-    m.addSource('Ability.Str.Base', name='Builder', calcInt=14)
     m.addSource('Damage.MainHand', name='Kukri', calcInt=lambda caster,target: rollDice(1,4,1), noCache=True)
     dmgs = []
     for i in range(10):

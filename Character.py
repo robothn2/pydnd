@@ -59,7 +59,7 @@ class Character(Unit):
 
         race_apply(self, builder['race'])
         for k, v in builder['abilities'].items():
-            self.calc.addSource('Abilities.%s.Base' % k, name='Builder', calcInt=int(v))
+            self.calc.addSource('Ability.%s.Base' % k, name='Builder', calcInt=int(v))
 
         '''
         'levels': [
@@ -68,7 +68,7 @@ class Character(Unit):
                         'Spot': 4, 'Tumble': 2, 'UseMagicDevice': 2}},
        '''
 
-        classLevels = self.calc.getProp('Class.Level')
+        classLevels = self.calc.getProp('Class.Level', self, None)
         for i, levelEntry in enumerate(builder['levels']):
             level = i + 1
             if level > levelRequest:
@@ -83,17 +83,17 @@ class Character(Unit):
 
             # add ability
             if 'ability' in levelEntry:
-                self.calc.addSource('Abilities.%s.Base' % levelEntry['ability'], name='LevelUp:%d'%level, calcInt=1)
+                self.calc.addSource('Ability.%s.Base' % levelEntry['ability'], name='LevelUp:%d'%level, calcInt=1)
 
             # update Class.Level, bab, SavingThrows, HitPoint
-            clsLevel = classLevels.calcSingleSource(self, None)
+            clsLevel = classLevels.calcSingleSource(cls, self, None)
             clsLevel += 1
             self.calc.addSource('Class.Level', name=cls, calcInt=clsLevel)
             self.calc.addSource('AttackBonus.Base', name=cls, calcInt=int(clsLevel * float(clsProto.proto['BaseAttackBonus'])))
             self.calc.addSource('SavingThrow.Fortitude', name=cls, calcInt=int(clsLevel * float(clsProto.proto['FortitudePerLevel'])))
             self.calc.addSource('SavingThrow.Reflex', name=cls, calcInt=int(clsLevel * float(clsProto.proto['ReflexPerLevel'])))
             self.calc.addSource('SavingThrow.Will', name=cls, calcInt=int(clsLevel * float(clsProto.proto['WillPerLevel'])))
-            self.calc.addSource('HitPoint', name=cls, calcInt=clsLevel*int(clsProto['HitDie']))
+            self.calc.addSource('HitPoint', name=cls, calcInt=clsLevel*int(clsProto.proto['HitDie']))
 
             # apply class feats/abilities by level
             clsProto.applyLevelUp(self, clsLevel, levelEntry)
@@ -122,20 +122,19 @@ class Character(Unit):
         self.setProp('hp', self.modifier.sumSource(('HitPoint')))
 
     def printProp(self, key):
-        print(key, ':', self.calc.calcValue(key), ',', self.modifier.getSource(key))
+        print(key, ':', self.calc.getPropValue(key, self, None))
 
     def statistic(self):
         self._applyAll()
         print('== statistics for character', self.getName())
         print('Feats:', self.modifier.getSource('Feats'))
-        print('Abilities:', self.modifier.getSource('Abilities'))
-        self.printProp('AttackBonus')
+        print('Abilities:', self.calc.getProp('Abilities', self, None))
+        self.printProp('AttackBonus.Base')
         self.printProp('ArmorClass')
         self.printProp('HitPoint')
         self.printProp('SpellResistance')
-        self.printProp('Reduction')
-        self.printProp('SpellCasting')
-        print('BAB:', self.modifier.sumSource(('AttackBonus', 'Base')))
+        #self.printProp('Reduction')
+        #self.printProp('SpellCasting')
         print('Attacks:', self.modifier.getSource('Attacks'))
 
     def getAttackBonus(self, target):

@@ -19,20 +19,18 @@ class Creature(Unit):
         Unit.update(self, deltaTime)
 
     def _applyAll(self):
-        self.calc.addSource('ArmorClass.Base', name='beastiary', calcInt=int(self.proto['armor_bonus']))
+        self.calc.addSource('ArmorClass.Natural', name='beastiary', calcInt=int(self.proto['armor_bonus']))
         self.calc.addSource('HitPoint', name='beastiary.expected_hp', calcInt=int(self.proto['expected_hp']))
         self.calc.addSource('HitPoint', name='beastiary.hp_fudge', calcInt=int(self.proto['hp_fudge']))
 
-        for _,ability in self.ctx['Abilities']:
-            self.calc.addSource('Abilities.'+ ability + '.Base', name='beastiary', calcInt=int(self.proto[ability]))
+        for _,ability in enumerate(self.ctx['Abilities']):
+            self.calc.addSource('Ability.'+ ability + '.Base', name='beastiary', calcInt=int(self.proto[ability]))
 
         buffs_apply(self)
         feats_apply(self)
         self.__applyAttackParameters()
 
-        self.setProp('ac', self.modifier.sumSource(('ArmorClass')))
         self.setProp('ab', self.modifier.sumSource(('AttackBonus')))
-        self.setProp('hp', self.modifier.sumSource(('HitPoint')))
 
         self.statistic()
         print(self.modifier)
@@ -48,12 +46,12 @@ class Creature(Unit):
         for i, attack in enumerate(params):
             weaponName = attack[0]
             if weaponName not in weaponsCreated:
+                # create a virtual weapon
                 weapon = Weapon(self.ctx, {'BaseItem': weaponName,
                                            'BaseDamage': [1, attack[1], 1],
                                            'BaseCriticalThreat': [20, 20, len(attack) - 2]
                                            })
                 weaponsCreated[weaponName] = weapon
-                #print(self.getName(), 'create a virtual weapon', self.proto)
 
                 if not weaponFirst:
                     weaponFirst = weapon

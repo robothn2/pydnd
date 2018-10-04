@@ -108,14 +108,14 @@ class Unit:
         return race in races
 
     def getClassLevel(self, className = None):
-        classLevels = self.calc.getProp('Class.Level')
+        classLevels = self.calc.getProp('Class.Level', self, None)
         if type(className) == str:
             return classLevels.calcSingleSource(self, None)
         return classLevels.calcValue(self, None)
 
     def getCasterLevel(self, classSpellType = 'Divine'):
         level = 0
-        classLevels = self.calc.getProp('Class.Level')
+        classLevels = self.calc.getProp('Class.Level', self, None)
         # todo: caster level
         ''' 
         if classLevels:
@@ -142,7 +142,7 @@ class Unit:
 
     def applyDamages(self, damages):
         damageTotal = damages.calcTotal()
-        print(self.getName(), 'accept damage', damageTotal, ' info', damages)
+        print(self.getName(), ', damage', damageTotal, ' info', damages)
         self._applyDamage(damageTotal)
 
     def _applyDamage(self, damageTotal):

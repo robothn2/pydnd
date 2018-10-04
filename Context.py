@@ -26,10 +26,7 @@ ctx['protosRace'] = loadScriptsFolder('Race')
 ctx['protosWeapon'] = loadScriptsFolder('Weapon')
 ctx['protosSpell'] = loadScriptsFolder('Spell')
 ctx['protosCreature'] = CsvLoader.loadCsvFile(r'data/beastiary.csv')
+ctx['protosSkill'] = CsvLoader.loadCsvFile(r'data/skills.csv')
 ctx['secondsPerTurn'] = 8.0
 ctx['secondsPerRound'] = 8.0
 ctx['Abilities'] = ['Str', 'Dex', 'Con', 'Int', 'Wis', 'Cha']
-ctx['Skills'] = ['Appraise', 'Bluff', 'Concentration', 'CraftAlchemy', 'CraftArmor', 'CraftTrap',
-                    'CraftWeapon', 'Diplomacy', 'DisableDevice','Heal', 'Hide', 'Intimidate', 'Listen',
-                    'Lore', 'MoveSilently', 'Parry', 'Perform', 'Search', 'SetTrap', 'SleightOfHand',
-                    'Spellcraft', 'Spot', 'Survival', 'Taunt', 'Tumble', 'UseMagicDevice']
