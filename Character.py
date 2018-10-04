@@ -30,8 +30,6 @@ class Character(Unit):
         if cls not in self.ctx['protosClass']:
             return False
         self.props.update({**props, **abilities_parse(abilities)})
-        self.setProp('classes', {cls: {'level': 1, 'proto': self.ctx['protosClass'][cls]}})
-        self.setProp('skills', skills_parse(skills))
         self.addFeats(feats)
 
         self._applyAll()
@@ -59,7 +57,7 @@ class Character(Unit):
             if key in ['', 'race', 'gender', 'age', 'deity', 'alignment', 'background']:
                 self.props[key] = builder[key]
 
-        race_apply(self)
+        race_apply(self, builder['race'])
         for k, v in builder['abilities'].items():
             self.calc.addSource('Abilities.%s.Base' % k, name='Builder', calcInt=int(v))
 
@@ -69,6 +67,8 @@ class Character(Unit):
              'skills': {'CraftWeapon': 4, 'Heal': 4, 'Hide': 4, 'Intimidate': 2, 'MoveSilently': 4, 'Spellcraft': 1,
                         'Spot': 4, 'Tumble': 2, 'UseMagicDevice': 2}},
        '''
+
+        classLevels = self.calc.getProp('Class.Level')
         for i, levelEntry in enumerate(builder['levels']):
             level = i + 1
             if level > levelRequest:
@@ -85,18 +85,18 @@ class Character(Unit):
             if 'ability' in levelEntry:
                 self.calc.addSource('Abilities.%s.Base' % levelEntry['ability'], name='LevelUp:%d'%level, calcInt=1)
 
-            if 'classes' not in self.props:
-                self.props['classes'] = {}
-            classesEntry = self.props['classes']
-            if cls not in classesEntry:
-                classesEntry[cls] = {'level': 0, 'proto': clsProto}
-
-            clsEntry = classesEntry[cls]
-            clsEntry['level'] += 1
-            self.calc.addSource('Class.Level', name=cls, calcInt=clsProto['HitDie'] * clsEntry['level'])
+            # update Class.Level, bab, SavingThrows, HitPoint
+            clsLevel = classLevels.calcSingleSource(self, None)
+            clsLevel += 1
+            self.calc.addSource('Class.Level', name=cls, calcInt=clsLevel)
+            self.calc.addSource('AttackBonus.Base', name=cls, calcInt=int(clsLevel * float(clsProto.proto['BaseAttackBonus'])))
+            self.calc.addSource('SavingThrow.Fortitude', name=cls, calcInt=int(clsLevel * float(clsProto.proto['FortitudePerLevel'])))
+            self.calc.addSource('SavingThrow.Reflex', name=cls, calcInt=int(clsLevel * float(clsProto.proto['ReflexPerLevel'])))
+            self.calc.addSource('SavingThrow.Will', name=cls, calcInt=int(clsLevel * float(clsProto.proto['WillPerLevel'])))
+            self.calc.addSource('HitPoint', name=cls, calcInt=clsLevel*int(clsProto['HitDie']))
 
             # apply class feats/abilities by level
-            clsProto.applyLevelUp(self, clsEntry['level'], levelEntry)
+            clsProto.applyLevelUp(self, clsLevel, levelEntry)
 
             # add feats
             if 'feats' in levelEntry:
@@ -113,12 +113,8 @@ class Character(Unit):
         return True
 
     def _applyAll(self):
-        race_apply(self)
-        classes_apply(self)
         buffs_apply(self)
         feats_apply(self)
-        abilities_apply(self)
-        skills_apply(self)
         weapon_apply(self)
 
         self.setProp('ac', self.modifier.sumSource(('ArmorClass')))

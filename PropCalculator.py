@@ -1,5 +1,5 @@
 #coding: utf-8
-from common import Props
+from Dice import rollDice
 
 def calc_post_mainhand_weapon(value):
     return value
@@ -104,7 +104,8 @@ class PropSourceIntMax(PropSource):
 class PropNode:
     def __init__(self, props, name, calculator):
         self.name = name
-        self.recalc = True # True if need recalc
+        self.recalc = True # set True if need recalc
+        self.noCache = False
         self.value = 0
         self.props = props
         self.calculator = calculator if calculator else calc_upstream_sum # default calculator is sum
@@ -133,6 +134,11 @@ class PropNode:
         self.recalc = True
         for _,propDownstream in enumerate(self.downstreams):
             propDownstream.needRecalc()
+
+    def setNoCache(self):
+        self.noCache = True
+        for _,propDownstream in enumerate(self.downstreams):
+            propDownstream.setNoCache()
 
     def __addDownstream(self, downstreamProp):
         self.downstreams.append(downstreamProp)
@@ -165,7 +171,6 @@ class PropNode:
                     upstreamsProp.append(self.__addUpstream(upstream['upstream'], upstreamDict))
             kwargs['upstreams'] = upstreamsProp # replace list of str/dict to list of Prop
             self.sourcesUpstreamMulti.append(PropSourceMultiUpstream(**kwargs))
-            print(self.sourcesUpstreamMulti)
 
         elif 'calcEnable' in kwargs:
             self.sourcesEnable.append(PropSourceEnable(**kwargs))
@@ -184,6 +189,14 @@ class PropNode:
             else:
                 self.sourcesInt[name] = PropSourceInt(**kwargs)
         self.needRecalc()
+        if kwargs.get('noCache'):
+            self.setNoCache()
+
+    def calcSingleSource(self, sourceName, caster, target):
+        source = self.sourcesInt.get(sourceName)
+        if source == None:
+            return 0
+        return source.calcValue(caster, target)
 
     def removeSource(self, sourceName):
         for i,source in enumerate(self.sourcesEnable):
@@ -206,7 +219,6 @@ class PropNode:
         for i,source in enumerate(self.sourcesUpstream):
             if source.name == sourceName:
                 self.sourcesUpstream.pop(i)
-                print(self.downstreams)
                 self.needRecalc()
                 return True
 
@@ -223,7 +235,7 @@ class PropNode:
         print('')
 
     def calcValue(self, caster, target):
-        if not self.recalc:
+        if not self.noCache and not self.recalc:
             return self.value
 
         #print('begin calc Prop:', self.name)
@@ -244,16 +256,16 @@ class PropNode:
                 return 0
 
         for name,sourceCalculator in self.sourcesInt.items():
-            sourceInt = sourceCalculator(caster, target)
-            self.value = self.calculator(sourceInt, self.value)
+            sourceValueInt = sourceCalculator(caster, target)
+            self.value = self.calculator(sourceValueInt, self.value)
 
         for _,upstreamCalculator in enumerate(self.sourcesUpstream):
-            sourceInt = upstreamCalculator(caster, target)
-            self.value = self.calculator(sourceInt, self.value)
+            sourceValueInt = upstreamCalculator(caster, target)
+            self.value = self.calculator(sourceValueInt, self.value)
 
-        for _,upstreamCalculatorMulti in enumerate(self.sourcesUpstreamMulti):
-            sourceInt = upstreamCalculatorMulti(caster, target)
-            self.value = self.calculator(sourceInt, self.value)
+        for _,upstreamCalculator in enumerate(self.sourcesUpstreamMulti):
+            sourceValueInt = upstreamCalculator(caster, target)
+            self.value = self.calculator(sourceValueInt, self.value)
 
         if self.sourceIntMax:
             valueNew = min(self.sourceIntMax(caster, target), self.value)
@@ -335,20 +347,44 @@ class PropCalculator:
         self.addProp('BaseAttackBonus')
         self.addProp('Class.Level')
 
-        self.addProp('Weapon.StrModifierMainHand', {'upstream': 'Modifier.Str', 'calcPost': calc_post_mainhand_weapon})
-
-        self.addProp('AttackBonus.MainHand', [
-            {'upstream': 'Weapon.StrModifierMainHand'},
-            {'upstream': 'Modifier.Str'},
-            {'name': 'ArmorDexCap', 'calcMax': 1000}, # armor can replace this max value
-            {'name': 'Buff:Disarm', 'calcDisable': (lambda caster, target: caster.hasBuff('Disarm'))},
-        ])
-
         self.addProp('HitPoint', [
             {'name': 'ModifierCon_x_Level', 'upstreams': ['Modifier.Con', 'Class.Level'], 'calcMulti': (
                 lambda upstreams, caster, target:
                     upstreams[0].calcValue(caster, target) * upstreams[1].calcValue(caster, target)
             )},
+        ])
+
+        self.addProp('AttackBonus.MainHand', [
+            {'upstream': 'Modifier.Str'},
+            {'upstream': 'AttackBonus.Additional'},
+        ])
+        self.addProp('AttackBonus.OffHand', [
+            {'upstream': 'Modifier.Str'},
+            {'upstream': 'AttackBonus.Additional'},
+        ])
+        self.addProp('AttackBonus.TwoHand', [
+            {'upstream': 'Modifier.Str'},
+            {'upstream': 'AttackBonus.Additional'},
+        ])
+
+        self.addProp('Damage.MainHand', [
+            #{'upstream': 'Weapon.MainHand.Base', name='Kukri', calcInt=lambda caster,target: rollDice(1,4,1), noCache=True}, # add this source on equiped mainhand weapon
+            {'upstream': 'Weapon.MainHand.Additional'},
+            {'upstream': 'Modifier.Str'},
+            {'upstream': 'Damage.Additional'},
+            #{'name': 'Buff:Disarm', 'calcDisable': (lambda caster, target: caster.hasBuff('Disarm'))},
+        ])
+        self.addProp('Damage.OffHand', [
+            #{'upstream': 'Weapon.OffHand.Base', name='Kukri', calcInt=lambda caster,target: rollDice(1,4,1), noCache=True}, # add this source on equiped mainhand weapon
+            {'upstream': 'Weapon.OffHand.Additional'},
+            {'upstream': 'Modifier.Str', 'calcPost':(lambda value: int(value/2))},
+            {'upstream': 'Damage.Additional'},
+        ])
+        self.addProp('Damage.TwoHand', [
+            #{'upstream': 'Weapon.TwoHand.Base', name='Kukri', calcInt=lambda caster,target: rollDice(1,4,1), noCache=True}, # add this source on equiped mainhand weapon
+            {'upstream': 'Weapon.TwoHand.Additional'},
+            {'upstream': 'Modifier.Str', 'calcPost':(lambda value: int(value*3/2))},
+            {'upstream': 'Damage.Additional'},
         ])
 
     def __repr__(self):
@@ -367,6 +403,11 @@ class PropCalculator:
             ])
     def __addSkillSources(self):
         self.addProp('Skill.Tumble', {'upstream': 'Modifier.Dex'})
+        self.addProp('Skill.Spellcraft', {'upstream': 'Modifier.Int'})
+        self.addProp('SavingThrow.Fortitude', {'upstream': 'Skill:Spellcraft', 'calcPost': lambda value: int(value / 5)})
+        self.addProp('SavingThrow.Reflex', {'upstream': 'Skill:Spellcraft', 'calcPost': lambda value: int(value / 5)})
+        self.addProp('SavingThrow.Will', {'upstream': 'Skill:Spellcraft', 'calcPost': lambda value: int(value / 5)})
+
         '''
         for _,skill in enumerate(self.ctx['Skills']):
             ab = 'Skill.' + skill
@@ -473,3 +514,14 @@ if __name__ == '__main__':
     # test source calculated by multi upstream
     m.addSource('Ability.Con.Base', name='Builder', calcInt=16)
     assert (m.getPropValue('HitPoint', p1, None) == 27)
+
+    # noCache flag affect upstream Props recursively
+    m.addSource('Ability.Str.Base', name='Builder', calcInt=14)
+    m.addSource('Damage.MainHand', name='Kukri', calcInt=lambda caster,target: rollDice(1,4,1), noCache=True)
+    dmgs = []
+    for i in range(10):
+        dmg = m.getPropValue('Damage.MainHand', p1, p2)
+        if dmg not in dmgs:
+            dmgs.append(dmg)
+    assert (len(dmgs) > 1)
+

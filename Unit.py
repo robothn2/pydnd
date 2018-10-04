@@ -103,26 +103,32 @@ class Unit:
             return []
         return self.modifier['Feats'][featName]
 
+    def matchRaces(self, races):
+        race = self.getProp('race')
+        return race in races
+
     def getClassLevel(self, className = None):
+        classLevels = self.calc.getProp('Class.Level')
         if type(className) == str:
-            if className in self.props['classes']:
-                return self.props['classes'][className]['level']
-            return 0
-        return self.props.sumFieldValue('classes', 'level')
+            return classLevels.calcSingleSource(self, None)
+        return classLevels.calcValue(self, None)
 
     def getCasterLevel(self, classSpellType = 'Divine'):
         level = 0
-        if 'classes' in self.props:
+        classLevels = self.calc.getProp('Class.Level')
+        # todo: caster level
+        ''' 
+        if classLevels:
             for className, classInfo in self.props.get('classes', {}).items():
                 if not classSpellType or classSpellType == classInfo['proto'].proto.get('SpellType'):
                     level += classInfo['level']
-
+        '''
         return level
 
     def getAttackBonus(self, target):
-        return self.getProp('ab') # for Creature
+        return self.calc.getPropValue('AttackBonus', self, target)
     def getArmorClass(self, target):
-        return self.getProp('ac') # for Creature
+        return self.calc.getPropValue('ArmorClass', self, target)
 
     def addBuff(self, caster, buffProto):
         self.buffs.addBuff(caster, buffProto)

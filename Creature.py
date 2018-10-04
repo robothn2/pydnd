@@ -27,9 +27,7 @@ class Creature(Unit):
             self.calc.addSource('Abilities.'+ ability + '.Base', name='beastiary', calcInt=int(self.proto[ability]))
 
         buffs_apply(self)
-        #race_apply(self)
         feats_apply(self)
-        abilities_apply(self)
         self.__applyAttackParameters()
 
         self.setProp('ac', self.modifier.sumSource(('ArmorClass')))
