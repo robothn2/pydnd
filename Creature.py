@@ -30,8 +30,7 @@ class Creature(Unit):
         feats_apply(self)
         self.__applyAttackParameters()
 
-        self.setProp('ab', self.modifier.sumSource(('AttackBonus')))
-
+        self.setProp('hp', self.calc.getPropValue('HitPoint', self, None))
         self.statistic()
         print(self.modifier)
 
@@ -58,14 +57,14 @@ class Creature(Unit):
             tsOffset = round(i * (self.ctx['secondsPerTurn'] / len(params)), 3)
             attacks.append((tsOffset, attack[1], True, weaponsCreated[weaponName]))
 
-        self.modifier.updateSource(['Attacks'], attacks)
+        self.calc.addSource('Attacks', name='MainHand', calcInt=attacks)
 
         self.setProp('WeaponMainHand', weaponFirst)
 
     def statistic(self):
         print('== statistics for creature', self.getName())
-        print('AttackBonus', self.props['ab'])
-        print('ArmorClass', self.props['ac'])
-        print('HitPoint', self.props['hp'])
+        self.printProp('AttackBonus.Base')
+        self.printProp('ArmorClass')
+        self.printProp('HitPoint')
         print('Attacks:', self.modifier.getSource('Attacks'))
         print('== statistics end')

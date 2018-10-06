@@ -21,8 +21,8 @@ if __name__ == '__main__':
     builder = loadJsonFile(r'data/builders/builder1.json')
     player = Character(Context.ctx)
     player.buildByBuilder(builder, 30)
-    player.setProp('WeaponMainHand', Weapon(Context.ctx, {'BaseItem': 'Kukri', 'Enhancement': 3}))
-    player.setProp('WeaponOffHand', Weapon(Context.ctx, {'name': 'OHWeapon','BaseItem': 'Kukri', 'Enhancement': 2}))
+    player.equipWeapon('MainHand', Weapon(Context.ctx, {'BaseItem': 'Kukri', 'Enhancement': 3}))
+    player.equipWeapon('OffHand', Weapon(Context.ctx, {'name': 'OHWeapon','BaseItem': 'Kukri', 'Enhancement': 2}))
     player.addBuff(player, Context.ctx['protosSpell']['DivineFavor'])
     player.statistic()
 

@@ -1,5 +1,6 @@
 #coding: utf-8
 from Dice import rollDice
+from common.Props import Modifier
 
 def calc_post_mainhand_weapon(value):
     return value
@@ -8,8 +9,11 @@ def calc_post_ability_modifier(value):
 def calc_upstream_sum(sourceValue, oldValue):
     return sourceValue + oldValue
 def calc_upstream_max(sourceValue, oldValue):
-    #print(sourceValue, oldValue)
     return max(sourceValue, oldValue)
+def calc_upstream_extend_attacks(sourceValue, oldValue):
+    oldValue.extend(sourceValue)
+    oldValue.sort(key=lambda att: att[0], reverse=False)
+    return oldValue
 
 class PropSource:
     def __init__(self, **kwargs):
@@ -83,9 +87,12 @@ class PropSourceInt(PropSource):
     def __call__(self, caster, target):
         if type(self.calcInt) == int:
             return self.calcInt
+        if type(self.calcInt) == list:
+            return self.calcInt
         if hasattr(self.calcInt, '__call__'):
             return self.calcInt(caster, target)
-        raise RuntimeError('Found invalid source', self.args)
+
+        raise RuntimeError('Found invalid source', self.args, ', calcInt', self.calcInt)
 
 class PropSourceIntMax(PropSource):
     def __init__(self, **kwargs):
@@ -102,11 +109,12 @@ class PropSourceIntMax(PropSource):
         raise RuntimeError('Found invalid source', self.args)
 
 class PropNode:
-    def __init__(self, props, name, calculator):
+    def __init__(self, props, name, calculator, defaultValue):
         self.name = name
         self.recalc = True # set True if need recalc
         self.noCache = False
-        self.value = 0
+        self.value = defaultValue
+        self.defaultValue = defaultValue
         self.props = props
         self.calculator = calculator if calculator else calc_upstream_sum # default calculator is sum
         self.sourcesInt = {}
@@ -148,7 +156,7 @@ class PropNode:
         upstreamProp = self.props.get(upstreamName)
         if not upstreamProp:
             #if upstream Prop not found, create empty PropNode
-            upstreamProp = PropNode(self.props, upstreamName, upstreamDict.get('calcUpstream'))
+            upstreamProp = PropNode(self.props, upstreamName, upstreamDict.get('calcUpstream'), 0)
             self.props[upstreamName] = upstreamProp
 
         upstreamDict['upstream'] = upstreamProp
@@ -156,9 +164,10 @@ class PropNode:
         return upstreamProp
 
     def addSource(self, **kwargs):
-        if 'upstream' in kwargs:
+        if 'upstream' in kwargs: # single upstream source, using internal calculator of upstream and do calcPost on return int value
             self.__addUpstream(kwargs.get('upstream'), kwargs)
             self.sourcesUpstream.append(PropSourceUpstream(**kwargs))
+
         elif 'calcMulti' in kwargs:
             upstreams = kwargs.get('upstreams')
             upstreamsProp = []
@@ -195,7 +204,7 @@ class PropNode:
     def calcSingleSource(self, sourceName, caster, target):
         source = self.sourcesInt.get(sourceName)
         if source == None:
-            return 0
+            return self.defaultValue
         return source(caster, target)
 
     def removeSource(self, sourceName):
@@ -240,7 +249,7 @@ class PropNode:
 
         #print('begin calc Prop:', self.name)
         self.recalc = False
-        self.value = 0
+        self.value = self.defaultValue
 
         sourceEnable = None
         for _,source in enumerate(self.sourcesEnable):
@@ -253,7 +262,7 @@ class PropNode:
                 break # highest priority disable source is lower than effecting enable source
             if sourceDisable(caster, target):
                 print('  Prop %s disabled by %s' % (self.name, sourceDisable.name))
-                return 0
+                return self.value
 
         for name,sourceCalculator in self.sourcesInt.items():
             sourceValueInt = sourceCalculator(caster, target)
@@ -275,7 +284,7 @@ class PropNode:
         print('  Prop', self.name, '=', self.value)
         return self.value
 
-    def getValueSource(self, caster, target):
+    def getValueWithSource(self, caster, target):
         self.recalc = False
         self.value = 0
 
@@ -322,6 +331,7 @@ class PropCalculator:
     def __init__(self, ctx):
         self.ctx = ctx
         self.props = {}
+        self.objects = Modifier()
 
         self.__addAbilitySources()
         self.__addSkillSources()
@@ -356,7 +366,9 @@ class PropCalculator:
         ])
 
         self.addProp('AttackBonus.Base')
-        self.addProp('AttackBonus.Additional')
+        self.addProp('AttackBonus.Additional', [
+            {'name': 'RaceSize', 'calcInt': 0}, # gnome = 1, others = 0
+        ])
         self.addProp('AttackBonus.MainHand', [
             {'upstream': 'Modifier.Str'},
             {'upstream': 'AttackBonus.Additional'},
@@ -369,6 +381,7 @@ class PropCalculator:
             {'upstream': 'Modifier.Str'},
             {'upstream': 'AttackBonus.Additional'},
         ])
+        self.addProp('Attacks', None, calc_upstream_extend_attacks, [])
 
         self.addProp('Damage.MainHand', [
             #{'upstream': 'Weapon.MainHand.Base', name='Kukri', calcInt=lambda caster,target: rollDice(1,4,1), noCache=True}, # add this source on equiped mainhand weapon
@@ -416,11 +429,11 @@ class PropCalculator:
         self.addProp('SavingThrow.Reflex', {'upstream': 'Skill:Spellcraft', 'calcPost': lambda value: int(value / 5)})
         self.addProp('SavingThrow.Will', {'upstream': 'Skill:Spellcraft', 'calcPost': lambda value: int(value / 5)})
 
-    def addProp(self, propName, sources = None, calculator = None):
+    def addProp(self, propName, sources = None, calculator = None, defaultValue=0):
         if propName in self.props:
             raise RuntimeError('found duplicate prop', propName)
 
-        prop = PropNode(self.props, propName, calculator)
+        prop = PropNode(self.props, propName, calculator, defaultValue)
         if sources == None:
             pass
         elif type(sources) == dict:
@@ -448,7 +461,7 @@ class PropCalculator:
             return 0
         return self.props[propName].calcValue(caster, target)
 
-    def getProp(self, propName, caster, target):
+    def getProp(self, propName):
         if propName not in self.props:
             return 0
         return self.props[propName]
@@ -456,7 +469,13 @@ class PropCalculator:
     def printPropValueSource(self, propName, caster, target):
         if propName not in self.props:
             return
-        print(self.props[propName].getValueSource(caster, target))
+        print(self.props[propName].getValueWithSource(caster, target))
+
+    def updateObject(self, paths, obj):
+        self.objects.updateSource(paths, obj)
+
+    def getObject(self, paths):
+        return self.objects.getSource(paths, None)
 
 if __name__ == '__main__':
     ctx = __import__('Context')

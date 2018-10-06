@@ -15,6 +15,7 @@ class Weapon(Item):
         self.modifier = Props.Modifier()
 
         if 'Enhancement' in props:
+            'Weapon.MainHand.Additional'
             self.modifier.updateSource(('AttackBonus', 'Additional', 'Enhancement'), int(props['Enhancement']))
             self.modifier.updateSource(('Damage', 'Additional', 'Magical', 'WeaponEnhancement'), int(props['Enhancement']))
 
@@ -60,12 +61,11 @@ class Weapon(Item):
     def __repr__(self):
         return self.props['name']
 
-    def getAttackBonus(self, target):
-        abAdditional = self.modifier.sumSource(('AttackBonus', 'Additional'))
-        # todo: ab from weapon's Buff(MagicWeapon etc.), VS alignment, VS racial
-        return abAdditional
-
     def getCriticalThreat(self):
         minMaxDiff = self.modifier.sumSource('CriticalRange')
         multiplierSources = self.modifier.getSource('CriticalMultiplier')
         return (minMaxDiff, multiplierSources)
+
+    def apply(self, unit, hand):
+        bab = unit.calc.getPropValue('AttackBonus.Base', unit, None)
+        attacks = calc_attacks_in_turn(bab, 5, self.ctx['secondsPerTurn'], 0.0, self, hand)

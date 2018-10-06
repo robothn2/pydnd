@@ -68,7 +68,7 @@ class Character(Unit):
                         'Spot': 4, 'Tumble': 2, 'UseMagicDevice': 2}},
        '''
 
-        classLevels = self.calc.getProp('Class.Level', self, None)
+        classLevels = self.calc.getProp('Class.Level')
         for i, levelEntry in enumerate(builder['levels']):
             level = i + 1
             if level > levelRequest:
@@ -112,49 +112,64 @@ class Character(Unit):
 
         return True
 
+    def equipWeapon(self, hand, weapon):
+        tsOffset = 0.0
+        maxAttackTimes = 10
+        if hand == 'TwoHand':
+            self.unequipWeapon('TwoHand')
+            self.unequipWeapon('MainHand')
+            self.unequipWeapon('OffHand')
+        elif hand == 'MainHand':
+            self.unequipWeapon('TwoHand')
+            self.unequipWeapon('MainHand')
+        else:
+            self.unequipWeapon('TwoHand')
+            self.unequipWeapon('OffHand')
+            tsOffset = 0.3
+
+        self.calc.updateObject(('Weapon', hand), weapon)
+
+        bab = self.calc.getPropValue('AttackBonus.Base', self, None)
+        babDec = 5
+        if weapon.proto['name'] == 'Kama' and self.getClassLevel('Monk') > 0:
+            babDec = 3
+        if hand == 'OffHand':
+            if not self.hasFeat('TwoWeaponFighting'):
+                maxAttackTimes = 0
+            else:
+                featParams = self.getFeatParams('TwoWeaponFighting')
+                if 'Perfect' in featParams:
+                    maxAttackTimes = 10
+                elif 'Improved' in featParams:
+                    maxAttackTimes = 2
+                else:
+                    maxAttackTimes = 1
+
+        self.calc.addSource('Attacks', name=hand, calcInt=lambda caster, target: \
+            calc_attacks_in_turn(maxAttackTimes, bab, babDec, self.ctx['secondsPerTurn'], tsOffset, weapon, hand))
+
+    def unequipWeapon(self, hand):
+        weaponExist = self.calc.getObject(('Weapon', hand))
+        if weaponExist:
+            weaponExist.unapply(self, hand)
+
     def _applyAll(self):
         buffs_apply(self)
         feats_apply(self)
-        weapon_apply(self)
 
-        self.setProp('ac', self.modifier.sumSource(('ArmorClass')))
-        self.setProp('ab', self.modifier.sumSource(('AttackBonus')))
-        self.setProp('hp', self.modifier.sumSource(('HitPoint')))
-
-    def printProp(self, key):
-        print(key, ':', self.calc.getPropValue(key, self, None))
+        self.setProp('hp', self.calc.getPropValue('HitPoint', self, None))
 
     def statistic(self):
         self._applyAll()
         print('== statistics for character', self.getName())
         print('Feats:', self.modifier.getSource('Feats'))
-        print('Abilities:', self.calc.getProp('Abilities', self, None))
+        print('Abilities:', self.calc.getProp('Ability'))
         self.printProp('AttackBonus.Base')
         self.printProp('ArmorClass')
         self.printProp('HitPoint')
         self.printProp('SpellResistance')
         #self.printProp('Reduction')
-        #self.printProp('SpellCasting')
-        print('Attacks:', self.modifier.getSource('Attacks'))
-
-    def getAttackBonus(self, target):
-        # ab from Buff, Feats, Str, except Weapon, Base
-        result = Damages.Result('AttackBonus')
-        result.addAdditionalSources(self.modifier)
-        result.addAdditionalSources(self.modifierBuff)
-        result.addConditionalTargetSources(self.modifier, self, target)
-        return result.calcTotal()
-
-    def getArmorClass(self, target):
-        # ac from Buff, Feats, Dex, Armor, Shield
-        result = Damages.Result('ArmorClass')
-        result.addBaseSources(self.modifier)
-        result.addAdditionalSources(self.modifier)
-        result.addAdditionalSources(self.modifierBuff)
-        result.addConditionalTargetSources(self.modifier, self, target)
-        print('getArmorClass', result.modifier)
-        return result.calcTotal()
-
+        print('Attacks:', self.calc.getPropValue('Attacks', self, None))
 
     def addXP(self, xp):
         xpOld = self.getProp('xp')

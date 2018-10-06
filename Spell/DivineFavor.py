@@ -15,17 +15,17 @@ proto = {
 }
 source = proto['name']
 
-def calcDuration(caster, metaMagics):
+def duration(caster, metaMagics):
     return 60.0
 
-def applyModifier(caster, targetModifier, metaMagics):
+def apply(caster, propCalc, metaMagics):
     print('apply buffer', source)
     level = caster.getCasterLevel()
     print('CasterLevel', level)
     value = max(1, min(3, int(level / 3)))
-    targetModifier.updateSource(('AttackBonus', 'Additional', source), value)
-    targetModifier.updateSource(('Damage', 'Additional', 'Magical', source), value)
+    propCalc.addSource('AttackBonus.Additional', name=source, calcInt=value)
+    propCalc.addSource('Damage.Additional', name=source, calcVoid=lambda damages,caster,target: damages.addSingleSource('Magical', source, value))
 
-def removeModifier(targetModifier):
-    targetModifier.removeSource(('AttackBonus', 'Additional', source))
-    targetModifier.removeSource(('Damage', 'Additional', 'Magical', source))
+def remove(propCalc):
+    propCalc.removeSource('AttackBonus.Additional', source)
+    propCalc.removeSource('Damage.Additional', source)

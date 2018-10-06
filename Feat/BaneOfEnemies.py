@@ -13,25 +13,11 @@ source = 'Feat:' + proto['name']
 def matchRequirements(unit):
     return unit.getClassLevel('Ranger') >= 21
 
-def conditionDamage(caster, target, params, damages):
-    race = target.getProp('race')
-    #print('taget race', race, ', params', params)
-    if race not in params:
-        return
-    damages.addSingleSource('Divine', source, Dice.rollDice(1, 6, 2))
-
-def conditionAttackBonus(caster, target, params, result):
-    if len(params) == 0:
-        return
-    race = target.getProp('race')
-    if race not in params:
-        return
-    result.addSingleSource(source, 2)
-
 def apply(unit, featParams):
-    featParams = unit.getFeatParams('FavoredEnemy') # use feat params from FavoredEnemy
-    print('apply feat', proto['name'], ', params', featParams)
+    races = unit.getFeatParams('FavoredEnemy') # use feat params from FavoredEnemy
+    print('apply feat', proto['name'], ', params', races)
 
-    unit.modifier.updateSource(('Conditional', 'Target', 'Damage', source), (conditionDamage, featParams))
+    unit.calc.addSource('Damage.Additional', name=source, calcVoid=\
+        lambda damages,caster,target: damages.addSingleSource('Divine', source, Dice.rollDice(1, 6, 2)) if target.matchRaces(races) else None)
 
-    unit.modifier.updateSource(('Conditional', 'Target', 'AttackBonus', source), (conditionAttackBonus, featParams))
+    unit.calc.addSource('AttackBonus.Additional', name=source, calcInt=lambda caster,target: 2 if target.matchRaces(races) else 0)

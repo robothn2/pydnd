@@ -36,12 +36,12 @@ class CombatManager:
         tsBegin = self.deltaInTurn
         tsEnd = tsBegin + deltaTime
         self.deltaInTurn += deltaTime
+        attacks = self.owner.calc.getPropValue('Attacks', self.owner, enemy)
         if self.deltaInTurn >= self.owner.ctx['secondsPerTurn']:
             self.deltaInTurn -= self.owner.ctx['secondsPerTurn']
-            print('new turn for', self.owner.getName(), ', Attacks', self.owner.modifier.getSource('Attacks'))
+            print('new turn for', self.owner.getName(), ', Attacks', attacks)
 
         # attack enemy
-        attacks = self.owner.modifier.getSource('Attacks')
         for _, attack in enumerate(attacks):
             if attack[0] < tsBegin:
                 continue
@@ -62,8 +62,6 @@ class CombatManager:
 
         abFinal = attack[1] # bab from attack
         abFinal += caster.getAttackBonus(target) # ab from caster's Buff, Feats, Str
-        weapon = attack[3]
-        abFinal += weapon.getAttackBonus(target) # ab from weapon's Buff(MagicWeapon etc.), VS alignment, Enhancement
         dcCaster = roll + abFinal
         dcTarget = int(target.getArmorClass(caster))
         info += ', dc:{} against {}'.format(dcCaster, dcTarget)
@@ -115,7 +113,7 @@ class CombatManager:
             return False
 
         dcCaster = roll + bab + caster.getAttackBonus(target)
-        dcTarget = target.getArmorClass(target)
+        dcTarget = target.getArmorClass(caster)
         if roll < 20:
             if dcCaster < dcTarget:
                 return False

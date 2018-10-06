@@ -23,20 +23,22 @@ def feats_apply(unit):
         proto = protos[featName]
         proto.apply(unit, feats[featName])
 
-def calc_attackbonus_list(baseAttackBonus, babDecValue):
+def calc_attackbonus_list(maxAttackTimes, baseAttackBonus, babDecValue):
     bab = int(baseAttackBonus)
     abList = []
-    while 1:
+    while maxAttackTimes > 0:
+        maxAttackTimes -= 1
         abList.append(bab)
         bab -= babDecValue
         if bab <= 0:
             break
     return abList
 
-def calc_attacks_in_turn(baseAttackBonus, babDecValue, secondsPerTurn, delaySecondsToFirstAttack,
+def calc_attacks_in_turn(maxAttackTimes, baseAttackBonus, babDecValue, secondsPerTurn, delaySecondsToFirstAttack,
                          weapon, weaponHand):
-    babList = calc_attackbonus_list(baseAttackBonus, babDecValue)
-
+    if maxAttackTimes == 0:
+        return []
+    babList = calc_attackbonus_list(maxAttackTimes, baseAttackBonus, babDecValue)
     durationAttack = (secondsPerTurn - delaySecondsToFirstAttack) / len(babList)
     tsOffset = delaySecondsToFirstAttack
     attacks = []
@@ -44,23 +46,3 @@ def calc_attacks_in_turn(baseAttackBonus, babDecValue, secondsPerTurn, delaySeco
         attacks.append((round(tsOffset,3), bab, weaponHand, weapon))
         tsOffset += durationAttack
     return attacks
-
-def weapon_apply(unit):
-    attacks = []
-    bab = unit.calc.getPropValue('AttackBonus.Base', unit, None)
-    #print(calc_attackbonus_list(bab, 5))
-    weaponMH = unit.getProp('WeaponMainHand')
-    if weaponMH:
-        attacks.extend(calc_attacks_in_turn(bab, 5, unit.ctx['secondsPerTurn'], 0.0, weaponMH, 'MainHand'))
-
-    weaponOH = unit.getProp('WeaponOffHand')
-    if weaponOH:
-        attacks.extend(calc_attacks_in_turn(bab, 5, unit.ctx['secondsPerTurn'], 0.3, weaponOH, 'OffHand'))
-
-    weaponTH = unit.getProp('WeaponTwoHand')
-    if weaponTH:
-        attacks.extend(calc_attacks_in_turn(bab, 5, unit.ctx['secondsPerTurn'], 0.0, weaponTH, 'TwoHand'))
-
-    #print(attacks)
-    attacks.sort(key=lambda att: att[0], reverse=False)
-    unit.modifier.updateSource(['Attacks'], attacks)

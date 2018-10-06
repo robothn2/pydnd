@@ -9,8 +9,7 @@ class Unit:
     def __init__(self, ctx):
         self.ctx = ctx
         self.calc = PropCalculator(ctx)
-        self.props = Props.Props({'dead': False,
-                                  'ac': 0, 'ab': 0, 'hp': 0, 'xp': 0})
+        self.props = Props.Props({'dead': False, 'hp': 0, 'xp': 0})
         self.modifier = Props.Modifier({'ArmorClass': {'Base': {'Natural': {'BaseArmor': 10}}}, 'HitPoint': {}})
         self.modifierBuff = Props.Modifier()
         self.combat = CombatManager(self)
@@ -108,14 +107,14 @@ class Unit:
         return race in races
 
     def getClassLevel(self, className = None):
-        classLevels = self.calc.getProp('Class.Level', self, None)
+        classLevels = self.calc.getProp('Class.Level')
         if type(className) == str:
             return classLevels.calcSingleSource(self, None)
         return classLevels.calcValue(self, None)
 
     def getCasterLevel(self, classSpellType = 'Divine'):
         level = 0
-        classLevels = self.calc.getProp('Class.Level', self, None)
+        classLevels = self.calc.getProp('Class.Level')
         # todo: caster level
         ''' 
         if classLevels:
@@ -124,6 +123,9 @@ class Unit:
                     level += classInfo['level']
         '''
         return level
+
+    def printProp(self, key):
+        print(key, ':', self.calc.getPropValue(key, self, None))
 
     def getAttackBonus(self, target):
         return self.calc.getPropValue('AttackBonus', self, target)
