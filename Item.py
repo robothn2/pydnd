@@ -1,5 +1,30 @@
 #coding: utf-8
 from common import Props
+from Dice import rollDice
+
+def calc_attackbonus_list(maxAttackTimes, baseAttackBonus, babDecValue):
+    bab = int(baseAttackBonus)
+    abList = []
+    while maxAttackTimes > 0:
+        maxAttackTimes -= 1
+        abList.append(bab)
+        bab -= babDecValue
+        if bab <= 0:
+            break
+    return abList
+
+def calc_attacks_in_turn(maxAttackTimes, baseAttackBonus, babDecValue, secondsPerTurn, delaySecondsToFirstAttack,
+                         weapon, hand):
+    if maxAttackTimes == 0:
+        return []
+    babList = calc_attackbonus_list(maxAttackTimes, baseAttackBonus, babDecValue)
+    durationAttack = (secondsPerTurn - delaySecondsToFirstAttack) / len(babList)
+    tsOffset = delaySecondsToFirstAttack
+    attacks = []
+    for _,bab in enumerate(babList):
+        attacks.append((round(tsOffset,3), bab, hand, weapon))
+        tsOffset += durationAttack
+    return attacks
 
 class Item:
     def __init__(self, ctx, props):
@@ -67,5 +92,31 @@ class Weapon(Item):
         return (minMaxDiff, multiplierSources)
 
     def apply(self, unit, hand):
-        bab = unit.calc.getPropValue('AttackBonus.Base', unit, None)
-        attacks = calc_attacks_in_turn(bab, 5, self.ctx['secondsPerTurn'], 0.0, self, hand)
+        tsOffset = 0.5 if hand == 'OffHand' else 0.0
+        bab = unit.calc.getPropValue('AttackBonus.Base', self, None)
+        babDec = 5
+        maxAttackTimes = 10
+        if self.proto['name'] == 'Kama' and unit.getClassLevel('Monk') > 0:
+            babDec = 3
+        if hand == 'OffHand':
+            if not unit.hasFeat('TwoWeaponFighting'):
+                maxAttackTimes = 0
+            else:
+                featParams = unit.getFeatParams('TwoWeaponFighting')
+                if 'Perfect' in featParams:
+                    maxAttackTimes = 10
+                elif 'Improved' in featParams:
+                    maxAttackTimes = 2
+                else:
+                    maxAttackTimes = 1
+
+        # attacks
+        unit.calc.addSource('Attacks', name=hand, calcInt=lambda caster, target: \
+            calc_attacks_in_turn(maxAttackTimes, bab, babDec, unit.ctx['secondsPerTurn'], tsOffset, self, hand))
+
+        unit.calc.updateObject(('Weapon', hand), self)
+
+        # weapon base damage
+        weaponParams = self.proto['BaseDamage']['params']
+        weaponName = self.props['name']
+        unit.calc.addSource('Damage.' + hand, name=weaponName, calcInt=lambda caster, target: ('Physical', weaponName, rollDice(weaponParams[0], weaponParams[1], weaponParams[2])), noCache=True)

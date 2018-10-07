@@ -24,7 +24,7 @@ def apply(caster, propCalc, metaMagics):
     print('CasterLevel', level)
     value = max(1, min(3, int(level / 3)))
     propCalc.addSource('AttackBonus.Additional', name=source, calcInt=value)
-    propCalc.addSource('Damage.Additional', name=source, calcVoid=lambda damages,caster,target: damages.addSingleSource('Magical', source, value))
+    propCalc.addSource('Damage.Additional', name=source, calcResult=lambda caster,target: ('Magical', source, value))
 
 def remove(propCalc):
     propCalc.removeSource('AttackBonus.Additional', source)

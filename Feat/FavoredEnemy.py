@@ -12,12 +12,11 @@ source = 'Feat:' + proto['name']
 def matchRequirements(unit):
     return True
 
-def calcDamage(caster, target, params, damages):
+def calcDamage(caster, target, params):
     if not target.matchRaces(params):
         return
-
     bonus = max(1, int(caster.getClassLevel('Ranger') / 5))
-    damages.addSingleSource('Divine', source, bonus)
+    return ('Divine', source, bonus)
 
 def calcSkill(caster, target, params):
     if not target.matchRaces(params):
@@ -28,7 +27,7 @@ def calcSkill(caster, target, params):
 def apply(unit, featParams):
     print('apply feat', proto['name'], ', params', featParams)
 
-    unit.calc.addSource('Damage.Additional', name=source, calcVoid=lambda damages,caster,target: calcDamage(caster, target, featParams, damages), noCache=True)
+    unit.calc.addSource('Damage.Additional', name=source, calcResult=lambda caster,target: calcDamage(caster, target, featParams), noCache=True)
 
     unit.calc.addSource('Skill.Listen', name=source, calcInt=lambda caster,target: calcSkill(caster, target, featParams), noCache=True)
     unit.calc.addSource('Skill.Spot', name=source, calcInt=lambda caster,target: calcSkill(caster, target, featParams), noCache=True)

@@ -15,15 +15,6 @@ class Damages:
         for k,v in sources.items():
             self.modifier.updateSource(('Multiplier', k), v)
 
-    def addModifierSources(self, modifier, sourcePaths):
-        for dmgType, dmgSources in modifier.getSource(sourcePaths).items():
-            self.modifier.mergeBranchDict(('Type', dmgType), dmgSources)
-
-    def addConditionalTargetSources(self, modifier, caster, target):
-        sources = modifier.getSource(['Conditional', 'Target', 'Damage'])
-        for sourceName, cond in sources.items():
-            cond[0](caster, target, cond[1], self)
-
     def calcTotal(self):
         damageTotal = self.modifier.sumSource('Type')
         multiplier = Props.sumIntValue(self.modifier.sumSource('Multiplier'))

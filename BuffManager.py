@@ -2,7 +2,7 @@
 from Dice import rollDice
 from Apply import *
 from common import Props
-import Damages
+import CalcResult
 
 class BuffManager:
     def __init__(self, unit):

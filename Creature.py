@@ -55,7 +55,7 @@ class Creature(Unit):
                 if not weaponFirst:
                     weaponFirst = weapon
             tsOffset = round(i * (self.ctx['secondsPerTurn'] / len(params)), 3)
-            attacks.append((tsOffset, attack[1], True, weaponsCreated[weaponName]))
+            attacks.append((tsOffset, attack[1], 'MainHand', weaponsCreated[weaponName]))
 
         self.calc.addSource('Attacks', name='MainHand', calcInt=attacks)
 

@@ -4,7 +4,7 @@ from Skills import *
 from Unit import *
 from Apply import *
 from Abilities import *
-import Damages
+import CalcResult
 import json
 import warnings
 
@@ -113,8 +113,6 @@ class Character(Unit):
         return True
 
     def equipWeapon(self, hand, weapon):
-        tsOffset = 0.0
-        maxAttackTimes = 10
         if hand == 'TwoHand':
             self.unequipWeapon('TwoHand')
             self.unequipWeapon('MainHand')
@@ -125,28 +123,8 @@ class Character(Unit):
         else:
             self.unequipWeapon('TwoHand')
             self.unequipWeapon('OffHand')
-            tsOffset = 0.3
 
-        self.calc.updateObject(('Weapon', hand), weapon)
-
-        bab = self.calc.getPropValue('AttackBonus.Base', self, None)
-        babDec = 5
-        if weapon.proto['name'] == 'Kama' and self.getClassLevel('Monk') > 0:
-            babDec = 3
-        if hand == 'OffHand':
-            if not self.hasFeat('TwoWeaponFighting'):
-                maxAttackTimes = 0
-            else:
-                featParams = self.getFeatParams('TwoWeaponFighting')
-                if 'Perfect' in featParams:
-                    maxAttackTimes = 10
-                elif 'Improved' in featParams:
-                    maxAttackTimes = 2
-                else:
-                    maxAttackTimes = 1
-
-        self.calc.addSource('Attacks', name=hand, calcInt=lambda caster, target: \
-            calc_attacks_in_turn(maxAttackTimes, bab, babDec, self.ctx['secondsPerTurn'], tsOffset, weapon, hand))
+        weapon.apply(self, hand)
 
     def unequipWeapon(self, hand):
         weaponExist = self.calc.getObject(('Weapon', hand))

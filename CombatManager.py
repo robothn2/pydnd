@@ -2,7 +2,7 @@
 from Dice import rollDice
 from Apply import *
 from common import Props
-import Damages
+import CalcResult
 
 class CombatManager:
     def __init__(self, unit):
@@ -80,31 +80,21 @@ class CombatManager:
         return True
 
     def weapon_calc_damage(self, caster, target, roll, attack):
-        damages = Damages.Damages()
+        damages = CalcResult.Damages()
 
-        # weapon base damage
-        weapon = attack[3]
-        weaponProto = weapon.proto
-        weaponParams = weaponProto['BaseDamage']['params']
-        weaponDmgType = weaponProto['BaseDamageType'][0] #todo: consider multi damage type
-        weaponName = weapon.props['name']
-        damages.addSingleSource(weaponDmgType, weaponName, rollDice(weaponParams[0], weaponParams[1], weaponParams[2]))
+        hand = attack[2]
+        dmgsCalc = caster.calc.getPropValue('Damage.' + hand, caster, target)
+        print(dmgsCalc)
+        for _,dmg in enumerate(dmgsCalc):
+            damages.addSingleSource(dmg[0], dmg[1], dmg[2])
 
         # multiplier
+        weapon = attack[3]
         rangeDiff, multipliers = weapon.getCriticalThreat()
         #print(rangeDiff, multipliers)
         if roll >= 20 - rangeDiff:
             if self.criticalCheck(caster, target, attack[0]):
                 damages.addMultipliers(multipliers)
-
-        # additional damage from caster & weapon
-        damages.addModifierSources(caster.modifier, ['Damage', 'Additional'])
-        damages.addModifierSources(caster.modifierBuff, ['Damage', 'Additional'])
-        damages.addModifierSources(weapon.modifier, ['Damage', 'Additional'])
-
-        # conditional damage from caster & weapon
-        damages.addConditionalTargetSources(caster.modifier, caster, target)
-        damages.addConditionalTargetSources(weapon.modifier, caster, target)
         return damages
 
     def criticalCheck(self, caster, target, bab):

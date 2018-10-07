@@ -14,6 +14,9 @@ def calc_upstream_extend_attacks(sourceValue, oldValue):
     oldValue.extend(sourceValue)
     oldValue.sort(key=lambda att: att[0], reverse=False)
     return oldValue
+def calc_upstream_append_damage(sourceValue, oldValue):
+    oldValue.append(sourceValue)
+    return oldValue
 
 class PropSource:
     def __init__(self, **kwargs):
@@ -35,7 +38,7 @@ class PropSourceUpstream(PropSource):
         value = self.upstream.calcValue(caster, target)
         if self.calcPost:
             value = self.calcPost(value)
-        return int(value)
+        return value
 
 class PropSourceMultiUpstream(PropSource):
     def __init__(self, **kwargs):
@@ -96,7 +99,7 @@ class PropSourceInt(PropSource):
 
 class PropSourceIntMax(PropSource):
     def __init__(self, **kwargs):
-        super(PropSourceIntMax, self).__init__(**kwargs)
+        super().__init__(**kwargs)
         self.name = kwargs['name']
         self.calcMax = kwargs.get('calcMax')
     def __repr__(self):
@@ -156,7 +159,10 @@ class PropNode:
         upstreamProp = self.props.get(upstreamName)
         if not upstreamProp:
             #if upstream Prop not found, create empty PropNode
-            upstreamProp = PropNode(self.props, upstreamName, upstreamDict.get('calcUpstream'), 0)
+            defaultValue = 0
+            if 'defaultValue' in upstreamDict:
+                defaultValue = upstreamDict.get('defaultValue')
+            upstreamProp = PropNode(self.props, upstreamName, upstreamDict.get('calcUpstream'), defaultValue)
             self.props[upstreamName] = upstreamProp
 
         upstreamDict['upstream'] = upstreamProp
@@ -203,9 +209,9 @@ class PropNode:
 
     def calcSingleSource(self, sourceName, caster, target):
         source = self.sourcesInt.get(sourceName)
-        if source == None:
-            return self.defaultValue
-        return source(caster, target)
+        if source:
+            return source(caster, target)
+        return self.defaultValue
 
     def removeSource(self, sourceName):
         for i,source in enumerate(self.sourcesEnable):
@@ -266,11 +272,19 @@ class PropNode:
 
         for name,sourceCalculator in self.sourcesInt.items():
             sourceValueInt = sourceCalculator(caster, target)
-            self.value = self.calculator(sourceValueInt, self.value)
+            if type(sourceValueInt) == tuple:
+                self.value.append(sourceValueInt)
+            else:
+                self.value = self.calculator(sourceValueInt, self.value)
 
         for _,upstreamCalculator in enumerate(self.sourcesUpstream):
             sourceValueInt = upstreamCalculator(caster, target)
-            self.value = self.calculator(sourceValueInt, self.value)
+            if type(self.value) == list:
+                if type(sourceValueInt) == int:
+                    print(self.sourcesUpstream, upstreamCalculator, sourceValueInt)
+                self.value.extend(sourceValueInt)
+            else:
+                self.value = self.calculator(sourceValueInt, self.value)
 
         for _,upstreamCalculator in enumerate(self.sourcesUpstreamMulti):
             sourceValueInt = upstreamCalculator(caster, target)
@@ -383,25 +397,23 @@ class PropCalculator:
         ])
         self.addProp('Attacks', None, calc_upstream_extend_attacks, [])
 
+        self.addProp('Damage.Additional', None, calc_upstream_append_damage, [])
         self.addProp('Damage.MainHand', [
             #{'upstream': 'Weapon.MainHand.Base', name='Kukri', calcInt=lambda caster,target: rollDice(1,4,1), noCache=True}, # add this source on equiped mainhand weapon
-            {'upstream': 'Weapon.MainHand.Additional'},
-            {'upstream': 'Modifier.Str'},
-            {'upstream': 'Damage.Additional'},
+            {'upstream': 'Weapon.MainHand.Additional', 'defaultValue':[]},
+            {'upstream': 'Modifier.Str', 'calcPost':lambda value: [('Physical', 'Modifier.Str', value)]},
             #{'name': 'Buff:Disarm', 'calcDisable': (lambda caster, target: caster.hasBuff('Disarm'))},
-        ])
+        ], None, [])
         self.addProp('Damage.OffHand', [
             #{'upstream': 'Weapon.OffHand.Base', name='Kukri', calcInt=lambda caster,target: rollDice(1,4,1), noCache=True}, # add this source on equiped mainhand weapon
-            {'upstream': 'Weapon.OffHand.Additional'},
-            {'upstream': 'Modifier.Str', 'calcPost':(lambda value: int(value/2))},
-            {'upstream': 'Damage.Additional'},
-        ])
+            {'upstream': 'Weapon.OffHand.Additional', 'defaultValue':[]},
+            {'upstream': 'Modifier.Str', 'calcPost':lambda value: [('Physical', 'Modifier.Str', int(value/2))]},
+        ], None, [])
         self.addProp('Damage.TwoHand', [
             #{'upstream': 'Weapon.TwoHand.Base', name='Kukri', calcInt=lambda caster,target: rollDice(1,4,1), noCache=True}, # add this source on equiped mainhand weapon
-            {'upstream': 'Weapon.TwoHand.Additional'},
-            {'upstream': 'Modifier.Str', 'calcPost':(lambda value: int(value*3/2))},
-            {'upstream': 'Damage.Additional'},
-        ])
+            {'upstream': 'Weapon.TwoHand.Additional', 'defaultValue':[]},
+            {'upstream': 'Modifier.Str', 'calcPost':lambda value: [('Physical', 'Modifier.Str', int(value*3/2))]},
+        ], None, [])
 
     def __repr__(self):
         return repr(self.props)
