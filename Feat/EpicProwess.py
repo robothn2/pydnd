@@ -14,5 +14,4 @@ def matchRequirements(unit):
     return unit.getClassLevel() >= 21
 
 def apply(unit, featParams):
-    print('apply feat', proto['name'], ', params', featParams)
     unit.calc.addSource('AttackBonus.Additional', name=source, calcInt=1)

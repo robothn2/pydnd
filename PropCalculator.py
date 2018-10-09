@@ -92,6 +92,8 @@ class PropSourceInt(PropSource):
             return self.calcInt
         if type(self.calcInt) == list:
             return self.calcInt
+        if type(self.calcInt) == tuple:
+            return [self.calcInt]
         if hasattr(self.calcInt, '__call__'):
             return self.calcInt(caster, target)
 
@@ -295,7 +297,7 @@ class PropNode:
             if valueNew != self.value:
                 print('  Prop %s cap by %s, %d -> %d' % (self.name, self.sourceIntMax.name, self.value, valueNew))
                 self.value = valueNew
-        print('  Prop', self.name, '=', self.value)
+        #print('  Prop', self.name, '=', self.value)
         return self.value
 
     def getValueWithSource(self, caster, target):
@@ -405,15 +407,20 @@ class PropCalculator:
             #{'name': 'Buff:Disarm', 'calcDisable': (lambda caster, target: caster.hasBuff('Disarm'))},
         ], None, [])
         self.addProp('Damage.OffHand', [
-            #{'upstream': 'Weapon.OffHand.Base', name='Kukri', calcInt=lambda caster,target: rollDice(1,4,1), noCache=True}, # add this source on equiped mainhand weapon
             {'upstream': 'Weapon.OffHand.Additional', 'defaultValue':[]},
             {'upstream': 'Modifier.Str', 'calcPost':lambda value: [('Physical', 'Modifier.Str', int(value/2))]},
         ], None, [])
         self.addProp('Damage.TwoHand', [
-            #{'upstream': 'Weapon.TwoHand.Base', name='Kukri', calcInt=lambda caster,target: rollDice(1,4,1), noCache=True}, # add this source on equiped mainhand weapon
             {'upstream': 'Weapon.TwoHand.Additional', 'defaultValue':[]},
             {'upstream': 'Modifier.Str', 'calcPost':lambda value: [('Physical', 'Modifier.Str', int(value*3/2))]},
         ], None, [])
+
+        self.addProp('Weapon.MainHand.CriticalRange')
+        self.addProp('Weapon.OffHand.CriticalRange')
+        self.addProp('Weapon.TwoHand.CriticalRange')
+        self.addProp('Weapon.MainHand.CriticalMultiplier')
+        self.addProp('Weapon.OffHand.CriticalMultiplier')
+        self.addProp('Weapon.TwoHand.CriticalMultiplier')
 
     def __repr__(self):
         return repr(self.props)
@@ -468,7 +475,7 @@ class PropCalculator:
             raise RuntimeError('prop not found', propName)
         return prop.removeSource(sourceName)
 
-    def getPropValue(self, propName, caster, target):
+    def calcPropValue(self, propName, caster, target):
         if propName not in self.props:
             return 0
         return self.props[propName].calcValue(caster, target)
@@ -478,10 +485,11 @@ class PropCalculator:
             return 0
         return self.props[propName]
 
-    def printPropValueSource(self, propName, caster, target):
-        if propName not in self.props:
-            return
-        print(self.props[propName].getValueWithSource(caster, target))
+    def getPropValueWithSource(self, propName, caster, target):
+        prop = self.props.get(propName)
+        if not prop:
+            return (0, {})
+        return prop.getValueWithSource(caster, target)
 
     def updateObject(self, paths, obj):
         self.objects.updateSource(paths, obj)
@@ -501,54 +509,54 @@ if __name__ == '__main__':
     m.addSource('Ability.Dex.Base', name='Builder', calcInt=18)
     m.addSource('Ability.Str.Base', name='Builder', calcInt=14)
     m.addSource('Ability.Dex.Base', name='LevelUp:4', calcInt=1)
-    assert (m.getPropValue('Ability.Dex.Base', p1, p2) == 21)
+    assert (m.calcPropValue('Ability.Dex.Base', p1, p2) == 21)
 
     # test custom calculator calc_upstream_max() for 'Ability.Dex.Item'
     m.addSource('Ability.Dex.Item', name='Item:Boot+2', calcInt=2)
     m.addSource('Ability.Dex.Item', name='Item:RingOfDexerity+6', calcInt=6)
-    assert (m.getPropValue('Ability.Dex.Item', p1, p2) == 6)
+    assert (m.calcPropValue('Ability.Dex.Item', p1, p2) == 6)
 
     m.addSource('ArmorClass.Dex', name='Feat:UncannyDodge', calcEnable = True, priority = 100)
-    assert (m.getPropValue('ArmorClass.Dex', p1, p2) == 8)
+    assert (m.calcPropValue('ArmorClass.Dex', p1, p2) == 8)
 
     m.addSource('ArmorClass.Armor', name='Item:Leather+3', calcInt = 7)
     m.addSource('ArmorClass.Armor', name='Item:RingOfProtection+3', calcInt=3)
-    assert (m.getPropValue('ArmorClass.Armor', p1, None) == 7)
+    assert (m.calcPropValue('ArmorClass.Armor', p1, None) == 7)
 
     # test source replaceable, and optional target
     m.addSource('Class.Level', name='Ranger', calcInt=1)
     m.addSource('Class.Level', name='Ranger', calcInt=7)
-    assert(m.getPropValue('Class.Level', p1, None) == 7)
+    assert(m.calcPropValue('Class.Level', p1, None) == 7)
 
     # test cached value discarded by new source
     m.addSource('Class.Level', name='Cleric', calcInt=2)
-    assert(m.getPropValue('Class.Level', p1, None) == 9)
+    assert(m.calcPropValue('Class.Level', p1, None) == 9)
 
     # test dynamic upstream, and custom name for upstream
     m.addSource('SpellResistance', upstream = 'Class.Level', name = 'YuantiPureBlood', calcPost = lambda value: 11 + value)
     # test calcPost
-    assert(m.getPropValue('SpellResistance', p1, None) == 20)
+    assert(m.calcPropValue('SpellResistance', p1, None) == 20)
 
     # test value cache
-    m.printPropValueSource('ArmorClass', p1, p2)
-    m.printPropValueSource('ArmorClass', p1, p2)
+    print(m.getPropValueWithSource('ArmorClass', p1, p2))
+    print(m.getPropValueWithSource('ArmorClass', p1, p2))
 
     # test removable source(Int) and value call needRecalc() recursively
     m.removeSource('Ability.Dex.Item', 'Item:RingOfDexerity+6')
     # test recursive call downstream.needRecalc() triggered by removing source
-    m.printPropValueSource('ArmorClass', p1, p2)
+    print(m.getPropValueWithSource('ArmorClass', p1, p2))
 
     # test source calculated by multi upstream
     m.addSource('Ability.Con.Base', name='Builder', calcInt=16)
-    assert (m.getPropValue('HitPoint', p1, None) == 27)
+    assert (m.calcPropValue('HitPoint', p1, None) == 27)
 
-    bab = m.getPropValue('AttackBonus.Base')
+    bab = m.calcPropValue('AttackBonus.Base')
 
     # noCache flag affect upstream Props recursively
     m.addSource('Damage.MainHand', name='Kukri', calcInt=lambda caster,target: rollDice(1,4,1), noCache=True)
     dmgs = []
     for i in range(10):
-        dmg = m.getPropValue('Damage.MainHand', p1, p2)
+        dmg = m.calcPropValue('Damage.MainHand', p1, p2)
         if dmg not in dmgs:
             dmgs.append(dmg)
     assert (len(dmgs) > 1)

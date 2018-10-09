@@ -30,20 +30,14 @@ protoKiCritical = {
 }
 source = 'Feat:' + proto['name']
 
-def condition(caster, weapon, params):
-    #print('condition of', proto['name'], ': weapon', weapon.proto['name'], ', params', params)
-    if not params or weapon.proto['name'] not in params:
+def applyToWeapon(unit, featParams, weapon, hand):
+    if type(featParams) != list or weapon.proto['name'] not in featParams:
         return
 
-    if 'IncreasedMultiplier' in params:
-        weapon.modifier.updateSource(('CriticalMultiplier', 'Additional', 'Feat:IncreasedMultiplier'), 1)
-    if 'SuperiorWeaponFocus' in params:
-        weapon.modifier.updateSource(('AttackBonus', 'Additional', 'Feat:SuperiorWeaponFocus'), 1)
-    if 'KiCritical' in params:
-        weapon.modifier.updateSource(('CriticalRange', 'Additional', 'Feat:KiCritical'), 2)
-
-    #print('modifier for weapon', weapon.props['name'], weapon.modifier)
-
-def apply(unit, featParams):
-    print('apply feat %s' % proto['name'])
-    unit.modifier.updateSource(('Conditional', 'Weapon', source), (condition, featParams))
+    print(source, 'affects weapon:', weapon.proto['name'], ', params:', featParams)
+    if 'IncreasedMultiplier' in featParams:
+        unit.calc.addSource('Weapon.%s.CriticalMultiplier' % hand, name='Feat:IncreasedMultiplier', calcInt=1)
+    if 'SuperiorWeaponFocus' in featParams:
+        unit.calc.addSource('AttackBonus.' + hand, name='Feat:SuperiorWeaponFocus', calcInt=1)
+    if 'KiCritical' in featParams:
+        unit.calc.addSource('Weapon.%s.CriticalRange' % hand, name='Feat:KiCritical', calcInt=2)

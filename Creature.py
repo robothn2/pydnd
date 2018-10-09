@@ -30,7 +30,7 @@ class Creature(Unit):
         feats_apply(self)
         self.__applyAttackParameters()
 
-        self.setProp('hp', self.calc.getPropValue('HitPoint', self, None))
+        self.setProp('hp', self.calc.calcPropValue('HitPoint', self, None))
         self.statistic()
         print(self.modifier)
 

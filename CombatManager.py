@@ -36,7 +36,7 @@ class CombatManager:
         tsBegin = self.deltaInTurn
         tsEnd = tsBegin + deltaTime
         self.deltaInTurn += deltaTime
-        attacks = self.owner.calc.getPropValue('Attacks', self.owner, enemy)
+        attacks = self.owner.calc.calcPropValue('Attacks', self.owner, enemy)
         if self.deltaInTurn >= self.owner.ctx['secondsPerTurn']:
             self.deltaInTurn -= self.owner.ctx['secondsPerTurn']
             print('new turn for', self.owner.getName(), ', Attacks', attacks)
@@ -83,18 +83,21 @@ class CombatManager:
         damages = CalcResult.Damages()
 
         hand = attack[2]
-        dmgsCalc = caster.calc.getPropValue('Damage.' + hand, caster, target)
-        print(dmgsCalc)
+        dmgsCalc = caster.calc.calcPropValue('Damage.' + hand, caster, target)
+        #print(dmgsCalc)
         for _,dmg in enumerate(dmgsCalc):
             damages.addSingleSource(dmg[0], dmg[1], dmg[2])
 
         # multiplier
         weapon = attack[3]
-        rangeDiff, multipliers = weapon.getCriticalThreat()
-        #print(rangeDiff, multipliers)
+        rangeDiff = self.owner.calc.calcPropValue('Weapon.%s.CriticalRange' % hand, caster, target)
         if roll >= 20 - rangeDiff:
             if self.criticalCheck(caster, target, attack[0]):
-                damages.addMultipliers(multipliers)
+                _,multipliers = self.owner.calc.getPropValueWithSource('Weapon.%s.CriticalMultiplier' % hand, caster, target)
+                #print('CriticalMultipliers:', multipliers)
+                for k,v in multipliers.items():
+                    if type(v) == int:
+                        damages.addMultiplier(k,v)
         return damages
 
     def criticalCheck(self, caster, target, bab):

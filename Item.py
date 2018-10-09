@@ -1,30 +1,7 @@
 #coding: utf-8
 from common import Props
 from Dice import rollDice
-
-def calc_attackbonus_list(maxAttackTimes, baseAttackBonus, babDecValue):
-    bab = int(baseAttackBonus)
-    abList = []
-    while maxAttackTimes > 0:
-        maxAttackTimes -= 1
-        abList.append(bab)
-        bab -= babDecValue
-        if bab <= 0:
-            break
-    return abList
-
-def calc_attacks_in_turn(maxAttackTimes, baseAttackBonus, babDecValue, secondsPerTurn, delaySecondsToFirstAttack,
-                         weapon, hand):
-    if maxAttackTimes == 0:
-        return []
-    babList = calc_attackbonus_list(maxAttackTimes, baseAttackBonus, babDecValue)
-    durationAttack = (secondsPerTurn - delaySecondsToFirstAttack) / len(babList)
-    tsOffset = delaySecondsToFirstAttack
-    attacks = []
-    for _,bab in enumerate(babList):
-        attacks.append((round(tsOffset,3), bab, hand, weapon))
-        tsOffset += durationAttack
-    return attacks
+import Apply
 
 class Item:
     def __init__(self, ctx, props):
@@ -38,11 +15,6 @@ class Weapon(Item):
     def __init__(self, ctx, props):
         super(Weapon, self).__init__(ctx, props)
         self.modifier = Props.Modifier()
-
-        if 'Enhancement' in props:
-            'Weapon.MainHand.Additional'
-            self.modifier.updateSource(('AttackBonus', 'Additional', 'Enhancement'), int(props['Enhancement']))
-            self.modifier.updateSource(('Damage', 'Additional', 'Magical', 'WeaponEnhancement'), int(props['Enhancement']))
 
         self.props['Type'] = 'Weapon'
         protoName = self.props['BaseItem']
@@ -77,42 +49,13 @@ class Weapon(Item):
                 nameWithEnhancement += '+' + str(props['Enhancement'])
             self.props['name'] = nameWithEnhancement
 
-        criticalParams = self.proto['BaseCriticalThreat']['params']
-        self.modifier.updateSource(('CriticalRange', 'Base', self.props['name']), criticalParams[1] - criticalParams[0])
-        self.modifier.updateSource(('CriticalMultiplier', 'Base', self.props['name']), criticalParams[2])
-
     def __str__(self):
         return self.props['name']
     def __repr__(self):
         return self.props['name']
 
-    def getCriticalThreat(self):
-        minMaxDiff = self.modifier.sumSource('CriticalRange')
-        multiplierSources = self.modifier.getSource('CriticalMultiplier')
-        return (minMaxDiff, multiplierSources)
-
     def apply(self, unit, hand):
-        tsOffset = 0.5 if hand == 'OffHand' else 0.0
-        bab = unit.calc.getPropValue('AttackBonus.Base', self, None)
-        babDec = 5
-        maxAttackTimes = 10
-        if self.proto['name'] == 'Kama' and unit.getClassLevel('Monk') > 0:
-            babDec = 3
-        if hand == 'OffHand':
-            if not unit.hasFeat('TwoWeaponFighting'):
-                maxAttackTimes = 0
-            else:
-                featParams = unit.getFeatParams('TwoWeaponFighting')
-                if 'Perfect' in featParams:
-                    maxAttackTimes = 10
-                elif 'Improved' in featParams:
-                    maxAttackTimes = 2
-                else:
-                    maxAttackTimes = 1
-
-        # attacks
-        unit.calc.addSource('Attacks', name=hand, calcInt=lambda caster, target: \
-            calc_attacks_in_turn(maxAttackTimes, bab, babDec, unit.ctx['secondsPerTurn'], tsOffset, self, hand))
+        Apply.apply_weapon_attacks(self, unit, hand)
 
         unit.calc.updateObject(('Weapon', hand), self)
 
@@ -120,3 +63,29 @@ class Weapon(Item):
         weaponParams = self.proto['BaseDamage']['params']
         weaponName = self.props['name']
         unit.calc.addSource('Damage.' + hand, name=weaponName, calcInt=lambda caster, target: ('Physical', weaponName, rollDice(weaponParams[0], weaponParams[1], weaponParams[2])), noCache=True)
+
+        # weapon enhancement
+        enhanceValue = self.props.get('Enhancement')
+        if enhanceValue != None:
+            unit.calc.addSource('Weapon.%s.Additional' % hand, name='WeaponEnhancement', calcInt=('Magical', 'WeaponEnhancement', enhanceValue))
+            unit.calc.addSource('AttackBonus.' + hand, name='WeaponEnhancement', calcInt=enhanceValue)
+
+        # weapon critical parameter
+        criticalParams = self.proto['BaseCriticalThreat']['params']
+        unit.calc.addSource('Weapon.%s.CriticalRange' % hand, name='WeaponBase', calcInt=criticalParams[1] - criticalParams[0])
+        unit.calc.addSource('Weapon.%s.CriticalMultiplier' % hand, name='WeaponBase', calcInt=criticalParams[2])
+
+        # weapon related feats
+        Apply.feats_apply_to_weapon(unit, self, hand)
+
+    def unapply(self, unit, hand):
+        unit.calc.removeSource('Attacks', hand)
+
+        unit.calc.removeSource('Damage.' + hand, self.props['name'])
+
+        unit.calc.removeSource('Weapon.%s.Additional' % hand, 'WeaponEnhancement')
+        unit.calc.removeSource('Damage.' + hand, 'WeaponEnhancement')
+
+        unit.calc.removeSource('Weapon.%s.CriticalRange' % hand, 'WeaponBase')
+        unit.calc.removeSource('Weapon.%s.CriticalMultiplier' % hand, 'WeaponBase')
+

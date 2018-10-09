@@ -135,7 +135,7 @@ class Character(Unit):
         buffs_apply(self)
         feats_apply(self)
 
-        self.setProp('hp', self.calc.getPropValue('HitPoint', self, None))
+        self.setProp('hp', self.calc.calcPropValue('HitPoint', self, None))
 
     def statistic(self):
         self._applyAll()
@@ -147,7 +147,7 @@ class Character(Unit):
         self.printProp('HitPoint')
         self.printProp('SpellResistance')
         #self.printProp('Reduction')
-        print('Attacks:', self.calc.getPropValue('Attacks', self, None))
+        print('Attacks:', self.calc.calcPropValue('Attacks', self, None))
 
     def addXP(self, xp):
         xpOld = self.getProp('xp')

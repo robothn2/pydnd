@@ -11,9 +11,9 @@ proto = {
 source = 'Feat:' + proto['name']
 
 def matchRequirements(unit):
-    return unit.hasFeats('TurnUndead', 'PowerAttack')\
-        and unit.calc.getPropValue('Ability.Str') >= 13\
-        and unit.calc.getPropValue('Ability.Cha') >= 13
+    return unit.hasFeats('TurnUndead', 'PowerAttack') \
+           and unit.calc.calcPropValue('Ability.Str') >= 13 \
+           and unit.calc.calcPropValue('Ability.Cha') >= 13
 
 def buffEffect(caster, target):
     value = caster.getAbilityModifier('Cha')

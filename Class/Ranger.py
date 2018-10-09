@@ -24,14 +24,22 @@ def applyLevelUp(unit, level, levelInfo):
         unit.addFeat('WeaponProficiency', proto['WeaponProficiency'])
         unit.addFeat('ArmorProficiency', proto['ArmorProficiency'])
     elif level == 2:
-        unit.addFeat('CombatStyle', featsHint)
+        # CombatStyle
+        if 'TwoWeaponFighting' in featsHint:
+            unit.addFeat('TwoWeaponFighting')
+        else:
+            pass
     elif level == 3:
         unit.addFeat('Toughness')
     elif level == 4:
         unit.addFeat('AnimalCompanion', featsHint)
         unit.grantSpellClass('Divine', proto['name'])
     elif level == 6:
-        unit.addFeat('ImprovedCombatStyle', featsHint)
+        # ImprovedCombatStyle
+        if 'TwoWeaponFighting' in unit.getFeatParams('CombatStyle'):
+            unit.addFeat('TwoWeaponFighting', ['Improved'])
+        else:
+            pass
     elif level == 7:
         unit.addFeat('WoodlandStride')
     elif level == 8:
@@ -39,7 +47,11 @@ def applyLevelUp(unit, level, levelInfo):
     elif level == 9:
         unit.addFeat('Evasion')
     elif level == 11:
-        unit.addFeat('CombatMastery')
+        # CombatMastery
+        if 'TwoWeaponFighting' in unit.getFeatParams('CombatStyle'):
+            unit.addFeat('TwoWeaponFighting', ['Perfect'])
+        else:
+            pass
     elif level == 13:
         unit.addFeat('Camouflage')
     elif level == 17:

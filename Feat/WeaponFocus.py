@@ -33,14 +33,11 @@ def availableParams(unit):
             weaponsAvailable.append(weaponBaseName)
     return weaponsAvailable
 
-def condition(caster, weapon, params):
-    #print('condition of', proto['name'], ': weapon', weapon.proto['name'], ', params', params)
-    if not params or weapon.proto['name'] not in params:
+def applyToWeapon(unit, featParams, weapon, hand):
+    print('apply feat %s' % proto['name'])
+    if type(featParams) != list or weapon.proto['name'] not in featParams:
         return
 
-    weapon.modifier.updateSource(('AttackBonus', 'Additional', source), 1)
-    #print('modifier for weapon', weapon.props['name'], weapon.modifier)
-
-def apply(unit, featParams):
-    print('apply feat %s' % proto['name'])
-    unit.modifier.updateSource(('Conditional', 'Weapon', source), (condition, featParams))
+    print(source, 'affects weapon:', weapon.proto['name'], ', params:', featParams)
+    if 'SuperiorWeaponFocus' in featParams:
+        unit.calc.addSource('AttackBonus.' + hand, name=source, calcInt=1)

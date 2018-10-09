@@ -125,12 +125,12 @@ class Unit:
         return level
 
     def printProp(self, key):
-        print(key, ':', self.calc.getPropValue(key, self, None))
+        print(key, ':', self.calc.calcPropValue(key, self, None))
 
     def getAttackBonus(self, target):
-        return self.calc.getPropValue('AttackBonus', self, target)
+        return self.calc.calcPropValue('AttackBonus', self, target)
     def getArmorClass(self, target):
-        return self.calc.getPropValue('ArmorClass', self, target)
+        return self.calc.calcPropValue('ArmorClass', self, target)
 
     def addBuff(self, caster, buffProto):
         self.buffs.addBuff(caster, buffProto)
