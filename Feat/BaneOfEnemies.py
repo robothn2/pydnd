@@ -13,11 +13,15 @@ source = 'Feat:' + proto['name']
 def matchRequirements(unit):
     return unit.getClassLevel('Ranger') >= 21
 
+def calcDamage(caster, target, params):
+    if not target.matchRaces(params):
+        return []
+    bonus = Dice.rollDice(1, 6, 2)
+    return ('Divine', source, bonus)
+
 def apply(unit, featParams):
     races = unit.getFeatParams('FavoredEnemy') # use feat params from FavoredEnemy
-    print('apply feat', proto['name'], ', params', races)
 
-    unit.calc.addSource('Damage.Additional', name=source, calcVoid=\
-        lambda damages,caster,target: damages.addSingleSource('Divine', source, Dice.rollDice(1, 6, 2)) if target.matchRaces(races) else None)
+    unit.calc.addSource('Damage.Additional', name=source, calcInt=lambda caster,target: calcDamage(caster, target, races), noCache=True)
 
     unit.calc.addSource('AttackBonus.Additional', name=source, calcInt=lambda caster,target: 2 if target.matchRaces(races) else 0)

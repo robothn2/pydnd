@@ -13,19 +13,18 @@ proto = {
     'Save': [],
     'SpellResistance': False
 }
-source = proto['name']
+source = 'Buff:' + proto['name']
 
 def duration(caster, metaMagics):
     return 60.0
 
 def apply(caster, propCalc, metaMagics):
-    print('apply buffer', source)
-    level = caster.getCasterLevel()
-    print('CasterLevel', level)
+    level = caster.calc.calcPropValue('Caster.Level', caster, None)
     value = max(1, min(3, int(level / 3)))
     propCalc.addSource('AttackBonus.Additional', name=source, calcInt=value)
-    propCalc.addSource('Damage.Additional', name=source, calcResult=lambda caster,target: ('Magical', source, value))
+    propCalc.addSource('Damage.Additional', name=source, calcInt=lambda caster,target: ('Magical', source, value))
 
-def remove(propCalc):
+def unapply(propCalc):
+    print('unapply buff', proto['name'])
     propCalc.removeSource('AttackBonus.Additional', source)
     propCalc.removeSource('Damage.Additional', source)

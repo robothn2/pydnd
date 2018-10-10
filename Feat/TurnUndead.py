@@ -18,8 +18,7 @@ def castTo(caster, target):
     pass
 
 def apply(unit, featParams):
-    print('apply feat', proto['name'], ', params', featParams)
     chargeSource = [0, # charges, can be initialized by init-function if unit take a rest
-                    (lambda unit: 3 + unit.getAbilityModifier('Cha'))] # charges init-function,
+                    (lambda unit: 3 + unit.calc.calcPropValue('Modifier.Cha'))] # charges init-function,
     sourceParams = [chargeSource, castTo]
-    unit.modifier.updateSource(('Spell', 'Charges', 'TurnUndead'), sourceParams)
+    unit.calc.addSource('Spell.Charges', name='TurnUndead', calcInt=sourceParams)

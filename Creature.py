@@ -26,7 +26,6 @@ class Creature(Unit):
         for _,ability in enumerate(self.ctx['Abilities']):
             self.calc.addSource('Ability.'+ ability + '.Base', name='beastiary', calcInt=int(self.proto[ability]))
 
-        buffs_apply(self)
         feats_apply(self)
         self.__applyAttackParameters()
 

@@ -10,9 +10,6 @@ def race_apply(unit, raceName):
     proto = protosRace[raceName]
     proto.apply(unit)
 
-def buffs_apply(unit):
-    pass
-
 def feats_apply(unit):
     feats = unit.modifier.getSource('Feats')
     protos = unit.ctx['protosFeat']
@@ -22,7 +19,7 @@ def feats_apply(unit):
 
         proto = protos[featName]
         if hasattr(proto, 'apply'):
-            print('apply feat', proto['name'], ', params', feats[featName])
+            print('apply feat', proto.proto['name'], ', params', feats[featName])
             proto.apply(unit, feats[featName])
 
 def feats_apply_to_weapon(unit, weapon, hand):
@@ -34,7 +31,7 @@ def feats_apply_to_weapon(unit, weapon, hand):
 
         proto = protos[featName]
         if hasattr(proto, 'applyToWeapon'):
-            print('apply feat', proto['name'], 'to weapon, params', feats[featName])
+            print('apply feat', proto.proto['name'], 'to weapon, params', feats[featName])
             proto.applyToWeapon(unit, feats[featName], weapon, hand)
 
 

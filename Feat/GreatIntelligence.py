@@ -12,6 +12,4 @@ def matchRequirements(unit):
     return unit.getClassLevel() >= 21
 
 def apply(unit, featParams):
-    print('apply feat', proto['name'], ', params', featParams)
-
     unit.modifier.updateSource(('Abilities', 'Int', 'Base', source), featParams[-1])

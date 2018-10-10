@@ -109,20 +109,8 @@ class Unit:
     def getClassLevel(self, className = None):
         classLevels = self.calc.getProp('Class.Level')
         if type(className) == str:
-            return classLevels.calcSingleSource(self, None)
+            return classLevels.calcSingleSource(className, self, None)
         return classLevels.calcValue(self, None)
-
-    def getCasterLevel(self, classSpellType = 'Divine'):
-        level = 0
-        classLevels = self.calc.getProp('Class.Level')
-        # todo: caster level
-        ''' 
-        if classLevels:
-            for className, classInfo in self.props.get('classes', {}).items():
-                if not classSpellType or classSpellType == classInfo['proto'].proto.get('SpellType'):
-                    level += classInfo['level']
-        '''
-        return level
 
     def printProp(self, key):
         print(key, ':', self.calc.calcPropValue(key, self, None))

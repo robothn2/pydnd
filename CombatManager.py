@@ -84,7 +84,6 @@ class CombatManager:
 
         hand = attack[2]
         dmgsCalc = caster.calc.calcPropValue('Damage.' + hand, caster, target)
-        #print(dmgsCalc)
         for _,dmg in enumerate(dmgsCalc):
             damages.addSingleSource(dmg[0], dmg[1], dmg[2])
 

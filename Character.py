@@ -89,6 +89,9 @@ class Character(Unit):
             clsLevel = classLevels.calcSingleSource(cls, self, None)
             clsLevel += 1
             self.calc.addSource('Class.Level', name=cls, calcInt=clsLevel)
+            clsSpellType = clsProto.proto.get('SpellType')
+            if clsSpellType:
+                self.calc.addSource('Caster.Level', name=cls, calcInt=clsLevel)
             self.calc.addSource('AttackBonus.Base', name=cls, calcInt=int(clsLevel * float(clsProto.proto['BaseAttackBonus'])))
             self.calc.addSource('SavingThrow.Fortitude', name=cls, calcInt=int(clsLevel * float(clsProto.proto['FortitudePerLevel'])))
             self.calc.addSource('SavingThrow.Reflex', name=cls, calcInt=int(clsLevel * float(clsProto.proto['ReflexPerLevel'])))
@@ -132,7 +135,6 @@ class Character(Unit):
             weaponExist.unapply(self, hand)
 
     def _applyAll(self):
-        buffs_apply(self)
         feats_apply(self)
 
         self.setProp('hp', self.calc.calcPropValue('HitPoint', self, None))
@@ -146,6 +148,10 @@ class Character(Unit):
         self.printProp('ArmorClass')
         self.printProp('HitPoint')
         self.printProp('SpellResistance')
+        self.printProp('SavingThrow.Fortitude')
+        self.printProp('SavingThrow.Reflex')
+        self.printProp('SavingThrow.Will')
+
         #self.printProp('Reduction')
         print('Attacks:', self.calc.calcPropValue('Attacks', self, None))
 

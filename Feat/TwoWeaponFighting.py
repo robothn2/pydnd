@@ -24,7 +24,9 @@ def applyToWeapon(unit, featParams, weapon, hand):
                 unit.calc.addSource('AttackBonus.OffHand', name='Feat:TwoWeaponFighting', calcInt=2)
 
             if 'Perfect' in featParams:
-                Apply.apply_weapon_attacks(weapon, unit, hand)
+                Apply.apply_weapon_attacks(weapon, unit, hand, 10)
+            elif 'Greater' in featParams:
+                Apply.apply_weapon_attacks(weapon, unit, hand, 3)
             elif 'Improved' in featParams:
                 Apply.apply_weapon_attacks(weapon, unit, hand, 2)
             else:

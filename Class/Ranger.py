@@ -25,10 +25,14 @@ def applyLevelUp(unit, level, levelInfo):
         unit.addFeat('ArmorProficiency', proto['ArmorProficiency'])
     elif level == 2:
         # CombatStyle
-        if 'TwoWeaponFighting' in featsHint:
-            unit.addFeat('TwoWeaponFighting')
-        else:
-            pass
+        for _, hint in enumerate(featsHint):
+            if type(hint) == list and hint[0] == 'CombatStyle':
+                if hint[1] == 'TwoWeaponFighting':
+                    unit.addFeat('CombatStyle', 'TwoWeaponFighting')
+                    unit.addFeat('TwoWeaponFighting')
+                elif hint[1] == 'TwoWeaponFighting':
+                    unit.addFeat('CombatStyle', 'Archery')
+                    unit.addFeat('RapidShot')
     elif level == 3:
         unit.addFeat('Toughness')
     elif level == 4:
@@ -39,7 +43,7 @@ def applyLevelUp(unit, level, levelInfo):
         if 'TwoWeaponFighting' in unit.getFeatParams('CombatStyle'):
             unit.addFeat('TwoWeaponFighting', ['Improved'])
         else:
-            pass
+            unit.addFeat('Manyshot')
     elif level == 7:
         unit.addFeat('WoodlandStride')
     elif level == 8:
@@ -49,13 +53,16 @@ def applyLevelUp(unit, level, levelInfo):
     elif level == 11:
         # CombatMastery
         if 'TwoWeaponFighting' in unit.getFeatParams('CombatStyle'):
-            unit.addFeat('TwoWeaponFighting', ['Perfect'])
+            unit.addFeat('TwoWeaponFighting', ['Greater'])
         else:
-            pass
+            unit.addFeat('RapidShot', ['Improved'])
     elif level == 13:
         unit.addFeat('Camouflage')
     elif level == 17:
         unit.addFeat('HideInPlainSight')
+    elif level == 21:
+        if 'TwoWeaponFighting' in unit.getFeatParams('CombatStyle'):
+            unit.addFeat('TwoWeaponFighting', ['Perfect'])
 
     if level % 5 == 0 or level == 1:
         unit.addFeat('FavoredEnemy', featsHint)

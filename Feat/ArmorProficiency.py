@@ -12,4 +12,4 @@ def matchRequirements(unit):
     return True
 
 def apply(unit, featParams):
-    print('apply feat %s' % proto['name'])
+    pass

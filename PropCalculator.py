@@ -1,6 +1,7 @@
 #coding: utf-8
 from Dice import rollDice
 from common.Props import Modifier
+import copy
 
 def calc_post_mainhand_weapon(value):
     return value
@@ -167,6 +168,8 @@ class PropNode:
             upstreamProp = PropNode(self.props, upstreamName, upstreamDict.get('calcUpstream'), defaultValue)
             self.props[upstreamName] = upstreamProp
 
+        if upstreamProp.noCache:
+            self.noCache = True
         upstreamDict['upstream'] = upstreamProp
         upstreamProp.__addDownstream(self)
         return upstreamProp
@@ -231,6 +234,7 @@ class PropNode:
         if sourceName in self.sourcesInt:
             self.sourcesInt.pop(sourceName)
             self.needRecalc()
+            print('remove source', sourceName, 'under Prop', self.name)
             return True
 
         for i,source in enumerate(self.sourcesUpstream):
@@ -257,7 +261,7 @@ class PropNode:
 
         #print('begin calc Prop:', self.name)
         self.recalc = False
-        self.value = self.defaultValue
+        self.value = copy.deepcopy(self.defaultValue) # for list value
 
         sourceEnable = None
         for _,source in enumerate(self.sourcesEnable):
@@ -404,15 +408,18 @@ class PropCalculator:
             #{'upstream': 'Weapon.MainHand.Base', name='Kukri', calcInt=lambda caster,target: rollDice(1,4,1), noCache=True}, # add this source on equiped mainhand weapon
             {'upstream': 'Weapon.MainHand.Additional', 'defaultValue':[]},
             {'upstream': 'Modifier.Str', 'calcPost':lambda value: [('Physical', 'Modifier.Str', value)]},
+            {'upstream': 'Damage.Additional'},
             #{'name': 'Buff:Disarm', 'calcDisable': (lambda caster, target: caster.hasBuff('Disarm'))},
         ], None, [])
         self.addProp('Damage.OffHand', [
             {'upstream': 'Weapon.OffHand.Additional', 'defaultValue':[]},
             {'upstream': 'Modifier.Str', 'calcPost':lambda value: [('Physical', 'Modifier.Str', int(value/2))]},
+            {'upstream': 'Damage.Additional'},
         ], None, [])
         self.addProp('Damage.TwoHand', [
             {'upstream': 'Weapon.TwoHand.Additional', 'defaultValue':[]},
             {'upstream': 'Modifier.Str', 'calcPost':lambda value: [('Physical', 'Modifier.Str', int(value*3/2))]},
+            {'upstream': 'Damage.Additional'},
         ], None, [])
 
         self.addProp('Weapon.MainHand.CriticalRange')
@@ -421,6 +428,13 @@ class PropCalculator:
         self.addProp('Weapon.MainHand.CriticalMultiplier')
         self.addProp('Weapon.OffHand.CriticalMultiplier')
         self.addProp('Weapon.TwoHand.CriticalMultiplier')
+
+        self.addProp('SavingThrow.Fortitude', {'upstream': 'SavingThrow.All'})
+        self.addProp('SavingThrow.Reflex', {'upstream': 'SavingThrow.All'})
+        self.addProp('SavingThrow.Will', {'upstream': 'SavingThrow.All'})
+
+        self.addProp('Caster.Level')
+        self.addProp('Spell.Charges')
 
     def __repr__(self):
         return repr(self.props)
@@ -444,9 +458,7 @@ class PropCalculator:
                 {'upstream': sk + '.Buff'}
             ])
 
-        self.addProp('SavingThrow.Fortitude', {'upstream': 'Skill:Spellcraft', 'calcPost': lambda value: int(value / 5)})
-        self.addProp('SavingThrow.Reflex', {'upstream': 'Skill:Spellcraft', 'calcPost': lambda value: int(value / 5)})
-        self.addProp('SavingThrow.Will', {'upstream': 'Skill:Spellcraft', 'calcPost': lambda value: int(value / 5)})
+        self.addProp('SavingThrow.All', {'upstream': 'Skill:Spellcraft', 'calcPost': lambda value: int(value / 5)})
 
     def addProp(self, propName, sources = None, calculator = None, defaultValue=0):
         if propName in self.props:

@@ -25,9 +25,7 @@ def calcSkill(caster, target, params):
     return max(1, int(caster.getClassLevel('Ranger') / 5))
 
 def apply(unit, featParams):
-    print('apply feat', proto['name'], ', params', featParams)
-
-    unit.calc.addSource('Damage.Additional', name=source, calcResult=lambda caster,target: calcDamage(caster, target, featParams), noCache=True)
+    unit.calc.addSource('Damage.Additional', name=source, calcInt=lambda caster,target: calcDamage(caster, target, featParams), noCache=True)
 
     unit.calc.addSource('Skill.Listen', name=source, calcInt=lambda caster,target: calcSkill(caster, target, featParams), noCache=True)
     unit.calc.addSource('Skill.Spot', name=source, calcInt=lambda caster,target: calcSkill(caster, target, featParams), noCache=True)

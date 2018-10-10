@@ -34,7 +34,6 @@ def availableParams(unit):
     return weaponsAvailable
 
 def applyToWeapon(unit, featParams, weapon, hand):
-    print('apply feat %s' % proto['name'])
     if type(featParams) != list or weapon.proto['name'] not in featParams:
         return
 

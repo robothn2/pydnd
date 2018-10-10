@@ -24,7 +24,7 @@ def castToTarget(caster, target):
     caster.addBuff(proto['name'], source, buffEffect, value * caster.ctx['secondsPerRound'])
 
 def apply(unit, featParams):
-    print('apply feat', proto['name'], ', params', featParams)
-    sourceParams = unit.modifier.getSource(('Spell', 'Charges', 'TurnUndead'))
-    chargeSource = sourceParams[0]
-    unit.modifier.updateSource(('Spell', 'Charges', 'DivineMight'), [chargeSource, castToTarget])
+    pass
+    #sourceParams = unit.modifier.getSource(('Spell', 'Charges', 'TurnUndead'))
+    #chargeSource = sourceParams[0]
+    #unit.modifier.updateSource(('Spell', 'Charges', 'DivineMight'), [chargeSource, castToTarget])
