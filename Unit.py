@@ -38,19 +38,10 @@ class Unit:
     def isDead(self):
         return self.props['dead']
 
-    def grantSpellClass(self, spellClass, className):
-        if 'spells' not in self.props:
-            self.props['spells'] = {}
+    def addAccessSpellClass(self, className):
+        pass
 
-        spellsEntry = self.props['spells']
-        if spellClass not in spellsEntry:
-            spellsEntry[spellClass] = {}
-
-        spellsClassEntry = spellsEntry[spellClass]
-        if className not in spellsClassEntry:
-            spellsClassEntry[className] = {}
-
-    def grantSpells(self, spellClass, className, spells):
+    def addAccessSpell(self, className, spells = []):
         pass
 
     def addFeat(self, featName, featParam = []):

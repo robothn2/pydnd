@@ -30,4 +30,4 @@ def applyLevelUp(unit, level, levelInfo):
         unit.addFeat('ArmorProficiency', proto['ArmorProficiency'])
         unit.addFeat('TurnUndead')
         unit.addFeat('SpontaneousCasting')
-        unit.grantSpellClass('Divine', proto['name'])
+        unit.addAccessSpellClass(proto['name'])

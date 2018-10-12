@@ -3,8 +3,10 @@
 proto = {
     'name': 'War',
     'desc': '''Clerics who take the War domain spend considerable time training for combat.''',
-    'SpecialAbility': '''Weapon focus: The cleric receives the weapon focus feat for their deity's favored weapon. They are also proficient with that weapon even if clerics normally are not. If their deity's favored weapon is unarmed strike, they gain the improved unarmed strike feat.''',
-    'BonusSpells': '''The cleric gains access to the following spells at the specified spell level: flame strike (4), power word stun (8).'''
+    'BonusFeats': [
+        ('Feat', 'WeaponFocus', '''The cleric receives the weapon focus feat for their deity's favored weapon. They are also proficient with that weapon even if clerics normally are not. If their deity's favored weapon is unarmed strike, they gain the improved unarmed strike feat.'''),
+    ],
+    'BonusSpells': ['FlameStrike', 'PowerWordStun'],
 }
 
 def apply(unit):
@@ -19,4 +21,4 @@ def apply(unit):
         else:
             unit.addFeat('WeaponFocus', weapon)
 
-    unit.grantSpells('Divine', 'Cleric', ['FlameStrike', 'PowerWordStun'])
+    unit.addAccessSpell('Cleric', ['FlameStrike', 'PowerWordStun'])

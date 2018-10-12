@@ -24,6 +24,8 @@ if __name__ == '__main__':
     player.equipWeapon('MainHand', Weapon(Context.ctx, {'BaseItem': 'Kukri', 'Enhancement': 3}))
     player.equipWeapon('OffHand', Weapon(Context.ctx, {'name': 'OHWeapon','BaseItem': 'Kukri', 'Enhancement': 2}))
     player.addBuff(player, Context.ctx['protosSpell']['DivineFavor'])
+    player.addBuff(player, Context.ctx['protosSpell']['Barkskin'])
+    player.addBuff(player, Context.ctx['protosSpell']['CatGrace'])
     player.statistic()
 
     arena = Arena()

@@ -37,7 +37,7 @@ def applyLevelUp(unit, level, levelInfo):
         unit.addFeat('Toughness')
     elif level == 4:
         unit.addFeat('AnimalCompanion', featsHint)
-        unit.grantSpellClass('Divine', proto['name'])
+        unit.addAccessSpellClass(proto['name'])
     elif level == 6:
         # ImprovedCombatStyle
         if 'TwoWeaponFighting' in unit.getFeatParams('CombatStyle'):
