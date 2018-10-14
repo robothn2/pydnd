@@ -27,6 +27,7 @@ if __name__ == '__main__':
     player.addBuff(player, Context.ctx['protosSpell']['Barkskin'])
     player.addBuff(player, Context.ctx['protosSpell']['CatGrace'])
     player.statistic()
+    player.activate('PowerAttack')
 
     arena = Arena()
     arena.addUnit(player)

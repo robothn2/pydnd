@@ -118,12 +118,31 @@ class Unit:
     def hasBuff(self, buffName):
         return False
 
+    def activate(self, name):
+        activableAbility = self.calc.getPropSource('Spell.Activable', name)
+        if not activableAbility:
+            print('No activable ability found:', name)
+            return
+
+        print('Activate ability:', name)
+        activableAbility.calcInt.activate(self)
+
+    def deactivate(self, name):
+        activableAbility = self.calc.getPropSource('Spell.Activable', name)
+        if not activableAbility:
+            print('No activable ability found:', name)
+            return
+
+        print('Deactivate ability:', name)
+        activableAbility.calcInt.deactivate(self)
+
     def addEnemy(self, enemy):
         self.combat.addEnemy(enemy)
 
     def applyDamages(self, damages):
         damageTotal = damages.calcTotal()
         print(self.getName(), ', damage', damageTotal, ' info', damages)
+        # todo: damage reduction
         self._applyDamage(damageTotal)
 
     def _applyDamage(self, damageTotal):

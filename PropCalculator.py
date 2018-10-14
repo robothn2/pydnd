@@ -212,6 +212,9 @@ class PropNode:
         if kwargs.get('noCache'):
             self.setNoCache()
 
+    def getSource(self, sourceName):
+        return self.sourcesInt.get(sourceName)
+
     def calcSingleSource(self, sourceName, caster, target):
         source = self.sourcesInt.get(sourceName)
         if source:
@@ -435,6 +438,7 @@ class PropCalculator:
 
         self.addProp('Caster.Level')
         self.addProp('Spell.Charges')
+        self.addProp('Spell.Activable')
 
     def __repr__(self):
         return repr(self.props)
@@ -496,6 +500,12 @@ class PropCalculator:
         if propName not in self.props:
             return 0
         return self.props[propName]
+
+    def getPropSource(self, propName, sourceName):
+        prop = self.props.get(propName)
+        if not prop:
+            return None
+        return prop.getSource(sourceName)
 
     def getPropValueWithSource(self, propName, caster, target):
         prop = self.props.get(propName)
