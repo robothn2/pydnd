@@ -119,13 +119,19 @@ class Unit:
         return False
 
     def activate(self, name):
-        activableAbility = self.calc.getPropSource('Spell.Activable', name)
-        if not activableAbility:
-            print('No activable ability found:', name)
+        feat = self.calc.getPropSource('Spell.Activable', name)
+        if feat:
+            print('Activate ability:', name)
+            feat.calcInt.activate(self)
             return
 
-        print('Activate ability:', name)
-        activableAbility.calcInt.activate(self)
+        feat = self.calc.getPropSource('Spell.Charges', name)
+        if feat:
+            print('Cast spell-like feat:', name)
+            feat.calcInt.activate(self)
+            return
+
+        print('No activable ability found:', name)
 
     def deactivate(self, name):
         activableAbility = self.calc.getPropSource('Spell.Activable', name)

@@ -1,7 +1,6 @@
 #coding: utf-8
 
 proto = {
-    'name': 'Barkskin',
     'desc': '''Barkskin hardens the target creature's skin, granting a natural armor bonus to Armor Class based on the caster's level: Level 1-6: +3, Level 7-12: +4, Levels 13+: +5''',
     'CasterLevel': [('Druid', 2), ('Ranger', 2), ('Plant', 2)],
     'InnateLevel': 2,
@@ -13,7 +12,8 @@ proto = {
     'Save': [],
     'SpellResistance': False
 }
-source = 'Buff:' + proto['name']
+name = 'Barkskin'
+source = 'Buff:' + name
 
 def duration(caster, metaMagics):
     return 3600.0 * caster.getClassLevel()
@@ -28,5 +28,4 @@ def apply(caster, propCalc, metaMagics):
     propCalc.addSource('ArmorClass.Natural', name=source, calcInt=value)
 
 def unapply(propCalc):
-    print('unapply buff', proto['name'])
     propCalc.removeSource('ArmorClass.Natural', source)

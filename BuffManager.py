@@ -12,7 +12,7 @@ class BuffManager:
 
     def addBuff(self, buffCaster, buffProto, buffMetaMagics = []):
         expired = int(1000 * (buffProto.duration(buffCaster, buffMetaMagics))) + self.tsInMs
-        buffName = buffProto.proto['name']
+        buffName = buffProto.name
         if buffName not in self.buffs:
             self.buffs.append([buffCaster, expired, buffProto, buffMetaMagics])
         else:
@@ -25,7 +25,7 @@ class BuffManager:
 
         # apply buff to owner
         buffProto.apply(buffCaster, self.owner.calc, buffMetaMagics)
-        print(repr(self.owner), 'apply buff', buffProto.proto['name'], ', cast from', repr(buffCaster))
+        print(repr(self.owner), 'apply buff', buffProto.name, ', cast from', repr(buffCaster))
         return True
 
     def update(self, deltaTime):
@@ -38,6 +38,6 @@ class BuffManager:
             if buff[1] <= self.tsInMs:
                 self.buffs.pop(i)
                 buff[2].unapply(self.owner.calc)
-                print(repr(self.owner), '\'s buff', buff[2].proto['name'], 'expired, cast by', repr(buff[0]))
+                print(repr(self.owner), '\'s buff', buff[2].name, 'expired, cast by', repr(buff[0]))
                 break
 

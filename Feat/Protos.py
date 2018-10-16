@@ -10,9 +10,3 @@ class FeatProtoActivable:
         self.funActive(caster, self.params)
     def deactivate(self, caster):
         self.funDeactive(caster)
-
-class FeatProtoSpellLike:
-    def __init__(self, **kwargs):
-        self.funCast = kwargs.get('cast')
-        self.params = kwargs.get('params')
-

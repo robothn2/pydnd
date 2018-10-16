@@ -13,7 +13,8 @@ proto = {
     'Save': [],
     'SpellResistance': False
 }
-source = 'Buff:' + proto['name']
+name = 'Cat\'s Grace'
+source = 'Buff:' + name
 
 def duration(caster, metaMagics):
     return 60.0 * caster.getClassLevel()
@@ -22,5 +23,4 @@ def apply(caster, propCalc, metaMagics):
     propCalc.addSource('Ability.Dex.Buff', name=source, calcInt=4)
 
 def unapply(propCalc):
-    print('unapply buff', proto['name'])
     propCalc.removeSource('Ability.Dex.Buff', source)

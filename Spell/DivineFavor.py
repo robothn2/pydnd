@@ -1,7 +1,6 @@
 #coding: utf-8
 
 proto = {
-    'name': 'DivineFavor',
     'desc': '''You gain a +1 bonus to attack and a +1 magical damage bonus for every three caster levels you have (minimum +1, maximum of +3).''',
     'CasterLevel': [('Cleric', 1), ('Paladin', 1)],
     'InnateLevel': 1,
@@ -13,7 +12,8 @@ proto = {
     'Save': [],
     'SpellResistance': False
 }
-source = 'Buff:' + proto['name']
+name = 'DivineFavor'
+source = 'Buff:' + name
 
 def duration(caster, metaMagics):
     return 60.0
@@ -25,6 +25,5 @@ def apply(caster, propCalc, metaMagics):
     propCalc.addSource('Damage.Additional', name=source, calcInt=lambda caster,target: ('Magical', source, value))
 
 def unapply(propCalc):
-    print('unapply buff', proto['name'])
     propCalc.removeSource('AttackBonus.Additional', source)
     propCalc.removeSource('Damage.Additional', source)

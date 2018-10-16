@@ -1,7 +1,6 @@
 #coding: utf-8
 
 proto = {
-    'name': 'GreaterMagicFang',
     'desc': '''This spell strengthens your animal companion, giving its attacks a +1 enhancement bonus to attack and damage for every three caster levels you have (maximum of +5).''',
     'CasterLevel': [('Druid', 3), ('Ranger', 3)],
     'InnateLevel': 3,
@@ -13,7 +12,8 @@ proto = {
     'Save': [],
     'SpellResistance': False
 }
-source = 'Buff:' + proto['name']
+name = 'GreaterMagicFang'
+source = 'Buff:' + name
 
 def duration(caster, metaMagics):
     return 60.0 * caster.getClassLevel()
@@ -25,6 +25,5 @@ def apply(caster, propCalc, metaMagics):
     propCalc.addSource('Damage.Additional', name=source, calcInt=value)
 
 def unapply(propCalc):
-    print('unapply buff', proto['name'])
     propCalc.removeSource('AttackBonus.Additional', source)
     propCalc.removeSource('Damage.Additional', source)
