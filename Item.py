@@ -21,13 +21,13 @@ class Weapon(Item):
         if protoName in self.ctx['protosWeapon']:
             self.proto = self.ctx['protosWeapon'][protoName].proto
         else:
-            # for a virtual weapon, we need following keys in |props|:
+            # for a natural weapon, we need following keys in |props|:
             #   BaseCriticalThreat, default is [20, 20, 2], also named as 20/x2
             #   BaseDamage, default is [1,4,1], also named as 1d4
             #   BaseDamageType, default is ['Bludgeoning']
             self.proto = {'BaseDamageType': ['Bludgeoning'], 'WeaponSize': 'Tiny', 'Weight': 0.0,
                           'BaseCriticalThreat': {'desc': '20-20/x2', 'params': [20, 20, 2]}}
-            self.proto['name'] = 'Virtual:' + protoName
+            self.proto['name'] = 'NaturalWeapon:' + protoName
             self.proto['BaseDamage'] = {'desc': '1d4', 'params': [1, 4, 1]}
             if 'BaseDamage' in props:
                 params = props['BaseDamage']

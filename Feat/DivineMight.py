@@ -16,18 +16,21 @@ def matchRequirements(unit):
            and unit.calc.calcPropValue('Ability.Cha') >= 13
 
 def __buffDuration(caster, metaMagics):
-    return 3600.0 * caster.getClassLevel()
+    turns = caster.calc.calcPropValue('Modifier.Cha', caster, None)
+    if 'Epic' in caster.getFeatParams(source):
+        turns *= 2
+    return turns * caster.ctx['secondsPerTurn']
 
-def __buffApply(caster, propCalc, metaMagics):
+def __buffApply(caster, target, metaMagics):
     value = caster.calc.calcPropValue('Modifier.Cha', caster, None)
-    propCalc.addSource('Damage.Additional', name=source, calcInt=lambda caster, target: ('Divine', source, value))
+    target.calc.addSource('Damage.Additional', name=source, calcInt=lambda caster, target: ('Divine', source, value))
 
-def __buffUnapply(propCalc):
-    propCalc.removeSource('Damage.Additional', source)
+def __buffUnapply(target):
+    target.calc.removeSource('Damage.Additional', source)
 
 def __castToTarget(caster, target, params):
-    proto = caster.calc.getPropSource('Spell.Charges', source)
-    caster.buffs.addBuff(caster, proto.calcInt)
+    proto = caster.calc.getPropSource('Spell.Charges', source).calcInt
+    target.buffs.addBuff(caster, proto)
 
 def __fillCharge(caster):
     value = caster.calc.calcSingleSource('Spell.Charges', 'TurnUndead', caster, None)

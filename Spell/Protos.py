@@ -12,13 +12,13 @@ class SpellProtoBufferSelf:
         self.params = kwargs.get('params')
 
     def activate(self, caster):
-        self.funCastToTarget(caster, None, self.params)
+        self.funCastToTarget(caster, caster, self.params)
 
     def duration(self, caster, metaMagics):
         return self.funBuffDuration(caster, metaMagics)
 
     def apply(self, caster, propCalc, metaMagics):
-        return self.funBuffApply(caster, caster.calc, metaMagics)
+        return self.funBuffApply(caster, caster, metaMagics)
 
     def unapply(self, propCalc):
         return self.funBuffUnapply(propCalc)

@@ -24,7 +24,7 @@ class BuffManager:
             buffExist = [buffCaster, expired, buffProto, buffMetaMagics]
 
         # apply buff to owner
-        buffProto.apply(buffCaster, self.owner.calc, buffMetaMagics)
+        buffProto.apply(buffCaster, self.owner, buffMetaMagics)
         print(repr(self.owner), 'apply buff', buffProto.name, ', cast from', repr(buffCaster))
         return True
 
@@ -37,7 +37,7 @@ class BuffManager:
         for i, buff in enumerate(self.buffs):
             if buff[1] <= self.tsInMs:
                 self.buffs.pop(i)
-                buff[2].unapply(self.owner.calc)
+                buff[2].unapply(self.owner)
                 print(repr(self.owner), '\'s buff', buff[2].name, 'expired, cast by', repr(buff[0]))
                 break
 

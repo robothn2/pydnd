@@ -11,6 +11,7 @@ proto = {
     'WillPerLevel': 0.25,
     'WeaponProficiencies': [],
     'ArmorProficiencies': [],
+    'SpellType': '',
     'SkillPoints': 2,
     'ClassSkills': ['CraftWeapon', 'Intimidate', 'Lore', 'Parry', 'Taunt']
 }

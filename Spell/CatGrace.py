@@ -19,8 +19,8 @@ source = 'Buff:' + name
 def duration(caster, metaMagics):
     return 60.0 * caster.getClassLevel()
 
-def apply(caster, propCalc, metaMagics):
-    propCalc.addSource('Ability.Dex.Buff', name=source, calcInt=4)
+def apply(caster, target, metaMagics):
+    target.calc.addSource('Ability.Dex.Buff', name=source, calcInt=4)
 
-def unapply(propCalc):
-    propCalc.removeSource('Ability.Dex.Buff', source)
+def unapply(target):
+    target.calc.removeSource('Ability.Dex.Buff', source)

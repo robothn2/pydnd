@@ -18,12 +18,12 @@ source = 'Buff:' + name
 def duration(caster, metaMagics):
     return 60.0 * caster.getClassLevel()
 
-def apply(caster, propCalc, metaMagics):
+def apply(caster, target, metaMagics):
     level = caster.calc.calcPropValue('Caster.Level', caster, None)
     value = min(5, int((level + 2) / 3))
-    propCalc.addSource('AttackBonus.Additional', name=source, calcInt=value)
-    propCalc.addSource('Damage.Additional', name=source, calcInt=value)
+    target.calc.addSource('AttackBonus.Additional', name=source, calcInt=value)
+    target.calc.addSource('Damage.Additional', name=source, calcInt=value)
 
-def unapply(propCalc):
-    propCalc.removeSource('AttackBonus.Additional', source)
-    propCalc.removeSource('Damage.Additional', source)
+def unapply(target):
+    target.calc.removeSource('AttackBonus.Additional', source)
+    target.calc.removeSource('Damage.Additional', source)

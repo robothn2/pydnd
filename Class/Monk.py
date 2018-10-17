@@ -11,6 +11,7 @@ proto = {
     'WillPerLevel': 0.5,
     'WeaponProficiency': ('Club', 'LightCrossbow',  'HeavyCrossbow', 'Dagger', 'Handaxe', 'Javelin', 'Kama', 'Quarterstaff', 'Shuriken', 'Sling'),
     'ArmorProficiency': (),
+    'SpellType': '',
     'SkillPoints': 4,
     'ClassSkills': ('Concentration', 'CraftAlchemy', 'CraftTrap', 'Diplomacy', 'Hide', 'Listen', 'Lore', 'MoveSilently', 'Parry', 'Spot', 'Tumble'),
     'BonusFeats': (
@@ -26,7 +27,7 @@ proto = {
         (15,['QuiveringPalm']),
         (19,['EmptyBody']),
         (20,['PerfectSelf'])
-        )
+    )
 }
 
 def applyLevelUp(unit, level, levelInfo):

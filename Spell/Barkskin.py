@@ -18,14 +18,14 @@ source = 'Buff:' + name
 def duration(caster, metaMagics):
     return 3600.0 * caster.getClassLevel()
 
-def apply(caster, propCalc, metaMagics):
+def apply(caster, target, metaMagics):
     level = caster.calc.calcPropValue('Caster.Level', caster, None)
     value = 3
     if level >= 13:
         value = 5
     elif level >= 7:
         value = 4
-    propCalc.addSource('ArmorClass.Natural', name=source, calcInt=value)
+    target.calc.addSource('ArmorClass.Natural', name=source, calcInt=value)
 
-def unapply(propCalc):
-    propCalc.removeSource('ArmorClass.Natural', source)
+def unapply(target):
+    target.calc.removeSource('ArmorClass.Natural', source)
