@@ -8,8 +8,5 @@ proto = {
 }
 source = 'Feat:' + proto['name']
 
-def matchRequirements(unit):
-    return True
-
 def apply(unit, featParams):
     pass

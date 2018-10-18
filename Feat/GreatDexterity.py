@@ -12,4 +12,6 @@ def matchRequirements(unit):
     return unit.getClassLevel() >= 21
 
 def apply(unit, featParams):
-    unit.modifier.updateSource(('Abilities', 'Dex', 'Base', source), featParams[-1])
+    prop = unit.calc.getProp('Ability.Dex.Base')
+    value = prop.calcSingleSource(source, unit, None)
+    unit.calc.addSource('Ability.Dex.Base', name=source, calcInt=value+1)

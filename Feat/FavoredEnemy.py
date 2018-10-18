@@ -9,9 +9,6 @@ proto = {
 }
 source = 'Feat:' + proto['name']
 
-def matchRequirements(unit):
-    return True
-
 def calcDamage(caster, target, params):
     if not target.matchRaces(params):
         return

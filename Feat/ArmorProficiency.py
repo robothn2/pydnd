@@ -9,7 +9,7 @@ proto = {
 source = 'Feat:' + proto['name']
 
 def matchRequirements(unit):
-    return True
+    return False
 
 def apply(unit, featParams):
     pass

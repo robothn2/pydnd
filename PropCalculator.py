@@ -212,6 +212,13 @@ class PropNode:
         if kwargs.get('noCache'):
             self.setNoCache()
 
+    def updateIntSource(self, sourceName, calculator):
+        source = self.sourcesInt.get(sourceName)
+        if source:
+            source.calcInt = calculator
+        else:
+            self.sourcesInt[sourceName] = PropSourceInt(name=sourceName, calcInt=calculator)
+
     def getSource(self, sourceName):
         return self.sourcesInt.get(sourceName)
 
@@ -376,7 +383,6 @@ class PropCalculator:
             {'upstream': 'ArmorClass.Aura'}
         ])
 
-        self.addProp('SpellResistance')
         self.addProp('BaseAttackBonus')
         self.addProp('Class.Level')
         self.addProp('Level.Adjustment')
@@ -432,13 +438,25 @@ class PropCalculator:
         self.addProp('Weapon.OffHand.CriticalMultiplier')
         self.addProp('Weapon.TwoHand.CriticalMultiplier')
 
+        self.addProp('Caster.Level')
+        self.addProp('Spell.Charges')
+        self.addProp('Spell.Activable')
+
+        self.addProp('Vision.Dark')
+        self.addProp('Vision.LowLight')
+
+        self.addProp('SpellResistance')
+
         self.addProp('SavingThrow.Fortitude', {'upstream': 'SavingThrow.All'})
         self.addProp('SavingThrow.Reflex', {'upstream': 'SavingThrow.All'})
         self.addProp('SavingThrow.Will', {'upstream': 'SavingThrow.All'})
 
-        self.addProp('Caster.Level')
-        self.addProp('Spell.Charges')
-        self.addProp('Spell.Activable')
+        self.addProp('Reduction.Fire')
+
+        self.addProp('Immunity.Sleep')
+        self.addProp('Immunity.Paralysis')
+        self.addProp('Immunity.Poison')
+        self.addProp('Immunity.Disease')
 
     def __repr__(self):
         return repr(self.props)
@@ -495,6 +513,12 @@ class PropCalculator:
         if propName not in self.props:
             return 0
         return self.props[propName].calcValue(caster, target)
+
+    def updatePropIntSource(self, propName, sourceName, calculator):
+        prop = self.props.get(propName)
+        if not prop:
+            raise RuntimeError('prop not found', propName)
+        prop.updateIntSource(sourceName, calculator)
 
     def getProp(self, propName):
         if propName not in self.props:

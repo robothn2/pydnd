@@ -11,14 +11,7 @@ proto = {
 }
 source = 'Feat:' + proto['name']
 
-def matchRequirements(unit):
-    return True
-
-def castTo(caster, target):
-    pass
-
 def apply(unit, featParams):
     chargeSource = [0, # charges, can be initialized by init-function if unit take a rest
                     (lambda unit: 3 + unit.calc.calcPropValue('Modifier.Cha'))] # charges init-function,
-    sourceParams = [chargeSource, castTo]
-    unit.calc.addSource('Spell.Charges', name='TurnUndead', calcInt=sourceParams)
+    #unit.calc.addSource('Spell.Charges', name='TurnUndead', calcInt=sourceParams)

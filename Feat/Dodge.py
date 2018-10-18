@@ -10,7 +10,7 @@ proto = {
 }
 
 def matchRequirements(unit):
-    return unit.modifier.sumSource(('Abilities', 'Dex'), ['Base']) >= 13
+    return unit.calc.calcPropValue('Ability.Dex.Base', unit, None) >= 13
 
 def apply(unit, featParams):
     unit.calc.addSource('ArmorClass.Dodge', name='Feat:' + proto['name'], calcInt=1)
