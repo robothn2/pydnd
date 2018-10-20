@@ -7,7 +7,7 @@ proto = {
 }
 
 def apply(unit):
-    print('apply feat %s' % proto['name'])
+    print('apply race %s' % proto['name'])
     unit.addFeat('QuickToMaster')
     unit.addFeat('Skilled')
     unit.addFeat('FavoredClass', 'Any')

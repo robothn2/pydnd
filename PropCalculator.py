@@ -374,16 +374,15 @@ class PropCalculator:
         self.addProp('ArmorClass', [
             {'upstream': 'ArmorClass.Armor', 'calcUpstream': calc_upstream_max},
             {'upstream': 'Skill.Tumble', 'name': 'ArmorClass.Tumble', 'calcPost': (lambda value: int(value/10))},
-            {'upstream': 'ArmorClass.Natural'},
+            {'upstream': 'ArmorClass.Natural', 'calcUpstream': calc_upstream_max},
             {'upstream': 'ArmorClass.Luck'},
-            {'upstream': 'ArmorClass.Deflection'},
+            {'upstream': 'ArmorClass.Deflection', 'calcUpstream': calc_upstream_max},
             {'upstream': 'ArmorClass.Dodge'},
             {'upstream': 'ArmorClass.Dex'},
             {'upstream': 'ArmorClass.Buff'},
             {'upstream': 'ArmorClass.Aura'}
         ])
 
-        self.addProp('BaseAttackBonus')
         self.addProp('Class.Level')
         self.addProp('Level.Adjustment')
 

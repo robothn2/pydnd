@@ -9,8 +9,8 @@ proto = {
     'FortitudePerLevel': 0.5,
     'ReflexPerLevel': 0.25,
     'WillPerLevel': 0.5,
-    'WeaponProficiencies': [],
-    'ArmorProficiencies': [],
+    'WeaponProficiency': [],
+    'ArmorProficiency': [],
     'SpellType': '',
     'SkillPoints': 2,
     'ClassSkills': ['Concentration', 'CraftAlchemy', 'CraftArmor', 'CraftTrap', 'CraftWeapon', 'Diplomacy', 'Listen', 'Lore', 'Parry', 'Search', 'Spellcraft', 'Spot'],
@@ -28,7 +28,7 @@ def matchRequirements(unit):
         return False
 
     # classes check
-    if unit.getClassLevel('Sorcerer') == 0 and unit.getClassLevel('Wizard') == 0:
+    if unit.getClassLevel('Sorcerer') == 0 and unit.getClassLevel('Bard') == 0:
         return False
     return True
 

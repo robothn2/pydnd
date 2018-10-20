@@ -9,8 +9,8 @@ proto = {
     'FortitudePerLevel': 0.25,
     'ReflexPerLevel': 0.5,
     'WillPerLevel': 0.25,
-    'WeaponProficiencies': [],
-    'ArmorProficiencies': [],
+    'WeaponProficiency': [],
+    'ArmorProficiency': [],
     'SpellType': '',
     'SkillPoints': 2,
     'ClassSkills': ['CraftWeapon', 'Intimidate', 'Lore', 'Parry', 'Taunt']
@@ -18,11 +18,11 @@ proto = {
 
 def matchRequirements(unit):
     # skills check
-    if unit.modifier.sumSource(('Skills', 'Intimidate'), ['Base']) < 4:
+    if unit.calc.calcPropValue('Skill.Intimidate', 'Builder') < 4:
         return False
 
     # bab check
-    if unit.modifier.sumSource('AttackBonus', ['Base']) < 5:
+    if unit.calc.calcPropValue('AttackBonus.Base') < 5:
         return False
 
     # feats check
@@ -30,9 +30,11 @@ def matchRequirements(unit):
         return False
 
     # check Weapon Focus on melee weapon
-    weapons = unit.modifier.getSource(['Feats', 'WeaponFocus'])
-    for _, weaponBaseName in weapons:
-        weaponProto = unit.ctx['protosWeapon'][weaponBaseName]
+    weapons = unit.getFeatParams('WeaponFocus')
+    for _, weaponBaseName in enumerate(weapons):
+        weaponProto = unit.ctx['protosWeapon'].get(weaponBaseName)
+        if not weaponProto:
+            continue
         if not weaponProto.proto.get('Ranged'):
             return True
     return False

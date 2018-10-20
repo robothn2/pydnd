@@ -12,18 +12,18 @@ proto = {
 source = 'Feat:' + proto['name']
 
 def matchRequirements(unit):
-    if unit.modifier.sumSource('AttackBonus', ['Base']) < 1:
+    if unit.calc.calcPropValue('AttackBonus.Base') < 1:
         return False
-    return unit.hasFeats(['WeaponProficiency'])
+    return not unit.getFeatParams('WeaponProficiency')
 
 def availableParams(unit):
-    if not unit.hasFeats(['WeaponProficiency']):
+    if not unit.hasFeat('WeaponProficiency'):
         return []
 
-    weapons = unit.modifier.getSource(['Feats', 'WeaponProficiency'])
+    weapons = unit.getFeatParams('WeaponProficiency')
     race = unit.getProp('race')
     if race not in ['Gnomes', 'Halflings']:
-        return weapons;
+        return weapons
 
     # Halflings and gnomes cant use large weapons
     weaponsAvailable = []
@@ -34,9 +34,12 @@ def availableParams(unit):
     return weaponsAvailable
 
 def applyToWeapon(unit, featParams, weapon, hand):
-    if type(featParams) != list or weapon.proto['name'] not in featParams:
+    if type(featParams) != list or weapon.getItemBaseName() not in featParams:
         return
 
-    print(source, 'affects weapon:', weapon.proto['name'], ', params:', featParams)
-    if 'SuperiorWeaponFocus' in featParams:
-        unit.calc.addSource('AttackBonus.' + hand, name=source, calcInt=1)
+    print(source, 'affects weapon:', weapon.getItemBaseName(), ', params:', featParams)
+    unit.calc.addSource('AttackBonus.' + hand, name='WeaponFocus', calcInt=1)
+    if 'Greater' in featParams:
+        unit.calc.addSource('AttackBonus.' + hand, name='GreaterWeaponFocus', calcInt=1)
+    if 'Epic' in featParams:
+        unit.calc.addSource('AttackBonus.' + hand, name='EpicWeaponFocus', calcInt=2)

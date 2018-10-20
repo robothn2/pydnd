@@ -54,6 +54,9 @@ class Weapon(Item):
     def __repr__(self):
         return self.props['name']
 
+    def getItemBaseName(self):
+        return self.proto['name']
+
     def apply(self, unit, hand):
         Apply.apply_weapon_attacks(self, unit, hand)
 

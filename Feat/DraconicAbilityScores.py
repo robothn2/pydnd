@@ -19,9 +19,9 @@ def apply(unit, featParams):
     elif level >= 2:
         strAdd = 2
     if strAdd > 0:
-        unit.calc.updatePropIntSource('Ability.Str.Base', name=source, calcInt=strAdd)
+        unit.calc.updatePropIntSource('Ability.Str.Base', source, strAdd)
 
     if level >= 7:
-        unit.calc.updatePropIntSource('Ability.Con.Base', name=source, calcInt=2)
+        unit.calc.updatePropIntSource('Ability.Con.Base', source, 2)
     if level >= 8:
-        unit.calc.updatePropIntSource('Ability.Int.Base', name=source, calcInt=2)
+        unit.calc.updatePropIntSource('Ability.Int.Base', source, 2)

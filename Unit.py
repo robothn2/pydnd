@@ -106,8 +106,10 @@ class Unit:
     def printProp(self, key):
         print(key, ':', self.calc.calcPropValue(key, self, None))
 
-    def getAttackBonus(self, target):
-        return self.calc.calcPropValue('AttackBonus', self, target)
+    def getAttackBonus(self, target, hand):
+        return self.calc.calcPropValue('AttackBonus.Additional', self, target) \
+             + self.calc.calcPropValue('AttackBonus.' + hand, self, target)
+
     def getArmorClass(self, target):
         return self.calc.calcPropValue('ArmorClass', self, target)
 

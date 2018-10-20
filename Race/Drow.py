@@ -40,5 +40,5 @@ def apply(unit):
     unit.calc.addSource('SpellResistance', upstream='Class.Level', name=source, calcPost=lambda value: 11 + value)
 
     unit.addFeat('Darkvision')
-    unit.addFeat('WeaponProficiency', ['longsword', 'rapier', 'longbow', 'shortbow'])
+    unit.addFeat('WeaponProficiency', ['Longsword', 'Rapier', 'Longbow', 'Shortbow'])
     unit.addFeat('FavoredClass', 'Wizard')

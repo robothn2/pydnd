@@ -162,7 +162,7 @@ class Character(Unit):
         print(self.getName(), 'received xp', xp, ',total', xpNew)
 
 if __name__ == '__main__':
-    builder = loadJsonFile(r'data/builders/builder1.json')
+    builder = loadJsonFile(r'data/builders/TwoWeaponRanger.json')
     player = Character(__import__('Context').ctx)
     player.buildByBuilder(builder, 30)
     player.addFeat('FavoredEnemy', [['FavoredEnemy', 'Dragons']])

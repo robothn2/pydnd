@@ -31,10 +31,10 @@ protoKiCritical = {
 source = 'Feat:' + proto['name']
 
 def applyToWeapon(unit, featParams, weapon, hand):
-    if type(featParams) != list or weapon.proto['name'] not in featParams:
+    if type(featParams) != list or weapon.getItemBaseName() not in featParams:
         return
 
-    print(source, 'affects weapon:', weapon.proto['name'], ', params:', featParams)
+    print(source, 'affects weapon:', weapon.getItemBaseName(), ', params:', featParams)
     if 'IncreasedMultiplier' in featParams:
         unit.calc.addSource('Weapon.%s.CriticalMultiplier' % hand, name='Feat:IncreasedMultiplier', calcInt=1)
     if 'SuperiorWeaponFocus' in featParams:

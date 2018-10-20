@@ -61,7 +61,7 @@ class CombatManager:
             return False
 
         abFinal = attack[1] # bab from attack
-        abFinal += caster.getAttackBonus(target) # ab from caster's Buff, Feats, Str
+        abFinal += caster.getAttackBonus(target, attack[2]) # ab from caster's Buff, Feats, Str
         dcCaster = roll + abFinal
         dcTarget = int(target.getArmorClass(caster))
         info += ', dc:{} against {}'.format(dcCaster, dcTarget)
@@ -91,7 +91,7 @@ class CombatManager:
         weapon = attack[3]
         rangeDiff = self.owner.calc.calcPropValue('Weapon.%s.CriticalRange' % hand, caster, target)
         if roll >= 20 - rangeDiff:
-            if self.criticalCheck(caster, target, attack[0]):
+            if self.criticalCheck(caster, target, attack):
                 _,multipliers = self.owner.calc.getPropValueWithSource('Weapon.%s.CriticalMultiplier' % hand, caster, target)
                 #print('CriticalMultipliers:', multipliers)
                 for k,v in multipliers.items():
@@ -99,12 +99,12 @@ class CombatManager:
                         damages.addMultiplier(k,v)
         return damages
 
-    def criticalCheck(self, caster, target, bab):
+    def criticalCheck(self, caster, target, attack):
         roll = rollDice(1, 20, 1)
         if roll == 1:
             return False
 
-        dcCaster = roll + bab + caster.getAttackBonus(target)
+        dcCaster = roll + attack[1] + caster.getAttackBonus(target, attack[2])
         dcTarget = target.getArmorClass(caster)
         if roll < 20:
             if dcCaster < dcTarget:
