@@ -508,7 +508,7 @@ class PropCalculator:
             raise RuntimeError('prop not found', propName)
         return prop.removeSource(sourceName)
 
-    def calcPropValue(self, propName, caster, target):
+    def calcPropValue(self, propName, caster, target = None):
         if propName not in self.props:
             return 0
         return self.props[propName].calcValue(caster, target)
@@ -530,7 +530,7 @@ class PropCalculator:
             return None
         return prop.getSource(sourceName)
 
-    def getPropValueWithSource(self, propName, caster, target):
+    def getPropValueWithSource(self, propName, caster, target = None):
         prop = self.props.get(propName)
         if not prop:
             return (0, {})

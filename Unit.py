@@ -4,6 +4,7 @@ from common import Props
 from CombatManager import CombatManager
 from BuffManager import BuffManager
 from PropCalculator import PropCalculator
+from FeatManager import FeatManager
 
 class Unit:
     def __init__(self, ctx):
@@ -14,6 +15,7 @@ class Unit:
         self.modifierBuff = Props.Modifier()
         self.combat = CombatManager(self)
         self.buffs = BuffManager(self)
+        self.feats = FeatManager(self)
 
     def __repr__(self):
         return self.getName()

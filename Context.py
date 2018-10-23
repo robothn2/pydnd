@@ -2,35 +2,44 @@
 from common import CsvLoader
 import os
 
-def loadScriptsFolder(scriptFolderPath, skipFilenames = []):
+def loadScriptsFolder(protos, scriptFolderPath, skipFilenames = []):
     dotedPath = scriptFolderPath.replace('/', '.')
-    protos = {}
     for folder, _, fileNames in os.walk(scriptFolderPath, followlinks=False):
         for fileName in fileNames:
             (name, extension) = os.path.splitext(fileName)
+            #print(name, extension)
             if extension != '.py':
                 continue
             if name in skipFilenames:
                 print('  skip file:', fileName)
                 continue
-            mod = __import__(dotedPath + '.' + name)
-            # print(dir(mod))
-            proto = eval('mod.' + name)
-            # print(dir(proto))
-            protos[name] = proto
-    return protos
 
-ctx = {}
-ctx['protosBackground'] = loadScriptsFolder('Background')
-ctx['protosDeity'] = loadScriptsFolder('Deity')
-ctx['protosDomain'] = loadScriptsFolder('Domain')
-ctx['protosFeat'] = loadScriptsFolder('Feat', ['Protos'])
-ctx['protosClass'] = loadScriptsFolder('Class')
-ctx['protosRace'] = loadScriptsFolder('Race')
-ctx['protosWeapon'] = loadScriptsFolder('Weapon')
-ctx['protosSpell'] = loadScriptsFolder('Spell', ['Protos'])
-ctx['protosCreature'] = CsvLoader.loadCsvFile(r'data/beastiary.csv')
+            mod = __import__(dotedPath + '.' + name, fromlist=['register'])
+            #print(dir(mod))
+            mod.register(protos)
+
+ctx = {
+    'protosBackground': {},
+    'protosDeity': {},
+    'protosDomain': {},
+    'protosFeat': {},
+    'protosClass': {},
+    'protosRace': {},
+    'protosWeapon': {},
+    'protosSpell': {},
+    'protosSkill': {},
+    'protosCreature': {},
+    'secondsPerTurn': 6.0,
+    'secondsPerRound': 6.0,
+    'Abilities': ('Str', 'Dex', 'Con', 'Int', 'Wis', 'Cha')
+}
+
+loadScriptsFolder(ctx, 'data/nwn2/Race')
+loadScriptsFolder(ctx, 'data/nwn2/Class')
+loadScriptsFolder(ctx, 'data/nwn2/Domain')
+loadScriptsFolder(ctx, 'data/nwn2/Deity')
+loadScriptsFolder(ctx, 'data/nwn2/Feat')
+loadScriptsFolder(ctx, 'data/nwn2/Spell')
+loadScriptsFolder(ctx, 'data/nwn2/Weapon')
 ctx['protosSkill'] = CsvLoader.loadCsvFile(r'data/skills.csv')
-ctx['secondsPerTurn'] = 6.0
-ctx['secondsPerRound'] = 6.0
-ctx['Abilities'] = ['Str', 'Dex', 'Con', 'Int', 'Wis', 'Cha']
+ctx['protosCreature'] = CsvLoader.loadCsvFile(r'data/beastiary.csv')

@@ -1,21 +1,9 @@
 #coding: utf-8
+from Models import Class
 
-proto = {
-    'name': 'Ranger',
-    'desc': '''A ranger can use a variety of weapons and is quite capable in combat. His skills allow him to survive in the wilderness, to find his prey, and to avoid detection. He also has special knowledge about certain types of creatures, which makes it easier for him to find and defeat such foes. Finally, an experienced ranger has such a tie to nature that he can actually draw upon natural power to cast divine spells, much as a druid does.''',
-    'HitDie': 8,
-    'BaseAttackBonus': 1.0,
-    'FortitudePerLevel': 0.5,
-    'ReflexPerLevel': 0.5,
-    'WillPerLevel': 0.25,
-    'WeaponProficiency': ['Simple', 'Martial'],
-    'ArmorProficiency': ['Light', 'Shield'],
-    'SpellType': 'Divine',
-    'SkillPoints': 6,
-    'ClassSkills': ['Concentration', 'CraftAlchemy', 'CraftArmor', 'CraftTrap', 'CraftWeapon', 'Heal', 'Hide', 'Listen', 'Lore', 'MoveSilently', 'Parry', 'Search', 'SetTrap', 'Spot', 'Survival']
-}
+name = 'Ranger'
 
-def applyLevelUp(unit, level, levelInfo):
+def __applyLevelUp(unit, level, levelInfo):
     featsHint = levelInfo['featsHint'] if 'featsHint' in levelInfo else []
 
     print('%s apply level %d, featsHint: %s' % (proto['name'], level, featsHint))
@@ -66,3 +54,22 @@ def applyLevelUp(unit, level, levelInfo):
 
     if level % 5 == 0 or level == 1:
         unit.addFeat('FavoredEnemy', featsHint)
+
+proto = {
+    'name': 'Ranger',
+    'desc': '''A ranger can use a variety of weapons and is quite capable in combat. His skills allow him to survive in the wilderness, to find his prey, and to avoid detection. He also has special knowledge about certain types of creatures, which makes it easier for him to find and defeat such foes. Finally, an experienced ranger has such a tie to nature that he can actually draw upon natural power to cast divine spells, much as a druid does.''',
+    'HitDie': 8,
+    'BaseAttackBonus': 1.0,
+    'FortitudePerLevel': 0.5,
+    'ReflexPerLevel': 0.5,
+    'WillPerLevel': 0.25,
+    'WeaponProficiency': ['Simple', 'Martial'],
+    'ArmorProficiency': ['Light', 'Shield'],
+    'SpellType': ('Divine', 4),
+    'SkillPoints': 6,
+    'ClassSkills': ['Concentration', 'CraftAlchemy', 'CraftArmor', 'CraftTrap', 'CraftWeapon', 'Heal', 'Hide', 'Listen', 'Lore', 'MoveSilently', 'Parry', 'Search', 'SetTrap', 'Spot', 'Survival'],
+    'applyLevelUp': __applyLevelUp,
+}
+
+def register(protos):
+    protos['Class'] = Class(name, **proto)

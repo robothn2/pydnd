@@ -13,7 +13,7 @@ class Item:
 
 class Weapon(Item):
     def __init__(self, ctx, props):
-        super(Weapon, self).__init__(ctx, props)
+        super().__init__(ctx, props)
         self.modifier = Props.Modifier()
 
         self.props['Type'] = 'Weapon'
