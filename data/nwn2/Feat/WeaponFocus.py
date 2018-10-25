@@ -28,7 +28,7 @@ def availableParams(unit):
     # Halflings and gnomes cant use large weapons
     weaponsAvailable = []
     for _, weaponBaseName in weapons:
-        weaponProto = unit.ctx['protosWeapon'][weaponBaseName]
+        weaponProto = unit.ctx['Weapon'][weaponBaseName]
         if weaponProto.proto['WeaponSize'] != 'Large':
             weaponsAvailable.append(weaponBaseName)
     return weaponsAvailable

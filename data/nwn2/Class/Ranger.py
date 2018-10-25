@@ -1,7 +1,23 @@
 #coding: utf-8
-from Models import Class
+from Models import Class, Feat
 
 name = 'Ranger'
+
+def _applyFeatFavoredEnemy(source, unit, featParams):
+    bonus = max(1, int(unit.getClassLevel('Ranger') / 5))
+    calcDamage = lambda caster,target: None if not target.matchRaces(featParams) else ('Divine', source, bonus)
+    unit.calc.addSource('Damage.Additional', name=source, calcInt=calcDamage, noCache=True)
+
+    calcSkill = lambda caster,target: 0 if not target.matchRaces(featParams) else max(1, int(caster.getClassLevel('Ranger') / 5))
+    unit.calc.addSource('Skill.Listen', name=source, calcInt=calcSkill, noCache=True)
+    unit.calc.addSource('Skill.Spot', name=source, calcInt=calcSkill, noCache=True)
+    unit.calc.addSource('Skill.Taunt', name=source, calcInt=calcSkill, noCache=True)
+def _unapplyFeatFavoredEnemy(source, unit):
+    unit.calc.removeSource('Damage.Additional', source)
+
+    unit.calc.addSource('Skill.Listen', source)
+    unit.calc.addSource('Skill.Spot', source)
+    unit.calc.addSource('Skill.Taunt', source)
 
 def __applyLevelUp(unit, level, levelInfo):
     featsHint = levelInfo['featsHint'] if 'featsHint' in levelInfo else []
@@ -56,20 +72,32 @@ def __applyLevelUp(unit, level, levelInfo):
         unit.addFeat('FavoredEnemy', featsHint)
 
 proto = {
-    'name': 'Ranger',
     'desc': '''A ranger can use a variety of weapons and is quite capable in combat. His skills allow him to survive in the wilderness, to find his prey, and to avoid detection. He also has special knowledge about certain types of creatures, which makes it easier for him to find and defeat such foes. Finally, an experienced ranger has such a tie to nature that he can actually draw upon natural power to cast divine spells, much as a druid does.''',
-    'HitDie': 8,
-    'BaseAttackBonus': 1.0,
-    'FortitudePerLevel': 0.5,
-    'ReflexPerLevel': 0.5,
-    'WillPerLevel': 0.25,
-    'WeaponProficiency': ['Simple', 'Martial'],
-    'ArmorProficiency': ['Light', 'Shield'],
+    'Hit Die': 'd8',
+    'Base Attack Bonus': 'High.',
+    'High Saves': 'Fortitude and Reflex.',
+    'Weapon Proficiencies': ('Simple', 'Martial'),
+    'Armor Proficiencies': ('Light', 'Shield'),
     'SpellType': ('Divine', 4),
-    'SkillPoints': 6,
-    'ClassSkills': ['Concentration', 'CraftAlchemy', 'CraftArmor', 'CraftTrap', 'CraftWeapon', 'Heal', 'Hide', 'Listen', 'Lore', 'MoveSilently', 'Parry', 'Search', 'SetTrap', 'Spot', 'Survival'],
+    'Skill Points': 6,
+    'Class Skills': ['Concentration', 'CraftAlchemy', 'CraftArmor', 'CraftTrap', 'CraftWeapon', 'Heal', 'Hide', 'Listen', 'Lore', 'MoveSilently', 'Parry', 'Search', 'SetTrap', 'Spot', 'Survival'],
     'applyLevelUp': __applyLevelUp,
 }
 
 def register(protos):
-    protos['Class'] = Class(name, **proto)
+    protos['Class'][name] = Class(name, **proto)
+
+    protos['Feat']['FavoredEnemy'] = Feat(
+        'FavoredEnemy',
+        nameFull = 'Favored Enemy',
+        type = 'Class',
+        group = 'FavoredEnemy',
+        groupMemberName = '',
+        apply = _applyFeatFavoredEnemy,
+        unapply = _unapplyFeatFavoredEnemy,
+        prerequisite = (
+            ('Class', name, 'Ranger level 1')
+        ),
+        specifics = '''The character gains a +1 bonus to damage rolls against their favored enemy. They also receive a +1 bonus on Listen, Spot, and Taunt checks against the favored enemy. Every 5 levels, the ranger may choose an additional Favored Enemy and all bonuses against all favored enemies increase by +1.''',
+        use = 'Automatic',
+    )

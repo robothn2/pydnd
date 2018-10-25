@@ -21,13 +21,13 @@ proto = {
     'Hit Die': 'd4',
     'Base Attack Bonus': 'Low.',
     'High Saves': 'Will.',
-    'Skill Points': '2 + Int modifier.',
     'Weapon Proficiencies': ['Club', 'Dagger', 'HeavyCrossbow', 'LightCrossbow', 'Quarterstaff'],
     'Armor Proficiencies': [],
-    'Spell Type': 'Arcane',
-    'Class Skills': ['Concentration', 'CraftAlchemy', 'CraftArmor', 'CraftWeapon', 'Lore', 'Spellcraft'],
+    'SpellType': 'Arcane',
+    'Skill Points': 2,
+    'Class Skills': ('Concentration', 'CraftAlchemy', 'CraftArmor', 'CraftWeapon', 'Lore', 'Spellcraft'),
     'BonusFeats': (
-        (1, ['Familiar', 'Spellbook']),
+        (1, ('Familiar', 'Spellbook')),
     ),
     'applyLevelUp': __applyLevelUp,
 }

@@ -34,14 +34,15 @@ proto = {
         ('Skill', 'Move Silently', 8),
         ('Skill', 'Hide', 10),
         ('Skill', 'Tumble', 5),
-        ('Feat', ('Dodge', 'Mobility'))),
+        ('Feat', ('Dodge', 'Mobility'))
+    ),
     'Hit Die': 'd8',
-    'Base Attack Bonus': 'Medium',
-    'High Saves': 'Reflex',
-    'Weapon Proficiencies': 'Simple',
-    'Armor Proficiencies': 'Light',
-    'Skill Points': '6 + Int modifier.',
-    'Class Skills': ['Bluff', 'CraftTrap', 'Diplomacy', 'Hide', 'Listen', 'MoveSilently', 'Parry', 'Search', 'SleightOfHand', 'Spot', 'Tumble'],
+    'Base Attack Bonus': 'Medium.',
+    'High Saves': 'Reflex.',
+    'Weapon Proficiencies': ('Simple'),
+    'Armor Proficiencies': ('Light'),
+    'Skill Points': 6,
+    'Class Skills': ('Bluff', 'CraftTrap', 'Diplomacy', 'Hide', 'Listen', 'MoveSilently', 'Parry', 'Search', 'SleightOfHand', 'Spot', 'Tumble'),
     'applyLevelUp': __applyLevelUp,
 }
 

@@ -7,7 +7,7 @@ def __requireWeaponFocusOnMelee(unit):
     # check Weapon Focus on melee weapon
     weapons = unit.getFeatParams('WeaponFocus')
     for _, weaponBaseName in enumerate(weapons):
-        weaponProto = unit.ctx['protosWeapon'].get(weaponBaseName)
+        weaponProto = unit.ctx['Weapon'].get(weaponBaseName)
         if not weaponProto:
             continue
         if not weaponProto.proto.get('Ranged'):
@@ -38,7 +38,7 @@ proto = {
     'Hit Die': 'd10',
     'Base Attack Bonus': 'High.',
     'High Saves': 'Reflex.',
-    'Skill Points': '2 + Int modifier.',
+    'Skill Points': 2,
     'Class Skills': ('CraftWeapon', 'Intimidate', 'Lore', 'Parry', 'Taunt'),
     'applyLevelUp': __applyLevelUp,
 }
