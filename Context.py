@@ -32,6 +32,7 @@ ctx = {
     'Race': {},
     'Weapon': {},
     'Spell': {},
+    'Buff': {},
     'Skill': {},
     'Creature': {},
 }

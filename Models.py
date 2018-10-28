@@ -208,8 +208,25 @@ class Feat(ModelBase):
         pass
 
 def register_feat(protos, groupName, featName, **kwargs):
-    #print(groupName, featName, kwargs)
     feat = Feat(featName, **kwargs)
     feat.group = groupName
     feat.nameMember = kwargs.pop('nameMember') if 'nameMember' in kwargs else feat.name
     protos['Feat'][groupName] = feat
+
+
+class Spell(ModelBase):
+    def __init__(self, name, **kwargs):
+        self.nameBuff = kwargs.pop('nameBuff') if 'nameBuff' in kwargs else name
+        super().__init__(name, **kwargs)
+    def apply(self, source, unit, featParams):
+        pass
+    def unapply(self, target = None):
+        pass
+    def duration(self):
+        pass
+
+def register_spell(protos, spellName, **kwargs):
+    spell = Spell(spellName, **kwargs)
+    protos['Spell'][spellName] = spell
+    if hasattr(spell.model, 'buffDuration'):
+        protos['Buff'][spell.nameBuff] = spell
