@@ -18,8 +18,8 @@ class Weapon(Item):
 
         self.props['Type'] = 'Weapon'
         protoName = self.props['BaseItem']
-        if protoName in self.ctx['protosWeapon']:
-            self.proto = self.ctx['protosWeapon'][protoName].proto
+        if protoName in self.ctx['Weapon']:
+            self.proto = self.ctx['Weapon'][protoName].proto
         else:
             # for a natural weapon, we need following keys in |props|:
             #   BaseCriticalThreat, default is [20, 20, 2], also named as 20/x2
@@ -79,7 +79,7 @@ class Weapon(Item):
         unit.calc.addSource('Weapon.%s.CriticalMultiplier' % hand, name='WeaponBase', calcInt=criticalParams[2])
 
         # weapon related feats
-        Apply.feats_apply_to_weapon(unit, self, hand)
+        unit.feats.applyToWeapon(self, hand)
 
     def unapply(self, unit, hand):
         unit.calc.removeSource('Attacks', hand)

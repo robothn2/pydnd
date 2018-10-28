@@ -1,28 +1,34 @@
 #coding: utf-8
-from Feat.Protos import FeatProtoActivable
+from Models import Feat, register_feat
 
-proto = {
-    'name': 'PowerAttack',
-    'Type': 'General',
-    'Prerequisite': 'Turn Undead, Cha 13+, Str 13+, Power Attack.',
-    'Specifics': '''The character may spend one of his turn undead attempts to add his Charisma bonus to all weapon damage for a number of rounds equal to the Charisma bonus.''',
-    'Use': '''Selected'''
-}
-source = proto['name']
-
-def matchRequirements(unit):
-    return unit.calc.calcPropValue('Ability.Str') >= 13
-
-def __active(caster, params):
-    value = 10 if 'Improved' in params else 5
+def __active(source, caster, params):
+    value = 6 if 'Improved' in params else 3
     caster.calc.addSource('AttackBonus.Additional', name=source, calcInt=-value)
-    caster.calc.addSource('Damage.Additional', name=source, calcInt=lambda caster,target: ('Physical', source, value))
+    caster.calc.addSource('Damage.Additional', name=source, calcInt=lambda caster, target: ('Physical', source, value))
 
-def __deactive(caster):
+def __deactive(source, caster):
     caster.calc.removeSource('AttackBonus.Additional', source)
     caster.calc.removeSource('Damage.Additional', source)
 
-def apply(unit, featParams):
-    activator = FeatProtoActivable(active=__active, deactive=__deactive, params=featParams)
-    unit.calc.addSource('Spell.Activable', name=source, calcInt=activator)
-    print(unit.calc.getPropSource('Spell.Activable', source))
+def register(protos):
+    # register main feat
+    register_feat(protos, 'PowerAttack', 'Power Attack',
+        apply=lambda source, unit, feat, params: unit.calc.addSource('Spell.Activable', name=source, calcInt=feat),
+        unapply=lambda source, unit, feat, params: unit.calc.removeSource('Spell.Activable', source),
+        active=__active,
+        deactive=__deactive,
+        prerequisite=[('Ability', 'Str', 13)],
+        specifics='''A character with this feat can make powerful but ungainly attacks. When Power Attack is selected, it grants a +3 bonus to the damage roll, but at the cost of -3 to the attack roll.''',
+    )
+
+    #register member feats
+    register_feat(protos, 'PowerAttack', 'Improved Power Attack',
+                  nameMember='Improved',
+                  prerequisite=[('Feat', 'PowerAttack'), ('BaseAttackBonus', 6)],
+                  specifics='''This feat allows the character to trade a -6 penalty on his attack roll to gain a +6 bonus on his damage roll. It is very useful when fighting tough, easy-to-hit opponents.''',
+                  )
+
+    register_feat(protos, 'FavoredEnemy', 'Favored Power Attack',
+                  prerequisite=[('Feat', 'FavoredEnemy'), ('Feat', 'PowerAttack'), ('BaseAttackBonus', 4)],
+                  specifics='''When you use the Power Attack or Improved Power Attack feat with a one-handed weapon against a favored enemy, your Power Attack damage bonus is doubled. With a two-handed weapon against a favored enemy, your Power Attack damage bonus is tripled.''',
+                  )

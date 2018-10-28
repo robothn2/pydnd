@@ -1,81 +1,69 @@
 #coding: utf-8
 import warnings
 
-class FeatProto:
-    def __init__(self, **kwargs):
-        self.kwargs = kwargs
-        self.name = kwargs.get('name')
-        self.nameFull = kwargs.get('nameFull')
-        self.group = kwargs.get('group')
-        self.groupMemberName = kwargs.get('groupMemberName')
-        self.apply = kwargs.get('apply')
-        self.unapply = kwargs.get('unapply')
-        self.prerequisite = kwargs.get('prerequisite')
-
-    def apply(self, type, caster):
-        if type == 'active':
-            caster.calc.addSource('Spell.Activable', name=self.nameFull, calcInt=self)
-        elif type == 'spell':
-            assert 'spell group not impl'
-        elif type == 'chargedSpell':
-            caster.calc.addSource('Spell.Charges', name=self.nameFull, calcInt=self)
-        else:
-            self.apply(caster)
-
-    def unapply(self, target = None):
-        pass
-
-    def active(self, caster):
-        active = self.kwargs.get('active')
-        active(caster)
-    def deactive(self, caster):
-        deactive = self.kwargs.get('deactive')
-        deactive(caster)
-
-class FeatGroupProto:
-    def __init__(self, **kwargs):
-        self.name = kwargs.get('name')
-        self.type = kwargs.get('type')
-        self.caster = kwargs.get('caster')
+class FeatGroup:
+    def __init__(self, name):
+        self.name = name
         self.members = {}
-    def addMember(self, featProto, featParams):
-        self.members[featProto.nameFull] = featProto
-        featProto.apply(self.type, self.caster)
+        self.params = []
+    def addMember(self, unit, feat, param):
+        self.members[feat.name] = feat
+        self.params.append(feat.name)
+        if hasattr(feat, 'nameMember'):
+            self.params.append(feat.nameMember)
+        if param is str:
+            self.params.append(param)
+        if hasattr(feat, 'apply'):
+            print(repr(unit), 'apply feat', feat.name, 'to', ', params', self.params)
+            feat.apply(feat.name, unit, feat, self.params)
 
-    def unapplyMember(self, target = None):
-        pass
+    def removeMember(self, unit, feat):
+        featName = feat.name if hasattr(feat, 'name') else feat
+        if not featName:
+            return
+        featExist = self.members.get(featName)
+        if not featExist:
+            return
+
+    def applyToWeapon(self, unit, weapon, hand):
+        for featName,feat in self.members.items():
+            if not hasattr(feat, 'applyToWeapon'):
+                return
+            print(repr(unit), 'apply feat', featName, 'to weapon, params', self.params)
+            feat.applyToWeapon(feat.name, unit, feat, self.params, weapon=weapon, hand=hand)
 
 class FeatManager:
     def __init__(self, unit):
         self.owner = unit
-        self.featGroups = [
-            FeatGroupProto(name='Self', type='applySelf', caster=unit),
-            FeatGroupProto(name='Weapon', type='applySelf', caster=unit), # apply on weapon switching
-            FeatGroupProto(name='Target', type='applySelf', caster=unit),
-            FeatGroupProto(name='Active', type='active', caster=unit),
-            FeatGroupProto(name='Spell', type='spell', caster=unit),
-            FeatGroupProto(name='ChargedSpell', type='chargedSpell', caster=unit),
-        ]
+        self.featGroups = {}
 
-    def addFeat(self, featNameFull, featParams):
-        featProto = self.owner.ctx['protosFeat'].get(featNameFull)
-        if not featProto:
-            warnings.warn('unknown feat ' + featNameFull)
+    def addFeat(self, featNameFull, featParams = None):
+        feat = self.owner.ctx['Feat'].get(featNameFull)
+        if not feat:
+            warnings.warn('unknown feat: ' + featNameFull)
             return False
 
-        for _, group in enumerate(self.featGroups):
-            if group.name != featProto.group:
-                continue
+        featGroup = self.featGroups.get(feat.group)
+        if featGroup is None:
+            featGroup = FeatGroup(feat.group)
+            self.featGroups[feat.group] = featGroup
 
-            print(repr(self.owner), 'add feat', featProto.nameFull, 'to group', group.name)
-            group.addMember(featProto, featParams)
-            return True
+        print(repr(self.owner), 'add feat', feat.nameFull, 'to group', feat.group)
+        params = None
+        if featParams is str or featParams is int:
+            params = featParams
+        elif featParams is dict:
+            params = featParams.get(featNameFull)
 
-        assert 'unknown feat group ' + featProto.group + ' for feat ' + featProto.nameFull
-        return False
+        featGroup.addMember(self.owner, feat, params)
+        return True
 
     def removeFeat(self, featNameFull):
         pass
 
     def getAvailableFeats(self):
         pass
+
+    def applyToWeapon(self, weapon, hand):
+        for groupName, featGroup in self.featGroups.items():
+            featGroup.applyToWeapon(self.owner, weapon, hand)

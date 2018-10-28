@@ -472,7 +472,7 @@ class PropCalculator:
                 {'upstream':  ab, 'calcPost':  calc_post_ability_modifier}
             ])
     def __addSkillSources(self):
-        for skill,skillProto in self.ctx['protosSkill'].items():
+        for skill,skillProto in self.ctx['Skill'].items():
             sk = 'Skill.' + skill
             self.addProp(sk, [
                 {'upstream': 'Modifier.' + skillProto['Ability']},

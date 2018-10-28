@@ -2,30 +2,6 @@
 from Models import Class
 
 name = 'Barbarian'
-
-def __applyLevelUp(unit, level, levelInfo):
-    featsHint = levelInfo['featsHint'] if 'featsHint' in levelInfo else []
-
-    print('%s apply level %d, featsHint: %s' % (proto['name'], level, featsHint))
-    if level == 1:
-        unit.addFeats(['Rage', 'FastMovement'])
-        unit.addFeat('WeaponProficiency', ['Martial', 'Simple'])
-        unit.addFeat('ArmorProficiency', ['Light', 'Medium', 'Shield'])
-    elif level == 2:
-        unit.addFeat('UncannyDodge')
-    elif level == 3:
-        unit.addFeat('TrapSense')
-    elif level == 7:
-        unit.addFeat('DamageReduction')
-    elif level == 11:
-        unit.addFeat('Rage', ['Greater'])
-    elif level == 14:
-        unit.addFeat('Rage', ['IndomitableWill'])
-    elif level == 17:
-        unit.addFeat('Rage', ['Tireless'])
-    elif level == 20:
-        unit.addFeat('Rage', ['Mighty'])
-
 proto = {
     'desc': '''The barbarian is an excellent warrior. Where the fighter's skill comes from training and discipline, however, the barbarian draws upon a powerful primal rage. While in this berserk fury, he becomes stronger and tougher, better able to defeat his foes and withstand their attacks. These rages leave him winded, and he has the energy for only a few such spectacular displays per day, but those few rages are usually sufficient. He is at home in the wild, and he runs at great speed.''',
     'Alignment': ('NeutralGood', 'Neutral', 'NeutralEvil', 'ChaoticGood', 'ChaoticNeutral', 'ChaoticEvil'),
@@ -36,18 +12,17 @@ proto = {
     'Armor Proficiencies': ('Light', 'Medium', 'Shield'),
     'Skill Points': 4,
     'Class Skills': ('CraftArmor', 'CraftTrap', 'CraftWeapon', 'Intimidate', 'Listen', 'Parry', 'Survival', 'Taunt'),
-    'BonusFeats': (
-        (1,['Rage','FastMovement']),
-        (2,['UncannyDodge']),
-        (3,['TrapSense']),
-        (7,['DamageReduction']),
-        (11,['GreaterRage']),
-        (14,['IndomitableWill']),
-        (17,['TirelessRage']),
-        (20,['MightyRage'])
+    'bonus': (
+        (1, ('Feat', ('Rage', 'Fast Movement'))),
+        (2, ('Feat', 'Uncanny Dodge')),
+        (3, ('Feat', 'Trap Sense')),
+        (7, ('Feat', 'Damage Reduction')),
+        (11, ('Feat', 'Greater Rage')),
+        (14, ('Feat', 'Indomitable Will')),
+        (17, ('Feat', 'Tireless Rage')),
+        (20, ('Feat', 'Mighty Rage')),
     ),
-    'applyLevelUp': __applyLevelUp,
 }
 
 def register(protos):
-    protos['Class'] = Class(name, **proto)
+    protos['Class'][name] = Class(name, **proto)

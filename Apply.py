@@ -4,7 +4,7 @@ from Dice import rollDice
 def race_apply(unit, raceName):
     if not raceName:
         return
-    protosRace = unit.ctx['protosRace']
+    protosRace = unit.ctx['Race']
     if raceName not in protosRace:
         return
     proto = protosRace[raceName]
@@ -12,7 +12,7 @@ def race_apply(unit, raceName):
 
 def feats_apply(unit):
     feats = unit.modifier.getSource('Feats')
-    protos = unit.ctx['protosFeat']
+    protos = unit.ctx['Feat']
     for featName in feats.keys():
         if featName not in protos:
             continue
@@ -21,18 +21,6 @@ def feats_apply(unit):
         if hasattr(proto, 'apply'):
             print('apply feat', proto.proto['name'], ', params', feats[featName])
             proto.apply(unit, feats[featName])
-
-def feats_apply_to_weapon(unit, weapon, hand):
-    feats = unit.modifier.getSource('Feats')
-    protos = unit.ctx['protosFeat']
-    for featName in feats.keys():
-        if featName not in protos:
-            continue
-
-        proto = protos[featName]
-        if hasattr(proto, 'applyToWeapon'):
-            print('apply feat', proto.proto['name'], 'to weapon, params', feats[featName])
-            proto.applyToWeapon(unit, feats[featName], weapon, hand)
 
 
 def calc_attackbonus_list(maxAttackTimes, baseAttackBonus, babDecValue):

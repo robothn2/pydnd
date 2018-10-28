@@ -47,26 +47,7 @@ class Unit:
         pass
 
     def addFeat(self, featName, featParam = []):
-        if featName not in self.ctx['protosFeat']:
-            warnings.warn('unknown feat: %s' % featName)
-            return False
-
-        if type(featParam) == str or type(featParam) == int:
-            self.modifier.mergeBranchList(('Feats', featName), featParam)
-            return True
-
-        if type(featParam) == list:
-            for _, featHintName in enumerate(featParam):
-                if type(featHintName) == str: #support addFeat('FavoredEnemy', ['Dragons'])
-                    self.modifier.mergeBranchList(('Feats', featName), featHintName)
-                    return True
-                if type(featHintName) == list and len(featHintName) == 2: #support addFeat('FavoredEnemy', [['FavoredEnemy','Dragons']])
-                    if featHintName[0] == featName:
-                        self.modifier.mergeBranchList(('Feats', featName), featHintName[1])
-                        return True
-
-        self.modifier.mergeBranchList(('Feats', featName), [])
-        return True
+        self.feats.addFeat(featName, featParam)
 
     def addFeats(self, feats, featsHint = []):
         for _, featName in enumerate(feats):

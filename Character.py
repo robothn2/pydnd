@@ -27,7 +27,7 @@ class Character(Unit):
         return self.builder['name']
 
     def buildLevel1(self, props, cls, abilities, skills, feats):
-        if cls not in self.ctx['protosClass']:
+        if cls not in self.ctx['Class']:
             return False
         self.props.update({**props, **abilities_parse(abilities)})
         self.addFeats(feats)
@@ -76,10 +76,10 @@ class Character(Unit):
 
             # check class name existence
             cls = levelEntry['class']
-            if cls not in self.ctx['protosClass']:
+            if cls not in self.ctx['Class']:
                 warnings.warn('unknown character class: %s at level %d' % (cls, level))
                 return False
-            clsProto = self.ctx['protosClass'][cls]
+            clsProto = self.ctx['Class'][cls]
 
             # add ability
             if 'ability' in levelEntry:
@@ -99,7 +99,7 @@ class Character(Unit):
             self.calc.addSource('HitPoint', name=cls, calcInt=clsLevel*int(clsProto.proto['HitDie']))
 
             # apply class feats/abilities by level
-            clsProto.applyLevelUp(self, clsLevel, levelEntry)
+            clsProto.levelUp(self, clsLevel, levelEntry)
 
             # add feats
             if 'feats' in levelEntry:

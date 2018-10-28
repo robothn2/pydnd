@@ -29,4 +29,4 @@ proto = {
 }
 
 def register(protos):
-    protos['Race'] = Rase(name, **proto)
+    protos['Race'][name] = Rase(name, **proto)

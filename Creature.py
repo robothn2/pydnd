@@ -8,8 +8,8 @@ import warnings, copy, json
 class Creature(Unit):
     def __init__(self, ctx, name):
         super(Creature, self).__init__(ctx)
-        if name in ctx['protosCreature']:
-            self.proto = copy.deepcopy(ctx['protosCreature'][name])
+        if name in ctx['Creature']:
+            self.proto = copy.deepcopy(ctx['Creature'][name])
             self.props.update(self.proto)
         else:
             warnings.warn('unknown create name: %s' % name)
