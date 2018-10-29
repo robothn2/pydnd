@@ -70,12 +70,12 @@ class Character(Unit):
 
         classLevels = self.calc.getProp('Class.Level')
         for i, levelEntry in enumerate(builder['levels']):
-            level = i + 1
+            level = levelEntry.pop('level')
             if level > levelRequest:
                 break
 
             # check class name existence
-            cls = levelEntry['class']
+            cls = levelEntry.pop('class')
             if cls not in self.ctx['Class']:
                 warnings.warn('unknown character class: %s at level %d' % (cls, level))
                 return False
@@ -83,23 +83,23 @@ class Character(Unit):
 
             # add ability
             if 'ability' in levelEntry:
-                self.calc.addSource('Ability.%s.Base' % levelEntry['ability'], name='LevelUp:%d'%level, calcInt=1)
+                self.calc.addSource('Ability.%s.Base' % levelEntry.pop('ability'), name='LevelUp:%d'%level, calcInt=1)
 
             # update Class.Level, bab, SavingThrows, HitPoint
             clsLevel = classLevels.calcSingleSource(cls, self, None)
             clsLevel += 1
             self.calc.addSource('Class.Level', name=cls, calcInt=clsLevel)
-            clsSpellType = clsProto.proto.get('SpellType')
-            if clsSpellType:
+            if clsProto.spellType is tuple:
+                self.calc.addSource('Caster.Level', name='SpellGrantLevel', calcInt=1 - clsProto.spellType[1])
                 self.calc.addSource('Caster.Level', name=cls, calcInt=clsLevel)
-            self.calc.addSource('AttackBonus.Base', name=cls, calcInt=int(clsLevel * float(clsProto.proto['BaseAttackBonus'])))
-            self.calc.addSource('SavingThrow.Fortitude', name=cls, calcInt=int(clsLevel * float(clsProto.proto['FortitudePerLevel'])))
-            self.calc.addSource('SavingThrow.Reflex', name=cls, calcInt=int(clsLevel * float(clsProto.proto['ReflexPerLevel'])))
-            self.calc.addSource('SavingThrow.Will', name=cls, calcInt=int(clsLevel * float(clsProto.proto['WillPerLevel'])))
-            self.calc.addSource('HitPoint', name=cls, calcInt=clsLevel*int(clsProto.proto['HitDie']))
+            self.calc.addSource('AttackBonus.Base', name=cls, calcInt=int(clsLevel * float(clsProto.bab)))
+            self.calc.addSource('SavingThrow.Fortitude', name=cls, calcInt=int(clsLevel * float(clsProto.fortitude)))
+            self.calc.addSource('SavingThrow.Reflex', name=cls, calcInt=int(clsLevel * float(clsProto.reflex)))
+            self.calc.addSource('SavingThrow.Will', name=cls, calcInt=int(clsLevel * float(clsProto.will)))
+            self.calc.addSource('HitPoint', name=cls, calcInt=clsLevel*int(clsProto.hd))
 
             # apply class feats/abilities by level
-            clsProto.levelUp(self, clsLevel, levelEntry)
+            clsProto.levelUp(self, clsLevel, **levelEntry)
 
             # add feats
             if 'feats' in levelEntry:
@@ -135,7 +135,7 @@ class Character(Unit):
             weaponExist.unapply(self, hand)
 
     def _applyAll(self):
-        feats_apply(self)
+        self.feats.apply(self)
 
         self.setProp('hp', self.calc.calcPropValue('HitPoint', self, None))
 

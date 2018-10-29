@@ -1,6 +1,7 @@
 #coding: utf-8
-import regex
-import warnings
+import regex,warnings,copy
+from Dice import rollDice
+import Apply
 
 def _parseHighSaves(text):
     return (0.5 if text.find('Fortitude') >= 0 or text.find('All') >= 0 else 0.25,
@@ -132,7 +133,7 @@ class ModelBase:
         self.name = name_canonical(name)
         self.model = type(self.name, (), kwargs)
 
-class Rase(ModelBase):
+class Race(ModelBase):
     def __init__(self, name, **kwargs):
         super().__init__(name, **kwargs)
 
@@ -150,7 +151,13 @@ class Class(ModelBase):
         self.skillPoints = _parse(kwargs, 'Skill Points', _parseSkillPoints)
         self.classSkills = _parse(kwargs, 'Class Skills', _parseClassSkills)
         super().__init__(name, **kwargs)
-        print(self)
+        self.spellType = None
+        for _,bonus in enumerate(kwargs['bonus']):
+            # (1, ('SpellType', 'Arcane', ...))
+            if bonus[1][0] == 'spellType':
+                self.spellType = (bonus[1][1], bonus[0])
+
+        # print(self)
 
     def isAvailable(self, unit):
         if not hasattr(self.model, 'Requirements'):
@@ -230,3 +237,75 @@ def register_spell(protos, spellName, **kwargs):
     protos['Spell'][spellName] = spell
     if hasattr(spell.model, 'buffDuration'):
         protos['Buff'][spell.nameBuff] = spell
+
+class Weapon(ModelBase):
+    def __init__(self, name, **kwargs):
+        super().__init__(name, **kwargs)
+        self.nameBase = self.name
+
+    def __repr__(self):
+        return self.name
+
+    def getItemBaseName(self):
+        return self.nameBase
+
+    def apply(self, unit, hand):
+        Apply.apply_weapon_attacks(self, unit, hand)
+
+        unit.calc.updateObject(('Weapon', hand), self)
+
+        # weapon base damage
+        weaponParams = self.model.damageRoll
+        unit.calc.addSource('Damage.' + hand, name=self.name, calcInt=lambda caster, target: ('Physical', self.name, rollDice(1, weaponParams[1], weaponParams[0])), noCache=True)
+
+        # weapon enhancement
+        if hasattr(self.model, 'enhancement'):
+            unit.calc.addSource('Weapon.%s.Additional' % hand, name='WeaponEnhancement', calcInt=('Magical', 'WeaponEnhancement', self.model.enhancement))
+            unit.calc.addSource('AttackBonus.' + hand, name='WeaponEnhancement', calcInt=self.model.enhancement)
+
+        # weapon critical parameter
+        criticalParams = self.model.criticalThreat
+        unit.calc.addSource('Weapon.%s.CriticalRange' % hand, name='WeaponBase', calcInt=criticalParams[0])
+        unit.calc.addSource('Weapon.%s.CriticalMultiplier' % hand, name='WeaponBase', calcInt=criticalParams[1])
+
+        # weapon related feats
+        unit.feats.applyToWeapon(self, hand)
+
+    def unapply(self, unit, hand):
+        unit.calc.removeSource('Attacks', hand)
+
+        unit.calc.removeSource('Damage.' + hand, self.name)
+
+        unit.calc.removeSource('Weapon.%s.Additional' % hand, 'WeaponEnhancement')
+        unit.calc.removeSource('Damage.' + hand, 'WeaponEnhancement')
+
+        unit.calc.removeSource('Weapon.%s.CriticalRange' % hand, 'WeaponBase')
+        unit.calc.removeSource('Weapon.%s.CriticalMultiplier' % hand, 'WeaponBase')
+
+
+def register_weapon(protos, weaponName, **kwargs):
+    weapon = Weapon(weaponName, **kwargs)
+    protos['Weapon'][weaponName] = weapon
+
+
+def create_weapon(protos, weaponName, **kwargs):
+    if weaponName in protos['Weapon']:
+        weapon = copy.deepcopy(protos['Weapon'][weaponName])
+        if 'name' in kwargs:
+            weapon.name = kwargs['name']
+        elif 'enhancement' in kwargs:
+            weapon.name += '+' + str(kwargs['enhancement'])
+        return weapon
+
+    # for a natural weapon, we need following keys in |props|:
+    #   BaseCriticalThreat, default is [20, 20, 2], also named as 20/x2
+    #   BaseDamage, default is [1,4,1], also named as 1d4
+    #   BaseDamageType, default is ['Bludgeoning']
+    damageRoll = kwargs.pop('damageRoll') if 'damageRoll' in kwargs else (1, 4)
+    criticalThreat = kwargs.pop('criticalThreat') if 'criticalThreat' in kwargs else (0, 2)
+    weaponSize = kwargs.pop('size') if 'size' in kwargs else 'Small'
+    damageType = kwargs.pop('damageType') if 'damageType' in kwargs else 'Bludgeoning'
+    specifics = kwargs.pop('specifics') if 'specifics' in kwargs else 'natural weapon ' + weaponName
+    weapon = Weapon(weaponName, damageRoll = damageRoll, criticalThreat = criticalThreat, damageType = damageType,\
+                    size = weaponSize, specifics = specifics)
+    return weapon

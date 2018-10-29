@@ -1,14 +1,9 @@
 #coding: utf-8
-from Dice import rollDice
 
 def race_apply(unit, raceName):
-    if not raceName:
+    if not raceName in unit.ctx['Race']:
         return
-    protosRace = unit.ctx['Race']
-    if raceName not in protosRace:
-        return
-    proto = protosRace[raceName]
-    proto.apply(unit)
+    unit.ctx['Race'][raceName].model.apply(unit)
 
 def feats_apply(unit):
     feats = unit.modifier.getSource('Feats')
@@ -21,7 +16,6 @@ def feats_apply(unit):
         if hasattr(proto, 'apply'):
             print('apply feat', proto.proto['name'], ', params', feats[featName])
             proto.apply(unit, feats[featName])
-
 
 def calc_attackbonus_list(maxAttackTimes, baseAttackBonus, babDecValue):
     bab = int(baseAttackBonus)

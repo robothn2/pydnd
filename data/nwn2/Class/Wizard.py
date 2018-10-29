@@ -11,7 +11,7 @@ proto = {
     'Armor Proficiencies': (),
     'Skill Points': 2,
     'Class Skills': ('Concentration', 'CraftAlchemy', 'CraftArmor', 'CraftWeapon', 'Lore', 'Spellcraft'),
-    'SpellType': ('Arcane', 1),
+    'spellType': ('Arcane', 1),
     'bonus': (
         (lambda level: level % 5 == 0,
             ('FeatBonus', ('MetaMagic', 'ItemCreation', 'Spell Mastery'), '''At 5th, 10th, 15th, and 20th level, a wizard gains a bonus feat. At each such opportunity, she can choose a metamagic feat, an item creation feat, or Spell Mastery. The wizard must still meet all prerequisites for a bonus feat, including caster level minimums.''')),

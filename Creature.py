@@ -26,7 +26,7 @@ class Creature(Unit):
         for _,ability in enumerate(self.ctx['Abilities']):
             self.calc.addSource('Ability.'+ ability + '.Base', name='beastiary', calcInt=int(self.proto[ability]))
 
-        feats_apply(self)
+        self.feats.apply(self)
         self.__applyAttackParameters()
 
         self.setProp('hp', self.calc.calcPropValue('HitPoint', self, None))

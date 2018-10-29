@@ -12,8 +12,8 @@ proto = {
     'Armor Proficiencies': ('Light', 'Shield'),
     'Skill Points': 6,
     'Class Skills': ('Appraise', 'Bluff', 'Concentration', 'CraftAlchemy', 'CraftArmor', 'CraftTrap', 'CraftWeapon', 'Diplomacy', 'Hide', 'Listen', 'Lore', 'MoveSilently', 'Parry', 'Perform', 'SleightOfHand', 'Spellcraft', 'Taunt', 'Tumble', 'UseMagicDevice'),
-    'SpellType': ('Arcane', 1),
     'bonus': (
+        (1, ('SpellType', 'Arcane', '''A bard casts arcane spells, which are drawn from the bard spell list. He can cast any spell he knows without preparing it ahead of time. To learn or cast a spell, a bard must have a Charisma score equal to at least 10 + the spell level (Cha 10 for 0-level spells, Cha 11 for 1st-level spells, and so forth). Starting at 8th level, and every three levels after, bards can replace one known spell with a new spell of the same level. The spell that can be replaced must be two spell levels below what the bard can currently cast (1st level spell at 8, 1st or 2nd level spell at 11, 1st or 2nd or 3rd level spell at 14, and so forth). Bards do not suffer from arcane spell failure when wearing light armor; medium and heavy armors, and shields still incur the normal failure chance.''')),
         (1, ('Feat', ('Bardic Knowledge', 'Inspiration', 'Inspire Courage', 'Bardic Music', 'Countersong', 'Fascinate'))),
         (2, ('Feat', 'Inspire Competence')),
         (3, ('Feat', 'Haven Song')),

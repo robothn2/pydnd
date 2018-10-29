@@ -4,6 +4,7 @@ from Creature import Creature
 from Item import *
 import Context
 import time
+from Models import create_weapon
 
 class Arena:
     def __init__(self):
@@ -26,7 +27,7 @@ if __name__ == '__main__':
     #player.addBuff(player, Context.ctx['Spell']['Barkskin'])
     #player.addBuff(player, Context.ctx['Spell']['CatGrace'])
     player.buildByBuilder(loadJsonFile(r'data/builders/DragonMasterNegotiator.json'), 30)
-    player.equipWeapon('TwoHand', Weapon(Context.ctx, {'BaseItem': 'Falchion', 'Enhancement': 3}))
+    player.equipWeapon('TwoHand', create_weapon(Context.ctx, 'Falchion', enhancement=3))
     player.statistic()
     player.activate('PowerAttack')
 

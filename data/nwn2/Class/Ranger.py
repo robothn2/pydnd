@@ -71,7 +71,6 @@ proto = {
     'Armor Proficiencies': ('Light', 'Shield'),
     'Skill Points': 6,
     'Class Skills': ('Concentration', 'CraftAlchemy', 'CraftArmor', 'CraftTrap', 'CraftWeapon', 'Heal', 'Hide', 'Listen', 'Lore', 'MoveSilently', 'Parry', 'Search', 'SetTrap', 'Spot', 'Survival'),
-    'SpellType': ('Divine', 4),
     'bonus': (
         (lambda level: level == 1 or level % 5 == 0, ('Feat', 'Favored Enemy', '''At 1st level, a ranger may select a type of creature as his favored enemy. The ranger gains a +1 bonus on Bluff, Listen, Spot, and Taunt checks, and also a +1 bonus on weapon damage rolls against their favored enemy. At 5th level, and every five levels after that, the ranger can choose an additional favored enemy and gains +1 to all favored enemy bonuses.''')),
         (1, ('Feat', 'Track', 'A ranger has the ability to find and read tracks, but he moves slowly when doing so.')),

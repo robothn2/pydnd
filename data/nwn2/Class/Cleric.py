@@ -11,10 +11,9 @@ proto = {
     'Armor Proficiencies': ('Light', 'Medium', 'Heavy', 'Shield'),
     'Skill Points': 2,
     'Class Skills': ('Concentration', 'CraftAlchemy', 'CraftArmor', 'CraftTrap', 'CraftWeapon', 'Diplomacy', 'Heal', 'Lore', 'Parry', 'Spellcraft'),
-    'SpellType': ('Divine', 1),
     'bonus': (
         (1, ('Domain', 2)),
-        (1, ('SpellType', 'Divine', '''A cleric casts divine spells, which are drawn from the cleric spell list. A cleric must choose and prepare his spells in advance. To prepare or cast a spell, a cleric must have a Wisdom score equal to at least 10 + the spell level (Wis 10 for 0-level spells, Wis 11 for 1st-level spells, and so forth).''')),
+        (1, ('spellType', 'Divine', '''A cleric casts divine spells, which are drawn from the cleric spell list. A cleric must choose and prepare his spells in advance. To prepare or cast a spell, a cleric must have a Wisdom score equal to at least 10 + the spell level (Wis 10 for 0-level spells, Wis 11 for 1st-level spells, and so forth).''')),
         (1, ('Feat', ('Spontaneous Casting', 'Turn Undead'))),
     ),
 }

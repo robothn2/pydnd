@@ -1,5 +1,5 @@
 #coding: utf-8
-from Models import Rase
+from Models import Race
 
 name = 'Drow'
 
@@ -35,4 +35,4 @@ proto = {
 }
 
 def register(protos):
-    protos['Race'][name] = Rase(name, **proto)
+    protos['Race'][name] = Race(name, **proto)
