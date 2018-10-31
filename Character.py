@@ -102,12 +102,14 @@ class Character(Unit):
             clsProto.levelUp(self, clsLevel, **levelEntry)
 
             # add feats
-            if 'feats' in levelEntry:
+            featsEntry = levelEntry.get('feats')
+            if featsEntry is list:
                 for _, featEntry in enumerate(levelEntry['feats']):
-                    if type(featEntry) == str:
-                        self.addFeat(featEntry, levelEntry.get('featsHint'))
-                    elif len(featEntry) == 2:
-                        self.addFeat(featEntry[0], featEntry[1])
+                    if featEntry is str:
+                        self.addFeat(featEntry, levelEntry.get('featChoice'))
+            elif featsEntry is dict:
+                for featName, featParam in featsEntry.items():
+                    self.addFeat(featName, featParam)
 
             # update skills
             for skillName,skillLevel in levelEntry['skills'].items():
@@ -135,7 +137,7 @@ class Character(Unit):
             weaponExist.unapply(self, hand)
 
     def _applyAll(self):
-        self.feats.apply(self)
+        self.feats.apply()
 
         self.setProp('hp', self.calc.calcPropValue('HitPoint', self, None))
 
@@ -160,12 +162,3 @@ class Character(Unit):
         xpNew = xpOld + xp
         self.setProp('xp', xpNew)
         print(self.getName(), 'received xp', xp, ',total', xpNew)
-
-if __name__ == '__main__':
-    builder = loadJsonFile(r'data/builders/TwoWeaponRanger.json')
-    player = Character(__import__('Context').ctx)
-    player.buildByBuilder(builder, 30)
-    player.addFeat('FavoredEnemy', [['FavoredEnemy', 'Dragons']])
-    player.addFeat('FavoredEnemy', 'Elves')
-    player.addFeat('Dodge', 'Elves')
-    print('Feats:', player.modifier.getSource('Feats'))

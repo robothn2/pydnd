@@ -7,14 +7,17 @@ class FeatGroup:
         self.members = {}
         self.params = []
     def addMember(self, unit, feat, param):
+        print('feat group', self.name, 'add member', feat.name, 'param:', param)
         self.members[feat.name] = feat
         self.params.append(feat.name)
-        if hasattr(feat, 'nameMember'):
+        if feat.nameMember is not None:
             self.params.append(feat.nameMember)
         if param is str:
             self.params.append(param)
+        elif param is tuple:
+            self.params.extend(param)
         if hasattr(feat, 'apply'):
-            print(repr(unit), 'apply feat', feat.name, 'to', ', params', self.params)
+            print(repr(unit), 'apply feat', feat.name, ', params', self.params)
             feat.apply(feat.name, unit, feat, self.params)
 
     def removeMember(self, unit, feat):
@@ -24,6 +27,13 @@ class FeatGroup:
         featExist = self.members.get(featName)
         if not featExist:
             return
+
+    def apply(self, unit):
+        for featName,feat in self.members.items():
+            if not hasattr(feat, 'applyToWeapon'):
+                return
+            print(repr(unit), 'apply feat', featName, ' params', self.params)
+            feat.apply(feat.name, unit, feat, self.params)
 
     def applyToWeapon(self, unit, weapon, hand):
         for featName,feat in self.members.items():
@@ -48,9 +58,9 @@ class FeatManager:
             featGroup = FeatGroup(feat.group)
             self.featGroups[feat.group] = featGroup
 
-        print(repr(self.owner), 'add feat', feat.nameFull, 'to group', feat.group)
+        #print(repr(self.owner), 'add feat', feat.nameFull, 'to group', feat.group)
         params = None
-        if featParams is str or featParams is int:
+        if featParams is str or featParams is int or featParams is tuple:
             params = featParams
         elif featParams is dict:
             params = featParams.get(featNameFull)
@@ -63,6 +73,10 @@ class FeatManager:
 
     def getAvailableFeats(self):
         pass
+
+    def apply(self):
+        for groupName, featGroup in self.featGroups.items():
+            featGroup.apply(self.owner)
 
     def applyToWeapon(self, weapon, hand):
         for groupName, featGroup in self.featGroups.items():

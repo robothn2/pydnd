@@ -52,7 +52,7 @@ class CombatManager:
     def meleeAttack(self, caster, target, attack):
         info = '{} attack:turnOffset({}) bab({}) {} weapon({}) {}'\
             .format(caster.getName(),
-                    round(attack[0], 3), attack[1], attack[2], attack[3].getName(),
+                    round(attack[0], 3), attack[1], attack[2], attack[3].name,
                     target.getName())
         roll = rollDice(1, 20, 1)
         info += ', roll: ' + str(roll)

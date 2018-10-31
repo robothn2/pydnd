@@ -35,17 +35,27 @@ def _applyTupleResource(res, unit, **kwargs):
     if res is not tuple:
         return
     if res[0] is function:
+        # support (_addDeityWeaponFocus, ...),
         res[0](unit)
         return
     if res[0] is str:
         if res[0] == 'Feat':
-            featName = res[1]
-            unit.addFeat(featName, kwargs.get(featName))
+            if res[1] is str:
+                # support ('Feat', 'Breath Weapon')
+                featName = res[1]
+                unit.addFeat(featName, kwargs.get(featName))
+            elif res[1] is tuple:
+                # support ('Feat', ('Natural Armor Increase', 'Draconic Ability Scores'))
+                for _,featName in enumerate(res[1]):
+                    unit.feats.addFeat(featName)
         elif res[0] == 'SpellAccess':
+            # support ('SpellAccess', 'Cleric', ('Magic Circle Against Evil', 'Lesser Planar Binding'))
             unit.addAccessSpell(res[1], res[2])
         elif res[0] == 'SpellType':
+            # support ('SpellType', 'Divine', ...)
             unit.addAccessSpellClass(res[1])
         elif res[0] == 'Domain':
+            # support ('Domain', 2)
             for _, domainName in enumerate(kwargs['domains']):
                 if domainName not in unit.ctx['Domain']:
                     continue
@@ -154,7 +164,7 @@ class Class(ModelBase):
         self.spellType = None
         for _,bonus in enumerate(kwargs['bonus']):
             # (1, ('SpellType', 'Arcane', ...))
-            if bonus[1][0] == 'spellType':
+            if bonus[1][0] == 'SpellType':
                 self.spellType = (bonus[1][1], bonus[0])
 
         # print(self)
@@ -167,6 +177,7 @@ class Class(ModelBase):
     def levelUp(self, unit, level, **choices):
         print('apply', self.name, 'level', level)
         if level == 1:
+            print(self.weapons, self.armors)
             unit.addFeat('Weapon Proficiency', self.weapons)
             unit.addFeat('Armor Proficiency', self.armors)
 
@@ -198,15 +209,15 @@ class Feat(ModelBase):
         self.category = kwargs.pop('Type') if 'Type' in kwargs else 'General'
         super().__init__(name, **kwargs)
         self.group = self.name # default group name is self
-        print(self.group, self.name, self.nameFull)
 
     def isAvailable(self, unit):
         if not hasattr(self.model, 'prerequisite'):
             return True
         return isRequirementsMatch(self.model.prerequisite, unit)
 
-    def apply(self, source, unit, featParams):
-        pass
+    def apply(self, source, unit, feat, params):
+        if hasattr(self.model, 'apply'):
+            self.model.apply(feat.name, unit, feat, params)
     def unapply(self, target = None):
         pass
     def active(self, caster):
@@ -217,9 +228,8 @@ class Feat(ModelBase):
 def register_feat(protos, groupName, featName, **kwargs):
     feat = Feat(featName, **kwargs)
     feat.group = groupName
-    feat.nameMember = kwargs.pop('nameMember') if 'nameMember' in kwargs else feat.name
-    protos['Feat'][groupName] = feat
-
+    feat.nameMember = kwargs.pop('nameMember') if 'nameMember' in kwargs else None
+    protos['Feat'][feat.nameFull] = feat
 
 class Spell(ModelBase):
     def __init__(self, name, **kwargs):

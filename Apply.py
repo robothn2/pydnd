@@ -46,7 +46,7 @@ def apply_weapon_attacks(weapon, unit, hand, maxAttackTimes = 10):
     bab = unit.calc.calcPropValue('AttackBonus.Base', weapon, None)
     babDec = 5
 
-    if weapon.proto['name'] == 'Kama' and unit.getClassLevel('Monk') > 0:
+    if weapon.nameBase == 'Kama' and unit.getClassLevel('Monk') > 0:
         babDec = 3
     if hand == 'OffHand':
         if not unit.hasFeat('TwoWeaponFighting'):

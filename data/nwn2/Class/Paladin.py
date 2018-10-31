@@ -10,7 +10,6 @@ proto = {
     'High Saves': 'Fortitude.',
     'Weapon Proficiencies': ('Simple', 'Martial'),
     'Armor Proficiencies': ('Light', 'Medium', 'Heavy', 'Shield'),
-    'spellType': ('Divine', 4),
     'Skill Points': 2,
     'Class Skills': ('Concentration', 'CraftArmor', 'CraftWeapon', 'Diplomacy', 'Heal', 'Lore', 'Parry'),
     'bonus': (

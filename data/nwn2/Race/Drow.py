@@ -24,8 +24,8 @@ def __apply(unit):
     unit.calc.addSource('SpellResistance', upstream='Class.Level', name=source, calcPost=lambda value: 11 + value)
 
     unit.addFeat('Darkvision')
-    unit.addFeat('WeaponProficiency', ['Longsword', 'Rapier', 'Longbow', 'Shortbow'])
-    unit.addFeat('FavoredClass', 'Wizard')
+    unit.addFeat('Weapon Proficiency', ['Longsword', 'Rapier', 'Longbow', 'Shortbow'])
+    unit.addFeat('Favored Class', 'Wizard')
 
 proto = {
     'desc': '''Descended from the original dark-skinned elven subrace called the Illythiiri, the drow were cursed into their present appearance by the good elven deities for following the goddess Lolth down the path to evil and corruption. Also called dark elves, the drow have black skin that resembles polished obsidian and stark white or pale yellow hair. They commonly have very pale eyes in shades of lilac, silver, pink, and blue. They also tend to be smaller and slimmer than most elves.''',

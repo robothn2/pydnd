@@ -1,8 +1,7 @@
 #coding: utf-8
 
 from Unit import Unit
-from Apply import *
-from Item import *
+from Models import Weapon
 import warnings, copy, json
 
 class Creature(Unit):
@@ -26,7 +25,7 @@ class Creature(Unit):
         for _,ability in enumerate(self.ctx['Abilities']):
             self.calc.addSource('Ability.'+ ability + '.Base', name='beastiary', calcInt=int(self.proto[ability]))
 
-        self.feats.apply(self)
+        self.feats.apply()
         self.__applyAttackParameters()
 
         self.setProp('hp', self.calc.calcPropValue('HitPoint', self, None))
@@ -45,10 +44,10 @@ class Creature(Unit):
             weaponName = attack[0]
             if weaponName not in weaponsCreated:
                 # create a virtual weapon
-                weapon = Weapon(self.ctx, {'BaseItem': weaponName,
-                                           'BaseDamage': [1, attack[1], 1],
-                                           'BaseCriticalThreat': [20, 20, len(attack) - 2]
-                                           })
+                weapon = Weapon(weaponName,
+                                damageRoll=(1, attack[1]),
+                                criticalThreat=(1, len(attack) - 2))
+
                 weaponsCreated[weaponName] = weapon
 
                 if not weaponFirst:

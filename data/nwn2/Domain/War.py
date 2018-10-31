@@ -9,11 +9,11 @@ def _addDeityWeaponFocus(unit):
 
     weapon = deity.model.favoredWeapon
     print('deity:', deityName, ', favored weapon:', weapon)
-    if weapon == 'UnarmedStrike':
-        unit.addFeat('ImprovedUnarmedStrike')
+    if weapon == 'Unarmed Strike':
+        unit.addFeat('Improved Unarmed Strike')
     else:
-        unit.addFeat('WeaponProficiency', weapon)
-        unit.addFeat('WeaponFocus', weapon)
+        unit.addFeat('Weapon Proficiency', weapon)
+        unit.addFeat('Weapon Focus', weapon)
 
 def register(protos):
     protos['Domain']['War'] = Domain(
@@ -21,5 +21,5 @@ def register(protos):
          desc = 'Clerics who take the War domain spend considerable time training for combat.',
          bonus = (
             (_addDeityWeaponFocus, '''The cleric receives the weapon focus feat for their deity's favored weapon. They are also proficient with that weapon even if clerics normally are not. If their deity's favored weapon is unarmed strike, they gain the improved unarmed strike feat.'''),
-            ('SpellAccess', 'Cleric', ('FlameStrike', 'PowerWordStun')),
+            ('SpellAccess', 'Cleric', ('Flame Strike', 'Power Word Stun')),
         ))

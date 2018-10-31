@@ -1,7 +1,7 @@
 #coding: utf-8
 from Models import Class, register_feat
 
-name = 'WeaponMaster'
+name = 'Weapon Master'
 
 def __requireWeaponFocusOnMelee(unit):
     # check Weapon Focus on melee weapon
