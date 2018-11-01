@@ -20,14 +20,14 @@ class Arena:
 
 if __name__ == '__main__':
     player = Character(Context.ctx)
-    #player.buildByBuilder(loadJsonFile(r'data/builders/TwoWeaponRanger.json'), 30)
-    #player.equipWeapon('MainHand', Weapon(Context.ctx, {'BaseItem': 'Kukri', 'Enhancement': 3}))
-    #player.equipWeapon('OffHand', Weapon(Context.ctx, {'name': 'OHWeapon','BaseItem': 'Kukri', 'Enhancement': 2}))
-    #player.addBuff(player, Context.ctx['Spell']['DivineFavor'])
+    player.buildByBuilder(loadJsonFile(r'data/builders/TwoWeaponRanger.json'), 30)
+    player.equipWeapon('MainHand', create_weapon(Context.ctx, 'Kukri', enhancement=3))
+    player.equipWeapon('OffHand', create_weapon(Context.ctx, 'Kukri', enhancement=3, name='OHWeapon'))
+    #player.addBuff(player, Context.ctx['Spell']['Divine Favor'])
     #player.addBuff(player, Context.ctx['Spell']['Barkskin'])
-    #player.addBuff(player, Context.ctx['Spell']['CatGrace'])
-    player.buildByBuilder(loadJsonFile(r'data/builders/DragonMasterNegotiator.json'), 30)
-    player.equipWeapon('TwoHand', create_weapon(Context.ctx, 'Falchion', enhancement=3))
+    #player.addBuff(player, Context.ctx['Spell']['Cat\'s Grace'])
+    #player.buildByBuilder(loadJsonFile(r'data/builders/DragonMasterNegotiator.json'), 30)
+    #player.equipWeapon('TwoHand', create_weapon(Context.ctx, 'Falchion', enhancement=3))
     player.statistic()
     player.activate('PowerAttack')
 

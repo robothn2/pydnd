@@ -26,7 +26,7 @@ proto = {
         ('Skill', 'Hide', 10),
         ('Skill', 'Tumble', 5),
         ('Feat', ('Dodge', 'Mobility', 'CombatExpertise', 'SpringAttack', 'WhirlwindAttack')),
-        ('Function', __requireWeaponFocusOnMelee, 'Weapon Focus in a melee weapon')
+        (__requireWeaponFocusOnMelee, 'Weapon Focus in a melee weapon')
     ),
     'bonus': (
         (1, ('Feat', 'Weapon of Choice')),

@@ -2,7 +2,7 @@
 from Models import register_feat
 
 def __applyGreatAbility(source, unit, feat, params):
-    ability = source[5:]
+    ability = source[5:8]
     propName = 'Ability.%s.Base' % ability
     prop = unit.calc.getProp(propName)
     value = prop.calcSingleSource(source, unit, None)
@@ -19,11 +19,11 @@ def register(protos):
                   specifics='''The character gains +1 attack bonus''',
                   )
 
-    for _, ability in enumerate(protos['Abilities']):
+    for _, ability in enumerate(['Strength', 'Dexterity', 'Constitution', 'Intelligence', 'Wisdom', 'Charisma']):
         register_feat(protos, 'Great' + ability, 'Great ' + ability,
                       type='Epic',
                       apply = __applyGreatAbility,
                       unapply = __unapplyGreatAbility,
                       prerequisite=[('Level', 21)],
-                      specifics = '''The character gains +1 attack bonus''',
+                      specifics = '''The character gains +1 ''' + ability,
                       )

@@ -49,10 +49,10 @@ def apply_weapon_attacks(weapon, unit, hand, maxAttackTimes = 10):
     if weapon.nameBase == 'Kama' and unit.getClassLevel('Monk') > 0:
         babDec = 3
     if hand == 'OffHand':
-        if not unit.hasFeat('TwoWeaponFighting'):
+        if not unit.hasFeat('Two-Weapon Fighting'):
             maxAttackTimes = 0
         else:
-            featParams = unit.getFeatParams('TwoWeaponFighting')
+            featParams = unit.getFeatParams('Two-Weapon Fighting')
             if 'Perfect' in featParams:
                 maxAttackTimes = 10
             elif 'Improved' in featParams:

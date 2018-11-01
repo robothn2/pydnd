@@ -63,18 +63,15 @@ class Unit:
                 self.addFeat(featName)
 
     def hasFeats(self, feats):
-        featsExist = self.modifier['Feats'].keys()
-        for _, featName in enumerate(feats):
-            if featName not in featsExist:
+        for _,featFullName in enumerate(feats):
+            if not self.feats.hasFeat(featFullName):
                 return False
         return True
-    def hasFeat(self, feat):
-        return feat in self.modifier['Feats']
+    def hasFeat(self, featFullName):
+        return self.feats.hasFeat(featFullName)
 
-    def getFeatParams(self, featName):
-        if featName not in self.modifier['Feats']:
-            return []
-        return self.modifier['Feats'][featName]
+    def getFeatParams(self, featFullName):
+        return self.feats.getFeatParams(featFullName)
 
     def matchRaces(self, races):
         race = self.getProp('race')

@@ -27,14 +27,15 @@ def _parse(kwargs, key, func):
     return func(kwargs.pop(key))
 
 def name_canonical(nameFull):
-    name = nameFull.replace('\'s', '').replace('-', '')
+    name = nameFull.replace('\'s', '').replace('-', ' ')
     words = name.split(' ')
     return ''.join(list(map(lambda word: word.capitalize(), words)))
 
 def _applyTupleResource(res, unit, **kwargs):
+    print('apply resource:', res)
     if res is not tuple:
         return
-    if res[0] is function:
+    if type(res[0]) == 'function':
         # support (_addDeityWeaponFocus, ...),
         res[0](unit)
         return
@@ -57,10 +58,12 @@ def _applyTupleResource(res, unit, **kwargs):
         elif res[0] == 'Domain':
             # support ('Domain', 2)
             for _, domainName in enumerate(kwargs['domains']):
-                if domainName not in unit.ctx['Domain']:
+                domain = unit.ctx['Domain'].get(domainName)
+                if domain is None:
+                    print('unknown domain:', domainName)
                     continue
-                domainProto = unit.ctx['Domain'][domainName]
-                domainProto.apply(unit)
+                print('apply domain:', domainName)
+                domain.apply(unit)
 
 def isRequirementsMatch(requirements, unit):
     if not requirements:
@@ -128,9 +131,9 @@ def isRequirementsMatch(requirements, unit):
                 return False
 
         # custom condition
-        elif cond[0] == 'Function':
-            if cond[1] is not function or not cond[1](unit):
-                # support ('Function', function, 'Weapon Focus in a melee weapon')
+        elif type(cond[0]) == 'function':
+            if not cond[0](unit):
+                # support (function, 'Weapon Focus in a melee weapon')
                 return False
         else:
             warnings.warn('unknown condition ' + repr(cond))
@@ -177,18 +180,18 @@ class Class(ModelBase):
     def levelUp(self, unit, level, **choices):
         print('apply', self.name, 'level', level)
         if level == 1:
-            print(self.weapons, self.armors)
             unit.addFeat('Weapon Proficiency', self.weapons)
             unit.addFeat('Armor Proficiency', self.armors)
 
         if not hasattr(self.model, 'bonus'):
             return
         for _,entry in enumerate(self.model.bonus):
-            if entry is not tuple:
+            #print(entry)
+            if type(entry) != tuple:
                 continue
             if entry[0] == level:
                 _applyTupleResource(entry[1], unit)
-            elif entry[0] is function:
+            elif type(entry[0]) == 'function':
                 if entry[0](level):
                     _applyTupleResource(entry[1], unit, **choices)
 
@@ -229,6 +232,7 @@ def register_feat(protos, groupName, featName, **kwargs):
     feat = Feat(featName, **kwargs)
     feat.group = groupName
     feat.nameMember = kwargs.pop('nameMember') if 'nameMember' in kwargs else None
+    #print('register group feat:', feat.group, ',', feat.nameFull, ',', feat.name, ',', feat.nameMember)
     protos['Feat'][feat.nameFull] = feat
 
 class Spell(ModelBase):

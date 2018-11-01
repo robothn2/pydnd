@@ -144,7 +144,7 @@ class Character(Unit):
     def statistic(self):
         self._applyAll()
         print('== statistics for character', self.getName())
-        print('Feats:', self.modifier.getSource('Feats'))
+        print('Feats:', repr(self.feats))
         print('Abilities:', self.calc.getProp('Ability'))
         self.printProp('AttackBonus.Base')
         self.printProp('ArmorClass')
