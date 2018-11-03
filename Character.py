@@ -1,7 +1,6 @@
 #coding: utf-8
 
 from Unit import *
-from Apply import *
 from Abilities import *
 from Models import apply_tuple_resource
 import json,warnings
@@ -19,7 +18,6 @@ class Character(Unit):
         super(Character, self).__init__(ctx)
         self.ctx = ctx
         self.builder = {'name': '', **abilities_parse(8, 8, 8, 8, 8, 8)}
-        self.calc.addSource('ArmorClass.Natural', name='Character', calcInt=10)
 
     def getName(self):
         return self.builder['name']
@@ -43,20 +41,27 @@ class Character(Unit):
         'abilities': {'Str': 16, 'Dex': 12, 'Con': 10, 'Int': 14, 'Wis': 8, 'Cha': 16},
        '''
         for key in builder.keys():
-            if key in ['', 'race', 'gender', 'age', 'deity', 'alignment', 'background']:
+            if key in ['race', 'gender', 'age', 'deity', 'alignment', 'background']:
                 self.props[key] = builder[key]
 
-        race_apply(self, builder['race'])
+        # apply race
+        raceName = builder['race']
+        race = self.ctx['Race'].get(raceName)
+        if not race:
+            warnings.warn('unknown race:' + raceName)
+            return False
+        race.model.apply(self)
+
+        # apply initial abilities
         for k, v in builder['abilities'].items():
             self.calc.addSource('Ability.%s.Base' % k, name='Builder', calcInt=int(v))
 
-        '''
+        """ apply builder details per level
         'levels': [
-            {'level': 1, 'class': 'Ranger', 'feats': ['FavoredEnemy(Humans)', 'Dodge'],
-             'skills': {'CraftWeapon': 4, 'Heal': 4, 'Hide': 4, 'Intimidate': 2, 'MoveSilently': 4, 'Spellcraft': 1,
-                        'Spot': 4, 'Tumble': 2, 'UseMagicDevice': 2}},
-       '''
-
+            {"level": 1, "class": "Ranger",	"feats": "Dodge", "featChoice": {"Favored Enemy": "Dragons"}, "skills": {"CraftWeapon": 4, "Heal": 4, "Hide": 4, "Intimidate": 2, "MoveSilently": 4, "Spellcraft": 1, "Spot": 4, "Tumble": 2, "UseMagicDevice": 2}},
+            ...
+            ]
+        """
         classLevels = self.calc.getProp('Class.Level')
         for i, levelEntry in enumerate(builder['levels']):
             level = levelEntry.pop('level')

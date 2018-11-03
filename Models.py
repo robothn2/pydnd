@@ -1,7 +1,6 @@
 #coding: utf-8
 import regex,warnings,copy
 from Dice import rollDice
-import Apply
 
 def _parseHighSaves(text):
     return (0.5 if text.find('Fortitude') >= 0 or text.find('All') >= 0 else 0.25,
@@ -66,13 +65,11 @@ def apply_tuple_resource(res, unit, **kwargs):
             unit.addAccessSpellClass(res[1])
         elif res[0] == 'Domain':
             # support ('Domain', 2)
-            print('apply domain:', kwargs)
             for _, domainName in enumerate(kwargs['domains']):
                 domain = unit.ctx['Domain'].get(domainName)
                 if not domain:
                     warnings.warn('unknown domain:' + domainName)
                     continue
-                print('apply domain:', domainName)
                 domain.apply(unit)
 
 def isRequirementsMatch(requirements, unit):
@@ -215,8 +212,7 @@ class Domain(ModelBase):
         print('apply cleric domain %s' % self.name)
         if hasattr(self, 'bonus'):
             for _,entry in enumerate(self.bonus):
-                if type(entry) == tuple:
-                    apply_tuple_resource(entry, unit)
+                apply_tuple_resource(entry, unit)
 
 class Feat(ModelBase):
     def __init__(self, name, **kwargs):
@@ -245,18 +241,57 @@ class Spell(ModelBase):
     def __init__(self, name, **kwargs):
         self.nameBuff = kwargs.pop('nameBuff') if 'nameBuff' in kwargs else name
         super().__init__(name, **kwargs)
-    def apply(self, source, unit, featParams):
-        pass
-    def unapply(self, target = None):
-        pass
-    def duration(self):
-        pass
 
 def register_spell(protos, spellName, **kwargs):
     spell = Spell(spellName, **kwargs)
     protos['Spell'][spellName] = spell
     if hasattr(spell.model, 'buffDuration'):
         protos['Buff'][spell.nameBuff] = spell
+
+
+def __calc_attackbonus_list(maxAttackTimes, baseAttackBonus, babDecValue):
+    bab = int(baseAttackBonus)
+    abList = []
+    while maxAttackTimes > 0:
+        maxAttackTimes -= 1
+        abList.append(bab)
+        bab -= babDecValue
+        if bab <= 0:
+            break
+    return abList
+def __calc_attacks_in_turn(maxAttackTimes, baseAttackBonus, babDecValue, secondsPerTurn, delaySecondsToFirstAttack, weapon, hand):
+    if maxAttackTimes == 0:
+        return []
+    babList = __calc_attackbonus_list(maxAttackTimes, baseAttackBonus, babDecValue)
+    durationAttack = (secondsPerTurn - delaySecondsToFirstAttack) / len(babList)
+    tsOffset = delaySecondsToFirstAttack
+    attacks = []
+    for _,bab in enumerate(babList):
+        attacks.append((round(tsOffset,3), bab, hand, weapon))
+        tsOffset += durationAttack
+    return attacks
+def apply_weapon_attacks(weapon, unit, hand, maxAttackTimes = 10):
+    tsOffset = 0.5 if hand == 'OffHand' else 0.0
+    bab = unit.calc.calcPropValue('AttackBonus.Base', weapon, None)
+    babDec = 5
+
+    if weapon.nameBase == 'Kama' and unit.getClassLevel('Monk') > 0:
+        babDec = 3
+    if hand == 'OffHand':
+        if not unit.hasFeat('Two-Weapon Fighting'):
+            maxAttackTimes = 0
+        else:
+            featParams = unit.getFeatParams('Two-Weapon Fighting')
+            if 'Perfect' in featParams:
+                maxAttackTimes = 10
+            elif 'Improved' in featParams:
+                maxAttackTimes = 2
+            else:
+                maxAttackTimes = 1
+
+    # attacks
+    unit.calc.addSource('Attacks', name=hand, calcInt=lambda caster, target: \
+        __calc_attacks_in_turn(maxAttackTimes, bab, babDec, unit.ctx['secondsPerTurn'], tsOffset, weapon, hand))
 
 class Weapon(ModelBase):
     def __init__(self, name, **kwargs):
@@ -271,7 +306,7 @@ class Weapon(ModelBase):
 
     def apply(self, unit, hand):
         print('apply', hand, 'weapon:', self.name)
-        Apply.apply_weapon_attacks(self, unit, hand)
+        apply_weapon_attacks(self, unit, hand)
 
         # weapon base damage
         weaponParams = self.model.damageRoll

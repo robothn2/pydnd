@@ -4,13 +4,13 @@ from Models import register_spell
 def __cast(source, caster, target, spell, metaMagics):
     target.buffs.addBuff(caster, spell, metaMagics)
 
-def __buffApply(source, caster, target, metaMagics):
+def __buffApply(spell, source, caster, target, metaMagics):
     level = caster.calc.calcPropValue('Caster.Level', caster, None)
     value = max(1, min(3, int(level / 3)))
     target.calc.addSource('AttackBonus.Additional', name=source, calcInt=value)
     target.calc.addSource('Damage.Additional', name=source, calcInt=lambda caster,target: ('Magical', source, value))
 
-def __buffUnapply(source, target):
+def __buffUnapply(spell, source, target):
     target.calc.removeSource('AttackBonus.Additional', source)
     target.calc.removeSource('Damage.Additional', source)
 

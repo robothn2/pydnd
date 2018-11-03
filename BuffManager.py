@@ -1,8 +1,4 @@
 #coding: utf-8
-from Dice import rollDice
-from Apply import *
-from common import Props
-import CalcResult
 
 class BuffManager:
     def __init__(self, unit):
@@ -11,8 +7,8 @@ class BuffManager:
         self.tsInMs = 0
 
     def addBuff(self, buffCaster, buffProto, buffMetaMagics = []):
-        expired = int(1000 * (buffProto.duration(buffCaster, buffMetaMagics))) + self.tsInMs
-        buffName = buffProto.name
+        expired = int(1000 * (buffProto.model.buffDuration(buffCaster, buffProto))) + self.tsInMs
+        buffName = buffProto.nameBuff
         if buffName not in self.buffs:
             self.buffs.append([buffCaster, expired, buffProto, buffMetaMagics])
         else:
@@ -24,8 +20,8 @@ class BuffManager:
             buffExist = [buffCaster, expired, buffProto, buffMetaMagics]
 
         # apply buff to owner
-        buffProto.apply(buffCaster, self.owner, buffMetaMagics)
-        print(repr(self.owner), 'apply buff', buffProto.name, ', cast from', repr(buffCaster))
+        buffProto.model.buffApply(buffProto, buffProto.nameBuff, buffCaster, self.owner, buffMetaMagics)
+        print(repr(self.owner), 'apply buff', buffProto.nameBuff, ', cast from', repr(buffCaster))
         return True
 
     def update(self, deltaTime):
@@ -37,7 +33,8 @@ class BuffManager:
         for i, buff in enumerate(self.buffs):
             if buff[1] <= self.tsInMs:
                 self.buffs.pop(i)
-                buff[2].unapply(self.owner)
+                buffProto = buff[2]
+                buffProto.model.buffUnapply(buffProto, buffProto.nameBuff, buff[0], self.owner, [])
                 print(repr(self.owner), '\'s buff', buff[2].name, 'expired, cast by', repr(buff[0]))
                 break
 

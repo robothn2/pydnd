@@ -1,7 +1,5 @@
 #coding: utf-8
 from common import Props
-from Dice import rollDice
-import Apply
 
 class Item:
     def __init__(self, ctx, props):

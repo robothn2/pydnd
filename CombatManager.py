@@ -1,7 +1,5 @@
 #coding: utf-8
 from Dice import rollDice
-from Apply import *
-from common import Props
 import CalcResult
 
 class CombatManager:

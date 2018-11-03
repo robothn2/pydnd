@@ -27,6 +27,6 @@ def register(protos):
                    range='Single',
                    cast=__cast,
                    buffDuration=lambda caster, buff: 60.0 * caster.getClassLevel(),
-                   buffApply=lambda source, caster, target, metaMagics: target.calc.addSource('Ability.Dex.Buff', name=source, calcInt=6 if 'Empower' in metaMagics else 4),
-                   buffUnapply=lambda source, target: target.calc.removeSource('Ability.Dex.Buff', source),
+                   buffApply=lambda spell, source, caster, target, metaMagics: target.calc.addSource('Ability.Dex.Buff', name=source, calcInt=6 if 'Empower' in metaMagics else 4),
+                   buffUnapply=lambda spell, source, target: target.calc.removeSource('Ability.Dex.Buff', source),
                    )

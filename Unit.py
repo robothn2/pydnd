@@ -69,7 +69,7 @@ class Unit:
         return classLevels.calcValue(self, None)
 
     def printProp(self, key):
-        print(key, ':', self.calc.calcPropValue(key, self, None))
+        print(key, ':', self.calc.getPropValueWithSource(key, self))
 
     def getAttackBonus(self, target, hand):
         return self.calc.calcPropValue('AttackBonus.Additional', self, target) \
@@ -89,13 +89,13 @@ class Unit:
         feat = self.calc.getPropSource('Spell.Activable', name)
         if feat:
             print('Activate ability:', name)
-            feat.calcInt.activate(self)
+            feat.calcInt.active(self)
             return
 
         feat = self.calc.getPropSource('Spell.Charges', name)
         if feat:
             print('Cast spell-like feat:', name)
-            feat.calcInt.activate(self)
+            feat.calcInt.active(self)
             return
 
         print('No activable ability found:', name)
@@ -107,7 +107,7 @@ class Unit:
             return
 
         print('Deactivate ability:', name)
-        activableAbility.calcInt.deactivate(self)
+        activableAbility.calcInt.deactive(self)
 
     def addEnemy(self, enemy):
         self.combat.addEnemy(enemy)

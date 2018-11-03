@@ -2,9 +2,10 @@
 from Models import register_feat
 
 def __applyGreatAbility(source, unit, feat, params, kwargs):
-    ability = source[5:8]
+    ability = source[6:9]
     propName = 'Ability.%s.Base' % ability
     prop = unit.calc.getProp(propName)
+    #print(propName, prop)
     value = prop.calcSingleSource(source, unit, None)
     unit.calc.addSource(propName, name=source, calcInt=value+1)
 def __unapplyGreatAbility(source, unit, feat, params, kwargs):

@@ -1,6 +1,5 @@
 #coding: utf-8
-from Models import register_feat
-from Apply import apply_weapon_attacks
+from Models import register_feat, apply_weapon_attacks
 
 def _applyFeatTwoWeaponFighting(source, unit, feat, params, kwargs):
     weapon = kwargs.get('weapon')

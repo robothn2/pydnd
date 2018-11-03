@@ -27,7 +27,7 @@ class FeatGroup:
             for _,p in enumerate(param):
                 self.__addSingleParam(p)
 
-        print(repr(self.owner), 'add feat:', feat.name, ', new param:', param, ', final params:', self.params)
+        #print(repr(self.owner), 'add feat:', feat.name, ', new param:', param, ', final params:', self.params)
 
     def removeMember(self, feat):
         featName = feat.name if hasattr(feat, 'name') else feat
@@ -64,11 +64,11 @@ class FeatGroup:
             if 'weapon' in kwargs:
                 if self.forWeapon:
                     print('  feat weapon:', featName)
-                    feat.model.apply(feat.name, unit, feat, self.params, kwargs)
+                    feat.model.apply(feat.nameFull, unit, feat, self.params, kwargs)
             else:
                 if not self.forWeapon:
                     print('  feat normal:', featName)
-                    feat.model.apply(feat.name, unit, feat, self.params, kwargs)
+                    feat.model.apply(feat.nameFull, unit, feat, self.params, kwargs)
 
 
 class FeatManager:

@@ -4,7 +4,7 @@ from Models import register_spell
 def __cast(source, caster, target, spell, metaMagics):
     target.buffs.addBuff(caster, spell, metaMagics)
 
-def __buffApply(source, caster, target, metaMagics):
+def __buffApply(spell, source, caster, target, metaMagics):
     level = caster.calc.calcPropValue('Caster.Level', caster, None)
     value = 3
     if level >= 13:
@@ -31,5 +31,5 @@ def register(protos):
                    cast=__cast,
                    buffDuration=lambda caster, buff: 3600.0 * caster.getClassLevel(),
                    buffApply=__buffApply,
-                   buffUnapply=lambda source, target: target.calc.removeSource('ArmorClass.Natural', source),
+                   buffUnapply=lambda spell, source, target: target.calc.removeSource('ArmorClass.Natural', source),
                    )

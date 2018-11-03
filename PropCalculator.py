@@ -373,6 +373,7 @@ class PropCalculator:
             {'name': 'Buff:TargetInvisible', 'calcDisable': (lambda caster, target: target and target.hasBuff('Invisible'))} # using normal priority 0, UncannyDodge can overwrite it
         ])
         self.addProp('ArmorClass', [
+            {'name': 'ArmorClass.Base', 'calcInt': 10},
             {'upstream': 'ArmorClass.Armor', 'calcUpstream': calc_upstream_max},
             {'upstream': 'Skill.Tumble', 'name': 'ArmorClass.Tumble', 'calcPost': (lambda value: int(value/10))},
             {'upstream': 'ArmorClass.Natural', 'calcUpstream': calc_upstream_max},
