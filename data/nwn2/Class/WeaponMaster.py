@@ -36,10 +36,10 @@ proto = {
     ),
 }
 
-def __applyToWeapon(source, unit, feat, params, **kwargs):
+def __applyWeaponOfChoice(source, unit, feat, params, kwargs):
     weapon = kwargs.get('weapon')
     hand = kwargs.get('hand')
-    if params is not list or weapon.getItemBaseName() not in params:
+    if type(params) != list or weapon.nameBase not in params:
         return
 
     print(source, 'affects weapon:', weapon.getItemBaseName(), ', params:', params)
@@ -49,26 +49,45 @@ def __applyToWeapon(source, unit, feat, params, **kwargs):
         unit.calc.addSource('AttackBonus.' + hand, name='SuperiorWeaponFocus', calcInt=1)
     if 'KiCritical' in params:
         unit.calc.addSource('Weapon.%s.CriticalRange' % hand, name='KiCritical', calcInt=2)
-def __unapply(source, unit, feat, params):
+def __unapplyWeaponOfChoice(source, unit, feat, params, kwargs):
+    pass
+
+
+def __castKiDamage(source, caster, feat, params):
+    pass
+def __decChargeKiDamage(source, unit, feat, params):
     pass
 
 def register(protos):
     protos['Class'][name] = Class(name, **proto)
 
+    # KiDamage group
+    register_feat(protos, 'KiDamage', 'Ki Damage',
+                  type='Class',
+                  apply=lambda source, unit, feat, params, kwargs: unit.calc.addSource('Spell.Charges', name=source, calcInt=feat),
+                  unapply=lambda source, unit, feat, params, kwargs: unit.calc.removeSource('Spell.Charges', source),
+                  maxCharge=lambda source, unit, feat, params: unit.getClassLevel(),
+                  decCharge=__decChargeKiDamage,
+                  cast=__castKiDamage,
+                  prerequisite=[],
+                  specifics='''Once per day per level, a Weapon Master may use this feat to do maximum damage to their opponent.''',
+                  )
+
+    # WeaponOfChoice group
     register_feat(protos, 'WeaponOfChoice', 'Weapon of Choice',
-                  apply=__applyToWeapon,
-                  unapply=__unapply,
+                  applyToWeapon=__applyWeaponOfChoice,
+                  unapply=__unapplyWeaponOfChoice,
                   specifics='''The weapon chosen to be a weapon of choice by a Weapon Master becomes the focus for all of their special abilities.''',
                   )
     register_feat(protos, 'WeaponOfChoice', 'Increased Multiplier',
-                  prerequisite=[('ClassLevel', name, 5)],
+                  prerequisite=[],
                   specifics='''With their weapon of choice, the multiplier is increased by x1 to all critical hits. Thus a x2 critical multiplier becomes a x3.''',
                   )
     register_feat(protos, 'WeaponOfChoice', 'Superior Weapon Focus',
-                  prerequisite=[('ClassLevel', name, 5)],
+                  prerequisite=[],
                   specifics='''The weapon master gains a +1 bonus to all attack rolls with their weapon of choice.''',
                   )
     register_feat(protos, 'WeaponOfChoice', 'Ki Critical',
-                  prerequisite=[('ClassLevel', name, 7)],
+                  prerequisite=[],
                   specifics='''The weapon master gains an additional +2 to the threat range of their weapon of choice.''',
                   )

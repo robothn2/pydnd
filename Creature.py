@@ -30,7 +30,6 @@ class Creature(Unit):
 
         self.setProp('hp', self.calc.calcPropValue('HitPoint', self, None))
         self.statistic()
-        print(self.modifier)
 
     def __applyAttackParameters(self):
         params = json.loads(self.proto['attack_parameters'])
@@ -64,5 +63,5 @@ class Creature(Unit):
         self.printProp('AttackBonus.Base')
         self.printProp('ArmorClass')
         self.printProp('HitPoint')
-        print('Attacks:', self.modifier.getSource('Attacks'))
+        print('Attacks:', self.calc.calcPropValue('Attacks', self))
         print('== statistics end')

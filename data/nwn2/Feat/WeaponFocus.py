@@ -18,10 +18,10 @@ def availableParams(unit):
             weaponsAvailable.append(weaponBaseName)
     return weaponsAvailable
 
-def __applyWeaponFocus(source, unit, feat, params, **kwargs):
+def __applyWeaponFocus(source, unit, feat, params, kwargs):
     weapon = kwargs.get('weapon')
     hand = kwargs.get('hand')
-    if params is not list or weapon.getItemBaseName() not in params:
+    if type(params) is not list or weapon.nameBase not in params:
         return
 
     print(source, 'affects weapon:', weapon.getItemBaseName(), ', params:', params)
@@ -42,7 +42,7 @@ def __unapplyWeaponFocus(source, unit, feat, params):
 
 def register(protos):
     register_feat(protos, 'WeaponFocus', 'Weapon Focus',
-                  apply=__applyWeaponFocus,
+                  applyToWeapon=__applyWeaponFocus,
                   unapply=__unapplyWeaponFocus,
                   prerequisite=[('BaseAttackBonus', 1), ('Feat', 'Weapon Proficiency')],
                   specifics='''A character with this feat is particularly skilled with a specific weapon, gaining a +1 attack bonus with it.''',

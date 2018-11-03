@@ -2,7 +2,7 @@
 from Models import register_feat
 from Apply import apply_weapon_attacks
 
-def _applyFeatTwoWeaponFighting(source, unit, feat, params, **kwargs):
+def _applyFeatTwoWeaponFighting(source, unit, feat, params, kwargs):
     weapon = kwargs.get('weapon')
     hand = kwargs.get('hand')
     if hand == 'TwoHand':
@@ -25,7 +25,7 @@ def _applyFeatTwoWeaponFighting(source, unit, feat, params, **kwargs):
             else:
                 apply_weapon_attacks(weapon, unit, hand, 1)
 
-def _unapplyFeatTwoWeaponFighting(source, unit, feat, params):
+def _unapplyFeatTwoWeaponFighting(source, unit, feat, params, kwargs):
     pass
 
 def register(protos):

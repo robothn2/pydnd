@@ -4,7 +4,7 @@ import Dice
 
 name = 'Ranger'
 
-def _applyFeatFavoredEnemy(source, unit, feat, params):
+def _applyFeatFavoredEnemy(source, unit, feat, params, kwargs):
     bonus = max(1, int(unit.getClassLevel('Ranger') / 5))
     calcDamage = lambda caster,target: None if not target.matchRaces(featParams) else ('Divine', source, bonus)
     unit.calc.addSource('Damage.Additional', name=source, calcInt=calcDamage, noCache=True)
@@ -12,54 +12,50 @@ def _applyFeatFavoredEnemy(source, unit, feat, params):
     unit.calc.addSource('Skill.Listen', name=source, calcInt=calcSkill, noCache=True)
     unit.calc.addSource('Skill.Spot', name=source, calcInt=calcSkill, noCache=True)
     unit.calc.addSource('Skill.Taunt', name=source, calcInt=calcSkill, noCache=True)
-def _unapplyFeatFavoredEnemy(source, unit, feat, params):
+def _unapplyFeatFavoredEnemy(source, unit, feat, params, kwargs):
     unit.calc.removeSource('Damage.Additional', source)
     unit.calc.addSource('Skill.Listen', source)
     unit.calc.addSource('Skill.Spot', source)
     unit.calc.addSource('Skill.Taunt', source)
 
-def _applyFeatBaneOfEnemies(source, unit, feat, params):
+def _applyFeatBaneOfEnemies(source, unit, feat, params, kwargs):
     calcDamage = lambda caster,target: None if not target.matchRaces(params) else ('Divine', source, Dice.rollDice(1, 6, 2))
     unit.calc.addSource('Damage.Additional', name=source, calcInt=calcDamage, noCache=True)
     unit.calc.addSource('AttackBonus.Additional', name=source, calcInt=lambda caster,target: 2 if target.matchRaces(params) else 0)
-def _unapplyFeatBaneOfEnemies(source, unit, featParams):
+def _unapplyFeatBaneOfEnemies(source, unit, feat, params, kwargs):
     unit.calc.removeSource('Damage.Additional', source)
     unit.calc.removeSource('AttackBonus.Additional', source)
 
-def _applyFeatCombatStyle(source, unit, feat, params):
+def _deriveFeatCombatStyle(source, unit, feat, params):
+    bonusFeats = {}
     level = unit.getClassLevel(name)
     if 'TwoWeaponFighting' in params:
         if level >= 2:
-            unit.addFeat('Two-Weapon Fighting')
-        elif level >= 21:
-            unit.addFeat('Perfect Two-Weapon Fighting')
+            bonusFeats['Two-Weapon Fighting'] = ''
+        if level >= 6:
+            bonusFeats['Improved Two-Weapon Fighting'] = ''
+        if level >= 11:
+            bonusFeats['Greater Two-Weapon Fighting'] = ''
+        if level >= 21:
+            bonusFeats['Perfect Two-Weapon Fighting'] = ''
     elif 'Archery' in params:
-        unit.addFeat('Rapid Shot')
-def _unapplyFeatCombatStyle(source, unit, feat, params):
-    unit.removeFeat('Two-Weapon Fighting')
-    unit.removeFeat('Perfect Two-Weapon Fighting')
-    unit.removeFeat('Rapid Shot')
-
-def _applyFeatImprovedCombatStyle(source, unit, feat, params):
-    if 'TwoWeaponFighting' in params:
-        unit.addFeat('Improved Two-Weapon Fighting')
-    elif 'Archery' in params:
-        unit.addFeat('Manyshot')
-def _unapplyFeatImprovedCombatStyle(source, unit, feat, params):
-    if 'TwoWeaponFighting' in params:
+        if level >= 2:
+            bonusFeats['Rapid Shot'] = ''
+        if level >= 6:
+            bonusFeats['Manyshot'] = ''
+        if level >= 11:
+            bonusFeats['Improved Rapid Shot'] = ''
+    return bonusFeats
+def _underiveFeatCombatStyle(source, unit, feat, params):
+    if feat.nameFull == 'Combat Style':
+        unit.removeFeat('Two-Weapon Fighting')
+        unit.removeFeat('Perfect Two-Weapon Fighting')
+        unit.removeFeat('Rapid Shot')
+    elif feat.nameFull == 'Improved Combat Style':
         unit.removeFeat('Improved Two-Weapon Fighting')
-    elif 'Archery' in params:
         unit.removeFeat('Manyshot')
-
-def _applyFeatCombatMastery(source, unit, feat, params):
-    if 'TwoWeaponFighting' in params:
-        unit.addFeat('Greater Two-Weapon Fighting')
-    elif 'Archery' in params:
-        unit.addFeat('Improved Rapid Shot')
-def _unapplyFeatCombatMastery(source, unit, feat, params):
-    if 'TwoWeaponFighting' in params:
+    elif feat.nameFull == 'Combat Mastery':
         unit.removeFeat('Greater Two-Weapon Fighting')
-    elif 'Archery' in params:
         unit.removeFeat('Improved Rapid Shot')
 
 proto = {
@@ -103,29 +99,25 @@ def register(protos):
                   type = 'Class',
                   apply = _applyFeatBaneOfEnemies,
                   unapply = _unapplyFeatBaneOfEnemies,
-                  prerequisite = [('ClassLevel', name, 1)],
+                  prerequisite = [('ClassLevel', name, 21)],
                   specifics = '''The character gains a 2d6 bonus to damage rolls and +2 attack bonus against their favored enemy.'''
                   )
 
     # feat group: CombatStyle
     register_feat(protos, 'CombatStyle', 'Combat Style',
                   type = 'Class',
-                  applyGroup = _applyFeatCombatStyle,
-                  unapply = _unapplyFeatCombatStyle,
-                  prerequisite = [('ClassLevel', name, 2)],
+                  deriveFeat = _deriveFeatCombatStyle,
+                  underiveFeat = _underiveFeatCombatStyle,
+                  prerequisite = [],
                   specifics = '''A Ranger can chosen TwoWeaponFighting or Archery combat style. If you chosen TwoWeaponFighting, you gain the following bonus feats: TwoWeaponFighting at 2nd level, Improved TwoWeaponFighting at 6th level, Greater TwoWeaponFighting at 11st level, and Perfect TwoWeaponFighting at 21st level. If you chosen Archery, you gain the following bonus feats: Rapid Shot at 2nd level, Manyshot at 6th level, and Improved Rapid Shot at 11th level. You gain the benefit of these feats even if you do not meet their prerequisites.''',
                   )
     register_feat(protos, 'CombatStyle', 'Improved Combat Style',
                   type = 'Class',
-                  applyGroup = _applyFeatImprovedCombatStyle,
-                  unapply = _unapplyFeatImprovedCombatStyle,
-                  prerequisite = [('ClassLevel', name, 6)],
+                  prerequisite = [],
                   specifics = '''At 6th level, a ranger's aptitude in his chosen combat style (archery or two-weapon combat) improves. If he selected archery at 2nd level, he is treated as having the Manyshot feat, even if he does not have the normal prerequisites for that feat. If the ranger selected two-weapon combat at 2nd level, he is treated as having the Improved Two-Weapon Fighting feat, even if he does not have the normal prerequisites for that feat. As before, the benefits of the ranger's chosen style apply only when he wears light or no armor. He loses all benefits of his combat style when wearing medium or heavy armor.''',
                   )
     register_feat(protos, 'CombatStyle', 'Combat Mastery',
                   type = 'Class',
-                  applyGroup = _applyFeatCombatMastery,
-                  unapply = _unapplyFeatCombatMastery,
-                  prerequisite = [('ClassLevel', name, 11)],
+                  prerequisite = [],
                   specifics = '''At 11th level, a ranger's aptitude in his chosen combat style (archery or two-weapon combat) improves again. If he selected archery at 2nd level, he is treated as having the Improved Rapid Shot feat, even if he does not have the normal prerequisites for that feat. If the ranger selected two-weapon combat at 2nd level, he is treated as having the Greater Two-Weapon Fighting feat, even if he does not have the normal prerequisites for that feat. As before, the benefits of the ranger's chosen style apply only when he wears light or no armor. He loses all benefits of his combat style when wearing medium or heavy armor.''',
                   )

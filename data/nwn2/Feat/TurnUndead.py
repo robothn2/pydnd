@@ -26,8 +26,8 @@ def register(protos):
     # TurnUndead group
     register_feat(protos, 'TurnUndead', 'Turn Undead',
                   type='Class',
-                  apply=lambda source, unit, feat, params: unit.calc.addSource('Spell.Charges', name=source, calcInt=feat),
-                  unapply=lambda source, unit, feat, params: unit.calc.removeSource('Spell.Charges', source),
+                  apply=lambda source, unit, feat, params, kwargs: unit.calc.addSource('Spell.Charges', name=source, calcInt=feat),
+                  unapply=lambda source, unit, feat, params, kwargs: unit.calc.removeSource('Spell.Charges', source),
                   maxCharge=__maxChargeTurnUndead,
                   decCharge=__decChargeTurnUndead,
                   cast=__castTurnUndead,
@@ -43,8 +43,8 @@ def register(protos):
     # DivineMight group
     register_feat(protos, 'DivineMight', 'Divine Might',
                   prerequisite=[('Feat', 'TurnUndead'), ('Feat', 'PowerAttack'), ('Ability', 'Str', 13), ('Ability', 'Cha', 13)],
-                  apply=lambda source, unit, feat, params: unit.calc.addSource('Spell.Charges', name=source, calcInt=feat),
-                  unapply=lambda source, unit, feat, params: unit.calc.removeSource('Spell.Charges', source),
+                  apply=lambda source, unit, feat, params, kwargs: unit.calc.addSource('Spell.Charges', name=source, calcInt=feat),
+                  unapply=lambda source, unit, feat, params, kwargs: unit.calc.removeSource('Spell.Charges', source),
                   maxCharge=__maxChargeTurnUndead,
                   decCharge=__decChargeTurnUndead,
                   buffApply=lambda source, caster, target: target.calc.removeSource('Damage.Additional', source),

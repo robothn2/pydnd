@@ -288,10 +288,11 @@ class PropNode:
 
         for name,sourceCalculator in self.sourcesInt.items():
             sourceValueInt = sourceCalculator(caster, target)
-            if type(sourceValueInt) == tuple:
-                self.value.append(sourceValueInt)
-            else:
-                self.value = self.calculator(sourceValueInt, self.value)
+            if sourceValueInt:
+                if type(sourceValueInt) == tuple:
+                    self.value.append(sourceValueInt)
+                else:
+                    self.value = self.calculator(sourceValueInt, self.value)
 
         for _,upstreamCalculator in enumerate(self.sourcesUpstream):
             sourceValueInt = upstreamCalculator(caster, target)

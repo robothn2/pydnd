@@ -13,13 +13,13 @@ def __deactive(source, caster):
 def register(protos):
     # register main feat
     register_feat(protos, 'PowerAttack', 'Power Attack',
-        apply=lambda source, unit, feat, params: unit.calc.addSource('Spell.Activable', name=source, calcInt=feat),
-        unapply=lambda source, unit, feat, params: unit.calc.removeSource('Spell.Activable', source),
-        active=__active,
-        deactive=__deactive,
-        prerequisite=[('Ability', 'Str', 13)],
-        specifics='''A character with this feat can make powerful but ungainly attacks. When Power Attack is selected, it grants a +3 bonus to the damage roll, but at the cost of -3 to the attack roll.''',
-    )
+                  apply=lambda source, unit, feat, params, kwargs: unit.calc.addSource('Spell.Activable', name=source, calcInt=feat),
+                  unapply=lambda source, unit, feat, params, kwargs: unit.calc.removeSource('Spell.Activable', source),
+                  active=__active,
+                  deactive=__deactive,
+                  prerequisite=[('Ability', 'Str', 13)],
+                  specifics='''A character with this feat can make powerful but ungainly attacks. When Power Attack is selected, it grants a +3 bonus to the damage roll, but at the cost of -3 to the attack roll.''',
+                  )
 
     #register member feats
     register_feat(protos, 'PowerAttack', 'Improved Power Attack',

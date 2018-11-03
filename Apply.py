@@ -5,18 +5,6 @@ def race_apply(unit, raceName):
         return
     unit.ctx['Race'][raceName].model.apply(unit)
 
-def feats_apply(unit):
-    feats = unit.modifier.getSource('Feats')
-    protos = unit.ctx['Feat']
-    for featName in feats.keys():
-        if featName not in protos:
-            continue
-
-        proto = protos[featName]
-        if hasattr(proto, 'apply'):
-            print('apply feat', proto.proto['name'], ', params', feats[featName])
-            proto.apply(unit, feats[featName])
-
 def calc_attackbonus_list(maxAttackTimes, baseAttackBonus, babDecValue):
     bab = int(baseAttackBonus)
     abList = []

@@ -11,8 +11,6 @@ class Unit:
         self.ctx = ctx
         self.calc = PropCalculator(ctx)
         self.props = Props.Props({'dead': False, 'hp': 0, 'xp': 0})
-        self.modifier = Props.Modifier({'ArmorClass': {'Base': {'Natural': {'BaseArmor': 10}}}, 'HitPoint': {}})
-        self.modifierBuff = Props.Modifier()
         self.combat = CombatManager(self)
         self.buffs = BuffManager(self)
         self.feats = FeatManager(self)
@@ -48,19 +46,6 @@ class Unit:
 
     def addFeat(self, featName, featParam = []):
         self.feats.addFeat(featName, featParam)
-
-    def addFeats(self, feats, featsHint = []):
-        for _, featName in enumerate(feats):
-            hitHint = False
-            for _, featHintName in enumerate(featsHint):
-                if len(featName) < len(featHintName) and featName == featHintName[0:len(featName)]:
-                    hitHint = True
-                    featParam = featHintName[len(featName)+1:-1]
-                    self.addFeat(featName, featParam)
-                    break
-
-            if not hitHint:
-                self.addFeat(featName)
 
     def hasFeats(self, feats):
         for _,featFullName in enumerate(feats):

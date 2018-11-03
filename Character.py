@@ -1,12 +1,10 @@
 #coding: utf-8
 
-from Skills import *
 from Unit import *
 from Apply import *
 from Abilities import *
-import CalcResult
-import json
-import warnings
+from Models import apply_tuple_resource
+import json,warnings
 
 def loadJsonFile(builderJsonFile):
     with open(builderJsonFile, encoding='utf-8') as f:
@@ -25,15 +23,6 @@ class Character(Unit):
 
     def getName(self):
         return self.builder['name']
-
-    def buildLevel1(self, props, cls, abilities, skills, feats):
-        if cls not in self.ctx['Class']:
-            return False
-        self.props.update({**props, **abilities_parse(abilities)})
-        self.addFeats(feats)
-
-        self._applyAll()
-        return True
 
     def buildByBuilder(self, builder, levelRequest):
         if not isinstance(builder, dict):
@@ -89,7 +78,7 @@ class Character(Unit):
             clsLevel = classLevels.calcSingleSource(cls, self, None)
             clsLevel += 1
             self.calc.addSource('Class.Level', name=cls, calcInt=clsLevel)
-            if clsProto.spellType is tuple:
+            if type(clsProto.spellType) is tuple:
                 self.calc.addSource('Caster.Level', name='SpellGrantLevel', calcInt=1 - clsProto.spellType[1])
                 self.calc.addSource('Caster.Level', name=cls, calcInt=clsLevel)
             self.calc.addSource('AttackBonus.Base', name=cls, calcInt=int(clsLevel * float(clsProto.bab)))
@@ -102,14 +91,11 @@ class Character(Unit):
             clsProto.levelUp(self, clsLevel, **levelEntry)
 
             # add feats
-            featsEntry = levelEntry.get('feats')
-            if featsEntry is list:
-                for _, featEntry in enumerate(levelEntry['feats']):
-                    if featEntry is str:
-                        self.addFeat(featEntry, levelEntry.get('featChoice'))
-            elif featsEntry is dict:
-                for featName, featParam in featsEntry.items():
-                    self.addFeat(featName, featParam)
+            feats = levelEntry.get('feats')
+            if feats:
+                #print('found builder feats:', feats)
+                featChoice = levelEntry['featChoice'] if 'featChoice' in levelEntry else {}
+                apply_tuple_resource(('Feat', feats), self, **featChoice)
 
             # update skills
             for skillName,skillLevel in levelEntry['skills'].items():
@@ -129,23 +115,30 @@ class Character(Unit):
             self.unequipWeapon('TwoHand')
             self.unequipWeapon('OffHand')
 
-        weapon.apply(self, hand)
+        self.calc.updateObject(('Weapon', hand), weapon)
 
     def unequipWeapon(self, hand):
         weaponExist = self.calc.getObject(('Weapon', hand))
         if weaponExist:
             weaponExist.unapply(self, hand)
 
-    def _applyAll(self):
+    def __applyWeaponHand(self, hand):
+        weaponExist = self.calc.getObject(('Weapon', hand))
+        if weaponExist:
+            weaponExist.apply(self, hand)
+
+    def applyAll(self):
         self.feats.apply()
+        self.__applyWeaponHand('TwoHand')
+        self.__applyWeaponHand('MainHand')
+        self.__applyWeaponHand('OffHand')
 
         self.setProp('hp', self.calc.calcPropValue('HitPoint', self, None))
 
     def statistic(self):
-        self._applyAll()
+        self.applyAll()
         print('== statistics for character', self.getName())
         print('Feats:', repr(self.feats))
-        print('Abilities:', self.calc.getProp('Ability'))
         self.printProp('AttackBonus.Base')
         self.printProp('ArmorClass')
         self.printProp('HitPoint')
@@ -153,9 +146,9 @@ class Character(Unit):
         self.printProp('SavingThrow.Fortitude')
         self.printProp('SavingThrow.Reflex')
         self.printProp('SavingThrow.Will')
-
         #self.printProp('Reduction')
-        print('Attacks:', self.calc.calcPropValue('Attacks', self, None))
+        print('Attacks:', self.calc.calcPropValue('Attacks', self))
+        print('== statistics end')
 
     def addXP(self, xp):
         xpOld = self.getProp('xp')

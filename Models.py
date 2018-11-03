@@ -31,24 +31,33 @@ def name_canonical(nameFull):
     words = name.split(' ')
     return ''.join(list(map(lambda word: word.capitalize(), words)))
 
-def _applyTupleResource(res, unit, **kwargs):
-    print('apply resource:', res)
-    if res is not tuple:
+def apply_tuple_resource(res, unit, **kwargs):
+    #print('apply resource:', res)
+    if type(res) != tuple:
         return
-    if type(res[0]) == 'function':
+
+    t = type(res[0])
+    if t == 'function':
         # support (_addDeityWeaponFocus, ...),
         res[0](unit)
         return
-    if res[0] is str:
+    if t is str:
         if res[0] == 'Feat':
-            if res[1] is str:
+            t1 = type(res[1])
+            featChoice = kwargs['featChoice'] if 'featChoice' in kwargs else kwargs
+            if t1 is str:
                 # support ('Feat', 'Breath Weapon')
                 featName = res[1]
-                unit.addFeat(featName, kwargs.get(featName))
-            elif res[1] is tuple:
+                unit.addFeat(featName, featChoice.get(featName))
+            elif t1 is tuple or t is list:
                 # support ('Feat', ('Natural Armor Increase', 'Draconic Ability Scores'))
                 for _,featName in enumerate(res[1]):
-                    unit.feats.addFeat(featName)
+                    unit.feats.addFeat(featName, featChoice.get(featName))
+            elif t1 is dict:
+                # support ('Feat', {'Weapon Focus': 'Longsword'})
+                for featName, featParam in res[1].items():
+                    unit.feats.addFeat(featName, featParam)
+
         elif res[0] == 'SpellAccess':
             # support ('SpellAccess', 'Cleric', ('Magic Circle Against Evil', 'Lesser Planar Binding'))
             unit.addAccessSpell(res[1], res[2])
@@ -57,10 +66,11 @@ def _applyTupleResource(res, unit, **kwargs):
             unit.addAccessSpellClass(res[1])
         elif res[0] == 'Domain':
             # support ('Domain', 2)
+            print('apply domain:', kwargs)
             for _, domainName in enumerate(kwargs['domains']):
                 domain = unit.ctx['Domain'].get(domainName)
-                if domain is None:
-                    print('unknown domain:', domainName)
+                if not domain:
+                    warnings.warn('unknown domain:' + domainName)
                     continue
                 print('apply domain:', domainName)
                 domain.apply(unit)
@@ -70,7 +80,7 @@ def isRequirementsMatch(requirements, unit):
         return True
 
     for _,cond in enumerate(requirements):
-        if cond is not tuple or len(cond) < 2:
+        if type(cond) != tuple or len(cond) < 2:
             continue
 
         # check Ability
@@ -93,7 +103,7 @@ def isRequirementsMatch(requirements, unit):
 
         # check ClassLevel
         elif cond[0] == 'ClassLevel':
-            if cond[1] is str and cond[2] is int:
+            if type(cond[1]) is str and type(cond[2]) is int:
                 # support ('ClassLevel', 'Ranger, 21)
                 if unit.getClassLevel(cond[1]) < cond[2]:
                     return False
@@ -103,7 +113,7 @@ def isRequirementsMatch(requirements, unit):
         # check ClassAny
         elif cond[0] == 'ClassAny':
             clsMatched = False
-            if cond[1] is tuple:
+            if type(cond[1]) is tuple:
                 # support ('ClassAny', ('Bard', 'Sorcerer'))
                 for _1,cls in enumerate(cond[1]):
                     if unit.getClassLevel('Sorcerer') > 0:
@@ -120,11 +130,11 @@ def isRequirementsMatch(requirements, unit):
 
         # check Feat
         elif cond[0] == 'Feat':
-            if cond[1] is tuple:
+            if type(cond[1]) is tuple:
                 # support ('Feat', ('Dodge', 'Mobility', 'CombatExpertise', 'SpringAttack', 'WhirlwindAttack')),
                 if not unit.hasFeats(cond[1]):
                     return False
-            elif cond[1] is str:
+            elif type(cond[1]) is str:
                 if not unit.hasFeat(cond[1]):
                     return False
             else:
@@ -169,8 +179,10 @@ class Class(ModelBase):
             # (1, ('SpellType', 'Arcane', ...))
             if bonus[1][0] == 'SpellType':
                 self.spellType = (bonus[1][1], bonus[0])
+                #print('found spell type:', self.spellType, ' for class:', self.nameFull)
 
         # print(self)
+        # todo: parse bonus and append prerequisite entry ('ClassLevel', name, 11) on feat
 
     def isAvailable(self, unit):
         if not hasattr(self.model, 'Requirements'):
@@ -190,10 +202,10 @@ class Class(ModelBase):
             if type(entry) != tuple:
                 continue
             if entry[0] == level:
-                _applyTupleResource(entry[1], unit)
+                apply_tuple_resource(entry[1], unit, **choices)
             elif type(entry[0]) == 'function':
                 if entry[0](level):
-                    _applyTupleResource(entry[1], unit, **choices)
+                    apply_tuple_resource(entry[1], unit, **choices)
 
 class Domain(ModelBase):
     def __init__(self, name, **kwargs):
@@ -203,9 +215,8 @@ class Domain(ModelBase):
         print('apply cleric domain %s' % self.name)
         if hasattr(self, 'bonus'):
             for _,entry in enumerate(self.bonus):
-                if entry is not tuple:
-                    continue
-                _applyTupleResource(entry, unit)
+                if type(entry) == tuple:
+                    apply_tuple_resource(entry, unit)
 
 class Feat(ModelBase):
     def __init__(self, name, **kwargs):
@@ -218,11 +229,6 @@ class Feat(ModelBase):
             return True
         return isRequirementsMatch(self.model.prerequisite, unit)
 
-    def apply(self, source, unit, feat, params):
-        if hasattr(self.model, 'apply'):
-            self.model.apply(feat.name, unit, feat, params)
-    def unapply(self, target = None):
-        pass
     def active(self, caster):
         pass
     def deactive(self, caster):
@@ -264,9 +270,8 @@ class Weapon(ModelBase):
         return self.nameBase
 
     def apply(self, unit, hand):
+        print('apply', hand, 'weapon:', self.name)
         Apply.apply_weapon_attacks(self, unit, hand)
-
-        unit.calc.updateObject(('Weapon', hand), self)
 
         # weapon base damage
         weaponParams = self.model.damageRoll
@@ -283,7 +288,7 @@ class Weapon(ModelBase):
         unit.calc.addSource('Weapon.%s.CriticalMultiplier' % hand, name='WeaponBase', calcInt=criticalParams[1])
 
         # weapon related feats
-        unit.feats.applyToWeapon(self, hand)
+        unit.feats.apply(weapon=self, hand=hand)
 
     def unapply(self, unit, hand):
         unit.calc.removeSource('Attacks', hand)

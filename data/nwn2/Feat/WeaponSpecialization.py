@@ -21,7 +21,7 @@ def __unapply(source, unit, feat, params):
 def register(protos):
     register_feat(protos, 'WeaponSpecialization', 'Weapon Specialization',
                   type='Special',
-                  apply=__applyToWeapon,
+                  applyToWeapon=__applyToWeapon,
                   unapply=__unapply,
                   prerequisite=[('ClassLevel', 'Fighter', 1), ('BaseAttackBonus', 4), ('Feat', 'Weapon Focus')],
                   specifics='''A character with this feat has trained especially hard with a specific weapon group, and gains a +2 damage bonus when using these weapons in combat.''',
