@@ -56,7 +56,7 @@ class FeatGroup:
         return derived
 
     def apply(self, unit, kwargs):
-        print(repr(unit), 'apply feat group:', self.name, ', members:', str(self.members.keys()))
+        #print(repr(unit), 'apply feat group:', self.name, ', members:', str(self.members.keys()))
         for featName, feat in self.members.items():
             if not hasattr(feat.model, 'apply'):
                 continue

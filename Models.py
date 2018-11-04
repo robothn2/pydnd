@@ -208,9 +208,7 @@ class Class(ModelBase):
             if entry[0] == level:
                 apply_tuple_resource(entry[1], unit, **choices)
             elif hasattr(entry[0], '__call__'):
-                print('level custom check:', level)
                 if entry[0](level):
-                    print('level custom check succ', level)
                     apply_tuple_resource(entry[1], unit, **choices)
     def calcSaveThrow(self, savingName, classLevel):
         return classLevel // 2 + 2 if savingName in self.highSaves else classLevel // 3
@@ -230,16 +228,12 @@ class Feat(ModelBase):
         self.category = kwargs.pop('Type') if 'Type' in kwargs else 'General'
         super().__init__(name, **kwargs)
         self.group = self.name # default group name is self
+        self.nameBuff = self.nameFull
 
     def isAvailable(self, unit):
         if not hasattr(self.model, 'prerequisite'):
             return True
         return isRequirementsMatch(self.model.prerequisite, unit)
-
-    def active(self, caster):
-        pass
-    def deactive(self, caster):
-        pass
 
 def register_feat(protos, groupName, featName, **kwargs):
     feat = Feat(featName, **kwargs)

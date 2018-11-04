@@ -6,21 +6,22 @@ class BuffManager:
         self.buffs = []
         self.tsInMs = 0
 
-    def addBuff(self, buffCaster, buffProto, buffMetaMagics = []):
-        expired = int(1000 * (buffProto.model.buffDuration(buffCaster, metaMagics=buffMetaMagics))) + self.tsInMs
-        buffName = buffProto.nameBuff
+    def addBuff(self, buffCaster, spell, **kwargs):
+        durationSeconds = (spell.model.buffDuration(buffCaster, **kwargs))
+        expired = int(1000 * durationSeconds) + self.tsInMs
+        buffName = spell.nameBuff
         if buffName not in self.buffs:
-            self.buffs.append((buffCaster, expired, buffProto, buffMetaMagics))
+            self.buffs.append((buffCaster, expired, spell, kwargs))
         else:
             buffExist = self.buffs[self.buffs.index(buffName)]
             if buffExist[1] > expired:
                 print('weak buff', buffName, 'cast from', repr(buffCaster))
                 return False
-            buffExist = (buffCaster, expired, buffProto, buffMetaMagics)
+            buffExist = (buffCaster, expired, spell, kwargs)
 
         # apply buff to owner
-        buffProto.model.buffApply(buffProto, buffCaster, self.owner, metaMagics=buffMetaMagics)
-        print(repr(self.owner), 'apply buff', buffProto.nameBuff, ', cast from', repr(buffCaster))
+        spell.model.buffApply(spell, buffCaster, self.owner, **kwargs)
+        print(repr(self.owner), 'apply buff', spell.nameBuff, ', cast from', repr(buffCaster), ', duration:', durationSeconds)
         return True
 
     def update(self, deltaTime):

@@ -88,7 +88,7 @@ class CombatManager:
         # multiplier
         weapon = attack[3]
         rangeDiff = self.owner.calc.calcPropValue('Weapon.%s.CriticalRange' % hand, caster, target)
-        if roll >= 20 - rangeDiff:
+        if roll > 20 - rangeDiff:
             if self.criticalCheck(caster, target, attack):
                 _,multipliers = self.owner.calc.getPropValueWithSource('Weapon.%s.CriticalMultiplier' % hand, caster, target)
                 #print('CriticalMultipliers:', multipliers)

@@ -2,10 +2,10 @@
 from Models import register_feat
 
 def availableParams(unit):
-    if not unit.hasFeat('WeaponProficiency'):
+    if not unit.hasFeat('Weapon Proficiency'):
         return []
 
-    weapons = unit.getFeatParams('WeaponProficiency')
+    weapons = unit.getFeatParams('Weapon Proficiency')
     race = unit.getProp('race')
     if race not in ['Gnomes', 'Halflings']:
         return weapons

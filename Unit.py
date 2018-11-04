@@ -1,5 +1,5 @@
 #coding: utf-8
-import warnings
+
 from common import Props
 from CombatManager import CombatManager
 from BuffManager import BuffManager
@@ -78,36 +78,38 @@ class Unit:
     def getArmorClass(self, target):
         return self.calc.calcPropValue('ArmorClass', self, target)
 
-    def addBuff(self, caster, buffProto, metaMagics = []):
-        self.buffs.addBuff(caster, buffProto, metaMagics)
+    def addBuff(self, caster, buffProto, **kwargs):
+        self.buffs.addBuff(caster, buffProto, **kwargs)
         return True
 
     def hasBuff(self, buffName):
         return False
 
-    def activate(self, name):
-        feat = self.calc.getPropSource('Spell.Activable', name)
-        if feat:
-            print('Activate ability:', name)
-            feat.calcInt.active(self)
+    def active(self, name, **kwargs):
+        source = self.calc.getPropSource('Spell.Activable', name)
+        if source is None:
+            print('No activable ability found:', name)
             return
-
-        feat = self.calc.getPropSource('Spell.Charges', name)
-        if feat:
-            print('Cast spell-like feat:', name)
-            feat.calcInt.active(self)
-            return
-
-        print('No activable ability found:', name)
-
-    def deactivate(self, name):
+        print('Activate ability:', name)
+        spell = source.calcInt
+        spell.model.active(spell, self, self)
+    def deactive(self, name):
         activableAbility = self.calc.getPropSource('Spell.Activable', name)
         if not activableAbility:
             print('No activable ability found:', name)
             return
-
         print('Deactivate ability:', name)
         activableAbility.calcInt.deactive(self)
+
+    def castSpell(self, name, target, **kwargs):
+        source = self.calc.getPropSource('Spell.Charges', name)
+        if source is None:
+            print('Spell not found:', name)
+            return
+        print('Cast spell', name, 'to', target.getName())
+        spell = source.calcInt
+        spell.model.cast(spell, self, target, params=self.feats.getFeatParams(spell.nameFull), **kwargs)
+
 
     def addEnemy(self, enemy):
         self.combat.addEnemy(enemy)

@@ -5,14 +5,18 @@ def __castTurnUndead(spell, caster, target, **kwargs):
     pass
 def __maxChargeTurnUndead(spell, caster, target, **kwargs):
     charge = 3 + caster.calc.calcPropValue('Modifier.Cha')
-    if 'ExtraTurning' in params:
+    params = kwargs.get('params')
+    if params and 'ExtraTurning' in params:
         charge += 4
     return charge
 def __decChargeTurnUndead(spell, caster, target, **kwargs):
     pass
 
+def __spellCastDivineMight(spell, caster, target, **kwargs):
+    target.buffs.addBuff(caster, spell, **kwargs)
 def __buffDurationDivineMight(caster, **kwargs):
     turns = caster.calc.calcPropValue('Modifier.Cha', caster)
+    #print('Divine might params:', kwargs)
     params = kwargs.get('params')
     if params and 'Epic' in params:
         turns *= 2
@@ -20,6 +24,7 @@ def __buffDurationDivineMight(caster, **kwargs):
 def __buffApplyDivineMight(spell, caster, target, **kwargs):
     value = caster.calc.calcPropValue('Modifier.Cha', caster)
     params = kwargs.get('params')
+    print('Divine might params:', kwargs)
     if params and 'Epic' in params:
         value *= 2
     target.calc.addSource('Damage.Additional', name=spell.nameBuff, calcInt=lambda caster, target: ('Divine', spell.nameBuff, value))
@@ -47,14 +52,16 @@ def register(protos):
                   prerequisite=[('Feat', 'TurnUndead'), ('Feat', 'PowerAttack'), ('Ability', 'Str', 13), ('Ability', 'Cha', 13)],
                   apply=lambda spell, caster, target, **kwargs: caster.calc.addSource('Spell.Charges', name=spell.nameFull, calcInt=spell),
                   unapply=lambda spell, caster, target, **kwargs: caster.calc.removeSource('Spell.Charges', spell.nameFull),
-                  cast=lambda spell, caster, target, **kwargs: target.buffs.addBuff(caster, spell),
+                  cast=__spellCastDivineMight,
                   maxCharge=__maxChargeTurnUndead,
                   decCharge=__decChargeTurnUndead,
-                  buffApply=lambda spell, caster, target, **kwargs: target.calc.removeSource('Damage.Additional', spell.nameBuff),
+                  buffDuration=__buffDurationDivineMight,
+                  buffApply=__buffApplyDivineMight,
                   buffUnapply=lambda spell, caster, target, **kwargs: target.calc.removeSource('Damage.Additional', spell.nameBuff),
                   specifics='''The character may spend one of his turn undead attempts to add his Charisma bonus to all weapon damage for a number of rounds equal to the Charisma bonus.''',
                   )
     register_feat(protos, 'DivineMight', 'Epic Divine Might',
+                  nameMember='Epic',
                   prerequisite=[('Feat', 'DivineMight'), ('Level', 21), ('Ability', 'Str', 21), ('Ability', 'Cha', 21)],
                   specifics='''When you use the Power Attack or Improved Power Attack feat with a one-handed weapon against a favored enemy, your Power Attack damage bonus is doubled. With a two-handed weapon against a favored enemy, your Power Attack damage bonus is tripled.''',
                   )

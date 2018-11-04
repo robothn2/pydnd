@@ -5,7 +5,7 @@ name = 'Weapon Master'
 
 def __requireWeaponFocusOnMelee(unit):
     # check Weapon Focus on melee weapon
-    weapons = unit.getFeatParams('WeaponFocus')
+    weapons = unit.getFeatParams('Weapon Focus')
     for _, weaponBaseName in enumerate(weapons):
         weaponProto = unit.ctx['Weapon'].get(weaponBaseName)
         if not weaponProto:
