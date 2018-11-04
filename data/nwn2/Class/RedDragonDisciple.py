@@ -21,8 +21,8 @@ proto = {
     ),
 }
 
-def __applyDraconicAbilityScores(source, unit, feat, params):
-    level = unit.getClassLevel('RedDragonDisciple')
+def __applyDraconicAbilityScores(feat, caster, target, **kwargs):
+    level = caster.getClassLevel('RedDragonDisciple')
 
     strAdd = 0
     if level == 10:
@@ -32,34 +32,34 @@ def __applyDraconicAbilityScores(source, unit, feat, params):
     elif level >= 2:
         strAdd = 2
     if strAdd > 0:
-        unit.calc.updatePropIntSource('Ability.Str.Base', source, strAdd)
+        caster.calc.updatePropIntSource('Ability.Str.Base', feat.nameFull, strAdd)
 
     if level >= 7:
-        unit.calc.updatePropIntSource('Ability.Con.Base', source, 2)
+        caster.calc.updatePropIntSource('Ability.Con.Base', feat.nameFull, 2)
     if level >= 8:
-        unit.calc.updatePropIntSource('Ability.Int.Base', source, 2)
-def __unapplyDraconicAbilityScores(source, unit, feat, params):
-    unit.calc.removeSource('Ability.Str.Base', source)
-    unit.calc.removeSource('Ability.Con.Base', source)
-    unit.calc.removeSource('Ability.Int.Base', source)
+        caster.calc.updatePropIntSource('Ability.Int.Base', feat.nameFull, 2)
+def __unapplyDraconicAbilityScores(feat, caster, target, **kwargs):
+    caster.calc.removeSource('Ability.Str.Base', feat.nameFull)
+    caster.calc.removeSource('Ability.Con.Base', feat.nameFull)
+    caster.calc.removeSource('Ability.Int.Base', feat.nameFull)
 
-def __applyNaturalArmorIncrease(source, unit, feat, params):
+def __applyNaturalArmorIncrease(feat, caster, target, **kwargs):
     level = unit.getClassLevel('RedDragonDisciple')
     value = int((level + 2) / 3)
-    unit.calc.updatePropIntSource('ArmorClass.Natural', source, value)
-def __unapplyNaturalArmorIncrease(source, unit, feat, params):
-    unit.calc.removeSource('ArmorClass.Natural', source)
+    caster.calc.updatePropIntSource('ArmorClass.Natural', feat.nameFull, value)
+def __unapplyNaturalArmorIncrease(feat, caster, target, **kwargs):
+    caster.calc.removeSource('ArmorClass.Natural', feat.nameFull)
 
-def __applyHalfDragon(source, unit, feat, params):
-    unit.calc.addSource('Vision.Dark', name=source, calcInt=60)
-    unit.calc.addSource('Immunity.Sleep', name=source, calcInt=1)
-    unit.calc.addSource('Immunity.Paralysis', name=source, calcInt=1)
-    unit.calc.addSource('Reduction.Fire', name=source, calcInt=-1)
-def __unapplyHalfDragon(source, unit, feat, params):
-    unit.calc.removeSource('Vision.Dark', name=source)
-    unit.calc.removeSource('Immunity.Sleep', name=source)
-    unit.calc.removeSource('Immunity.Paralysis', name=source)
-    unit.calc.removeSource('Reduction.Fire', name=source)
+def __applyHalfDragon(feat, caster, target, **kwargs):
+    caster.calc.addSource('Vision.Dark', name=feat.nameFull, calcInt=60)
+    caster.calc.addSource('Immunity.Sleep', name=feat.nameFull, calcInt=1)
+    caster.calc.addSource('Immunity.Paralysis', name=feat.nameFull, calcInt=1)
+    caster.calc.addSource('Reduction.Fire', name=feat.nameFull, calcInt=-1)
+def __unapplyHalfDragon(feat, caster, target, **kwargs):
+    caster.calc.removeSource('Vision.Dark', name=feat.nameFull)
+    caster.calc.removeSource('Immunity.Sleep', name=feat.nameFull)
+    caster.calc.removeSource('Immunity.Paralysis', name=feat.nameFull)
+    caster.calc.removeSource('Reduction.Fire', name=feat.nameFull)
 
 def register(protos):
     protos['Class'][name] = Class(name, **proto)

@@ -3,9 +3,16 @@ import regex,warnings,copy
 from Dice import rollDice
 
 def _parseHighSaves(text):
-    return (0.5 if text.find('Fortitude') >= 0 or text.find('All') >= 0 else 0.25,
-            0.5 if text.find('Reflex') >= 0 or text.find('All') >= 0 else 0.25,
-            0.5 if text.find('Will') >= 0 or text.find('All') >= 0 else 0.25)
+    if text.find('All') >= 0:
+        return ['Fortitude', 'Reflex', 'Will']
+    ret = []
+    if text.find('Fortitude') >= 0:
+        ret.append('Fortitude')
+    if text.find('Reflex') >= 0:
+        ret.append('Reflex')
+    if text.find('Will') >= 0:
+        ret.append('Will')
+    return ret
 def _parseBaseAttackBonus(text):
     if text.find('High') >= 0:
         return 1.0
@@ -36,7 +43,7 @@ def apply_tuple_resource(res, unit, **kwargs):
         return
 
     t = type(res[0])
-    if t == 'function':
+    if hasattr(res[0], '__call__'):
         # support (_addDeityWeaponFocus, ...),
         res[0](unit)
         return
@@ -138,7 +145,7 @@ def isRequirementsMatch(requirements, unit):
                 return False
 
         # custom condition
-        elif type(cond[0]) == 'function':
+        elif hasattr(cond[0], '__call__'):
             if not cond[0](unit):
                 # support (function, 'Weapon Focus in a melee weapon')
                 return False
@@ -165,7 +172,7 @@ class Class(ModelBase):
     def __init__(self, name, **kwargs):
         self.bab = _parse(kwargs, 'Base Attack Bonus', _parseBaseAttackBonus)
         self.hd = _parse(kwargs, 'Hit Die', _parseHitDie)
-        (self.fortitude, self.reflex, self.will) = _parse(kwargs, 'High Saves', _parseHighSaves)
+        self.highSaves = _parse(kwargs, 'High Saves', _parseHighSaves)
         self.weapons = _parse(kwargs, 'Weapon Proficiencies', _parseWeaponProficiencies)
         self.armors = _parse(kwargs, 'Armor Proficiencies', _parseArmorProficiencies)
         self.skillPoints = _parse(kwargs, 'Skill Points', _parseSkillPoints)
@@ -200,10 +207,13 @@ class Class(ModelBase):
                 continue
             if entry[0] == level:
                 apply_tuple_resource(entry[1], unit, **choices)
-            elif type(entry[0]) == 'function':
+            elif hasattr(entry[0], '__call__'):
+                print('level custom check:', level)
                 if entry[0](level):
+                    print('level custom check succ', level)
                     apply_tuple_resource(entry[1], unit, **choices)
-
+    def calcSaveThrow(self, savingName, classLevel):
+        return classLevel // 2 + 2 if savingName in self.highSaves else classLevel // 3
 class Domain(ModelBase):
     def __init__(self, name, **kwargs):
         super().__init__(name, **kwargs)
@@ -212,6 +222,7 @@ class Domain(ModelBase):
         print('apply cleric domain %s' % self.name)
         if hasattr(self, 'bonus'):
             for _,entry in enumerate(self.bonus):
+                print('apply resource %s cleric domain %s' % (str(entry), self.name))
                 apply_tuple_resource(entry, unit)
 
 class Feat(ModelBase):

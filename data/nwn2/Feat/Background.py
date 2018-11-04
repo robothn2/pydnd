@@ -1,12 +1,12 @@
 #coding: utf-8
 from Models import register_feat
 
-def __apply(source, unit, feat, params):
-    unit.calc.addSource('SavingThrow.All', name=source, calcInt=1)
-    unit.calc.addSource('ArmorClass.Luck', name=source, calcInt=1)
-def __unapply(source, unit, feat, params):
-    unit.calc.removeSource('SavingThrow.All', source)
-    unit.calc.removeSource('ArmorClass.Luck', source)
+def __apply(feat, caster, target, **kwargs):
+    caster.calc.addSource('SavingThrow.All', name=feat.nameFull, calcInt=1)
+    caster.calc.addSource('ArmorClass.Luck', name=feat.nameFull, calcInt=1)
+def __unapply(feat, caster, target, **kwargs):
+    caster.calc.removeSource('SavingThrow.All', feat.nameFull)
+    caster.calc.removeSource('ArmorClass.Luck', feat.nameFull)
 
 def register(protos):
     register_feat(protos, 'General', 'Luck of Heroes',

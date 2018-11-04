@@ -18,31 +18,33 @@ def availableParams(unit):
             weaponsAvailable.append(weaponBaseName)
     return weaponsAvailable
 
-def __applyWeaponFocus(source, unit, feat, params, kwargs):
+def __applyWeaponFocus(feat, caster, target, **kwargs):
     weapon = kwargs.get('weapon')
     hand = kwargs.get('hand')
+    params = kwargs.get('params')
     if type(params) is not list or weapon.nameBase not in params:
         return
 
-    print(source, 'affects weapon:', weapon.getItemBaseName(), ', params:', params)
-    unit.calc.addSource('AttackBonus.' + hand, name='WeaponFocus', calcInt=1)
+    print(feat.nameFull, 'affects weapon:', weapon.getItemBaseName(), ', params:', params)
+    caster.calc.addSource('AttackBonus.' + hand, name='WeaponFocus', calcInt=1)
     if 'Greater' in params:
-        unit.calc.addSource('AttackBonus.' + hand, name='GreaterWeaponFocus', calcInt=1)
+        caster.calc.addSource('AttackBonus.' + hand, name='GreaterWeaponFocus', calcInt=1)
     if 'Epic' in params:
-        unit.calc.addSource('AttackBonus.' + hand, name='EpicWeaponFocus', calcInt=2)
+        caster.calc.addSource('AttackBonus.' + hand, name='EpicWeaponFocus', calcInt=2)
     if 'ImprovedCritical' in params:
         criticalParams = weapon.proto['BaseCriticalThreat']['params']
         rangeDiff = criticalParams[1] - criticalParams[0]
-        unit.calc.addSource('Weapon.%s.CriticalRange' % hand, name=source, calcInt=rangeDiff)
-def __unapplyWeaponFocus(source, unit, feat, params):
-    unit.calc.removeSource('AttackBonus.TwoHand', feat.nameMember)
-    unit.calc.removeSource('AttackBonus.MainHand', feat.nameMember)
-    unit.calc.removeSource('AttackBonus.OffHand', feat.nameMember)
+        caster.calc.addSource('Weapon.%s.CriticalRange' % hand, name=feat.nameFull, calcInt=rangeDiff)
+def __unapplyWeaponFocus(feat, caster, target, **kwargs):
+    caster.calc.removeSource('AttackBonus.TwoHand', feat.nameMember)
+    caster.calc.removeSource('AttackBonus.MainHand', feat.nameMember)
+    caster.calc.removeSource('AttackBonus.OffHand', feat.nameMember)
 
 
 def register(protos):
     register_feat(protos, 'WeaponFocus', 'Weapon Focus',
-                  applyToWeapon=__applyWeaponFocus,
+                  forWeapon=True,
+                  apply=__applyWeaponFocus,
                   unapply=__unapplyWeaponFocus,
                   prerequisite=[('BaseAttackBonus', 1), ('Feat', 'Weapon Proficiency')],
                   specifics='''A character with this feat is particularly skilled with a specific weapon, gaining a +1 attack bonus with it.''',

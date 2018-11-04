@@ -1,8 +1,8 @@
 #coding: utf-8
 from Models import register_spell
 
-def __cast(source, caster, target, spell, metaMagics):
-    target.buffs.addBuff(caster, spell, metaMagics)
+def __cast(spell, caster, target, **kwargs):
+    target.buffs.addBuff(caster, spell, kwargs)
 
 proto = {
     'InnateLevel': 2,
@@ -26,7 +26,7 @@ def register(protos):
                    target='Touch',
                    range='Single',
                    cast=__cast,
-                   buffDuration=lambda caster, buff: 60.0 * caster.getClassLevel(),
-                   buffApply=lambda spell, source, caster, target, metaMagics: target.calc.addSource('Ability.Dex.Buff', name=source, calcInt=6 if 'Empower' in metaMagics else 4),
-                   buffUnapply=lambda spell, source, target: target.calc.removeSource('Ability.Dex.Buff', source),
+                   buffDuration=lambda caster, **kwargs: 60.0 * caster.getClassLevel(),
+                   buffApply=lambda spell, caster, target, **kwargs: target.calc.addSource('Ability.Dex.Buff', name=spell.nameBuff, calcInt=4),
+                   buffUnapply=lambda spell, caster, target, **kwargs: target.calc.removeSource('Ability.Dex.Buff', spell.nameBuff),
                    )

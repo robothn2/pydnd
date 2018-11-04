@@ -1,21 +1,20 @@
 #coding: utf-8
 from Models import register_feat
 
-def __applyGreatAbility(source, unit, feat, params, kwargs):
-    ability = source[6:9]
+def __applyGreatAbility(feat, caster, target, **kwargs):
+    ability = feat.nameFull[6:9]
     propName = 'Ability.%s.Base' % ability
-    prop = unit.calc.getProp(propName)
-    #print(propName, prop)
-    value = prop.calcSingleSource(source, unit, None)
-    unit.calc.addSource(propName, name=source, calcInt=value+1)
-def __unapplyGreatAbility(source, unit, feat, params, kwargs):
+    prop = caster.calc.getProp(propName)
+    value = prop.calcSingleSource(feat.nameFull, caster, None)
+    caster.calc.addSource(propName, name=feat.nameFull, calcInt=value+1)
+def __unapplyGreatAbility(feat, caster, target, **kwargs):
     pass
 
 def register(protos):
     register_feat(protos, 'General', 'Epic Prowess',
                   type='Epic',
-                  apply=lambda source, unit, feat, params, kwargs: unit.calc.addSource('AttackBonus.Additional', name=source, calcInt=1),
-                  unapply=lambda source, unit, feat, params, kwargs: unit.calc.removeSource('AttackBonus.Additional', source),
+                  apply=lambda feat, caster, target, **kwargs: caster.calc.addSource('AttackBonus.Additional', name=feat.nameFull, calcInt=1),
+                  unapply=lambda feat, caster, target, **kwargs: caster.calc.removeSource('AttackBonus.Additional', feat.nameFull),
                   prerequisite=[('Level', 21)],
                   specifics='''The character gains +1 attack bonus''',
                   )

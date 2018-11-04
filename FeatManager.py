@@ -15,7 +15,7 @@ class FeatGroup:
 
     def addMember(self, feat, param):
         if len(self.members) == 0:
-            self.forWeapon = hasattr(feat, 'applyToWeapon')
+            self.forWeapon = hasattr(feat.model, 'forWeapon')
         self.members[feat.nameFull] = feat
         if feat.nameMember and feat.nameMember not in self.params:
             self.params.append(feat.nameMember)
@@ -48,7 +48,7 @@ class FeatGroup:
         derived = {}
         for featName,feat in self.members.items():
             if hasattr(feat.model, 'deriveFeat'):
-                derives = feat.model.deriveFeat(feat.name, unit, feat, self.params)
+                derives = feat.model.deriveFeat(feat, unit, None, params=self.params)
                 if type(derives) is dict:
                     derived.update(derives)
         if len(derived) > 0:
@@ -64,11 +64,11 @@ class FeatGroup:
             if 'weapon' in kwargs:
                 if self.forWeapon:
                     print('  feat weapon:', featName)
-                    feat.model.apply(feat.nameFull, unit, feat, self.params, kwargs)
+                    feat.model.apply(feat, unit, feat, params=self.params, **kwargs)
             else:
                 if not self.forWeapon:
                     print('  feat normal:', featName)
-                    feat.model.apply(feat.nameFull, unit, feat, self.params, kwargs)
+                    feat.model.apply(feat, unit, None, params=self.params, **kwargs)
 
 
 class FeatManager:

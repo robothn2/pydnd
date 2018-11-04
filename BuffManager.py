@@ -7,20 +7,19 @@ class BuffManager:
         self.tsInMs = 0
 
     def addBuff(self, buffCaster, buffProto, buffMetaMagics = []):
-        expired = int(1000 * (buffProto.model.buffDuration(buffCaster, buffProto))) + self.tsInMs
+        expired = int(1000 * (buffProto.model.buffDuration(buffCaster, metaMagics=buffMetaMagics))) + self.tsInMs
         buffName = buffProto.nameBuff
         if buffName not in self.buffs:
-            self.buffs.append([buffCaster, expired, buffProto, buffMetaMagics])
+            self.buffs.append((buffCaster, expired, buffProto, buffMetaMagics))
         else:
             buffExist = self.buffs[self.buffs.index(buffName)]
             if buffExist[1] > expired:
                 print('weak buff', buffName, 'cast from', repr(buffCaster))
                 return False
-
-            buffExist = [buffCaster, expired, buffProto, buffMetaMagics]
+            buffExist = (buffCaster, expired, buffProto, buffMetaMagics)
 
         # apply buff to owner
-        buffProto.model.buffApply(buffProto, buffProto.nameBuff, buffCaster, self.owner, buffMetaMagics)
+        buffProto.model.buffApply(buffProto, buffCaster, self.owner, metaMagics=buffMetaMagics)
         print(repr(self.owner), 'apply buff', buffProto.nameBuff, ', cast from', repr(buffCaster))
         return True
 
@@ -30,11 +29,12 @@ class BuffManager:
             return
 
         # remove expired buff, one per update call
-        for i, buff in enumerate(self.buffs):
-            if buff[1] <= self.tsInMs:
+        for i, buffEntry in enumerate(self.buffs):
+            if buffEntry[1] <= self.tsInMs:
                 self.buffs.pop(i)
-                buffProto = buff[2]
-                buffProto.model.buffUnapply(buffProto, buffProto.nameBuff, buff[0], self.owner, [])
-                print(repr(self.owner), '\'s buff', buff[2].name, 'expired, cast by', repr(buff[0]))
+                caster = buffEntry[0]
+                spell = buffEntry[2]
+                print(repr(self.owner), '\'s buff', spell.nameBuff, 'expired, cast by', repr(caster))
+                spell.model.buffUnapply(spell, caster, self.owner)
                 break
 

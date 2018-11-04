@@ -1,17 +1,17 @@
 #coding: utf-8
 from Models import register_spell
 
-def __cast(source, caster, target, spell, metaMagics):
-    target.buffs.addBuff(caster, spell, metaMagics)
+def __cast(spell, caster, target, **kwargs):
+    target.buffs.addBuff(caster, spell, kwargs)
 
-def __buffApply(spell, source, caster, target, metaMagics):
+def __buffApply(spell, caster, target, **kwargs):
     level = caster.calc.calcPropValue('Caster.Level', caster, None)
     value = 3
     if level >= 13:
         value = 5
     elif level >= 7:
         value = 4
-    target.calc.addSource('ArmorClass.Natural', name=source, calcInt=value)
+    target.calc.addSource('ArmorClass.Natural', name=spell.nameBuff, calcInt=value)
 
 proto = {
     'InnateLevel': 2,
@@ -29,7 +29,7 @@ def register(protos):
                    target='Single',
                    range='Touch',
                    cast=__cast,
-                   buffDuration=lambda caster, buff: 3600.0 * caster.getClassLevel(),
+                   buffDuration=lambda caster, **kwargs: 3600.0 * caster.getClassLevel(),
                    buffApply=__buffApply,
-                   buffUnapply=lambda spell, source, target: target.calc.removeSource('ArmorClass.Natural', source),
+                   buffUnapply=lambda spell, caster, target, **kwargs: target.calc.removeSource('ArmorClass.Natural', spell.nameBuff),
                    )

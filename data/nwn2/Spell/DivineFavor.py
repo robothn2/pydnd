@@ -1,18 +1,18 @@
 #coding: utf-8
 from Models import register_spell
 
-def __cast(source, caster, target, spell, metaMagics):
-    target.buffs.addBuff(caster, spell, metaMagics)
+def __cast(spell, caster, target, **kwargs):
+    target.buffs.addBuff(caster, spell, kwargs)
 
-def __buffApply(spell, source, caster, target, metaMagics):
-    level = caster.calc.calcPropValue('Caster.Level', caster, None)
+def __buffApply(spell, caster, target, **kwargs):
+    level = caster.calc.calcPropValue('Caster.Level', caster)
     value = max(1, min(3, int(level / 3)))
-    target.calc.addSource('AttackBonus.Additional', name=source, calcInt=value)
-    target.calc.addSource('Damage.Additional', name=source, calcInt=lambda caster,target: ('Magical', source, value))
+    target.calc.addSource('AttackBonus.Additional', name=spell.nameBuff, calcInt=value)
+    target.calc.addSource('Damage.Additional', name=spell.nameBuff, calcInt=lambda caster,target: ('Magical', spell.nameBuff, value))
 
-def __buffUnapply(spell, source, target):
-    target.calc.removeSource('AttackBonus.Additional', source)
-    target.calc.removeSource('Damage.Additional', source)
+def __buffUnapply(spell, caster, target, **kwargs):
+    target.calc.removeSource('AttackBonus.Additional', spell.nameBuff)
+    target.calc.removeSource('Damage.Additional', spell.nameBuff)
 
 proto = {
     'InnateLevel': 1,
@@ -30,7 +30,7 @@ def register(protos):
                    target='Caster',
                    range='Personal',
                    cast=__cast,
-                   buffDuration=lambda caster, buff: 60.0,
+                   buffDuration=lambda caster, **kwargs: 60.0,
                    buffApply=__buffApply,
                    buffUnapply=__buffUnapply,
                    )

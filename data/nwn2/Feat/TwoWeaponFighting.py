@@ -1,30 +1,31 @@
 #coding: utf-8
 from Models import register_feat, apply_weapon_attacks
 
-def _applyFeatTwoWeaponFighting(source, unit, feat, params, kwargs):
+def _applyFeatTwoWeaponFighting(feat, caster, target, **kwargs):
     weapon = kwargs.get('weapon')
     hand = kwargs.get('hand')
+    params = kwargs.get('params')
     if hand == 'TwoHand':
         return
     if hand == 'OffHand':
-        weaponMH = unit.calc.getObject(('Weapon', 'MainHand'))
+        weaponMH = caster.calc.getObject(('Weapon', 'MainHand'))
         if weaponMH:
-            unit.calc.addSource('AttackBonus.MainHand', name='Feat:TwoWeaponFighting', calcInt=-4)
-            unit.calc.addSource('AttackBonus.OffHand', name='Feat:TwoWeaponFighting', calcInt=-4)
+            caster.calc.addSource('AttackBonus.MainHand', name='Feat:TwoWeaponFighting', calcInt=-4)
+            caster.calc.addSource('AttackBonus.OffHand', name='Feat:TwoWeaponFighting', calcInt=-4)
             if weapon.proto['WeaponSize'] in ['Tiny', 'Small']:
-                unit.calc.addSource('AttackBonus.MainHand', name='Feat:TwoWeaponFighting', calcInt=2)
-                unit.calc.addSource('AttackBonus.OffHand', name='Feat:TwoWeaponFighting', calcInt=2)
+                caster.calc.addSource('AttackBonus.MainHand', name='Feat:TwoWeaponFighting', calcInt=2)
+                caster.calc.addSource('AttackBonus.OffHand', name='Feat:TwoWeaponFighting', calcInt=2)
 
             if 'Perfect' in params:
-                apply_weapon_attacks(weapon, unit, hand, 10)
+                apply_weapon_attacks(weapon, caster, hand, 10)
             elif 'Greater' in params:
-                apply_weapon_attacks(weapon, unit, hand, 3)
+                apply_weapon_attacks(weapon, caster, hand, 3)
             elif 'Improved' in params:
-                apply_weapon_attacks(weapon, unit, hand, 2)
+                apply_weapon_attacks(weapon, caster, hand, 2)
             else:
-                apply_weapon_attacks(weapon, unit, hand, 1)
+                apply_weapon_attacks(weapon, caster, hand, 1)
 
-def _unapplyFeatTwoWeaponFighting(source, unit, feat, params, kwargs):
+def _unapplyFeatTwoWeaponFighting(feat, caster, target, **kwargs):
     pass
 
 def register(protos):

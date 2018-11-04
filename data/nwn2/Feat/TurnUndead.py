@@ -1,33 +1,35 @@
 #coding: utf-8
 from Models import Feat, register_feat
 
-def __castTurnUndead(source, caster, feat, params):
+def __castTurnUndead(spell, caster, target, **kwargs):
     pass
-def __maxChargeTurnUndead(source, unit, feat, params):
-    charge = 3 + unit.calc.calcPropValue('Modifier.Cha')
+def __maxChargeTurnUndead(spell, caster, target, **kwargs):
+    charge = 3 + caster.calc.calcPropValue('Modifier.Cha')
     if 'ExtraTurning' in params:
         charge += 4
     return charge
-def __decChargeTurnUndead(source, unit, feat, params):
+def __decChargeTurnUndead(spell, caster, target, **kwargs):
     pass
 
-def __buffDurationDivineMight(caster, feat, params):
+def __buffDurationDivineMight(caster, **kwargs):
     turns = caster.calc.calcPropValue('Modifier.Cha', caster)
-    if 'Epic' in params:
+    params = kwargs.get('params')
+    if params and 'Epic' in params:
         turns *= 2
     return turns * caster.ctx['secondsPerTurn']
-def __buffApplyDivineMight(source, caster, target, feat, params):
-    value = caster.calc.calcPropValue('Modifier.Cha', caster, None)
-    if 'Epic' in params:
+def __buffApplyDivineMight(spell, caster, target, **kwargs):
+    value = caster.calc.calcPropValue('Modifier.Cha', caster)
+    params = kwargs.get('params')
+    if params and 'Epic' in params:
         value *= 2
-    target.calc.addSource('Damage.Additional', name=source, calcInt=lambda caster, target: ('Divine', source, value))
+    target.calc.addSource('Damage.Additional', name=spell.nameBuff, calcInt=lambda caster, target: ('Divine', spell.nameBuff, value))
 
 def register(protos):
     # TurnUndead group
     register_feat(protos, 'TurnUndead', 'Turn Undead',
                   type='Class',
-                  apply=lambda source, unit, feat, params, kwargs: unit.calc.addSource('Spell.Charges', name=source, calcInt=feat),
-                  unapply=lambda source, unit, feat, params, kwargs: unit.calc.removeSource('Spell.Charges', source),
+                  apply=lambda spell, caster, target, **kwargs: caster.calc.addSource('Spell.Charges', name=spell.nameFull, calcInt=spell),
+                  unapply=lambda spell, caster, target, **kwargs: caster.calc.removeSource('Spell.Charges', spell.nameFull),
                   maxCharge=__maxChargeTurnUndead,
                   decCharge=__decChargeTurnUndead,
                   cast=__castTurnUndead,
@@ -43,13 +45,13 @@ def register(protos):
     # DivineMight group
     register_feat(protos, 'DivineMight', 'Divine Might',
                   prerequisite=[('Feat', 'TurnUndead'), ('Feat', 'PowerAttack'), ('Ability', 'Str', 13), ('Ability', 'Cha', 13)],
-                  apply=lambda source, unit, feat, params, kwargs: unit.calc.addSource('Spell.Charges', name=source, calcInt=feat),
-                  unapply=lambda source, unit, feat, params, kwargs: unit.calc.removeSource('Spell.Charges', source),
+                  apply=lambda spell, caster, target, **kwargs: caster.calc.addSource('Spell.Charges', name=spell.nameFull, calcInt=spell),
+                  unapply=lambda spell, caster, target, **kwargs: caster.calc.removeSource('Spell.Charges', spell.nameFull),
+                  cast=lambda spell, caster, target, **kwargs: target.buffs.addBuff(caster, spell),
                   maxCharge=__maxChargeTurnUndead,
                   decCharge=__decChargeTurnUndead,
-                  buffApply=lambda source, caster, target: target.calc.removeSource('Damage.Additional', source),
-                  buffUnapply=lambda source, caster, target: target.calc.removeSource('Damage.Additional', source),
-                  cast=lambda caster, target, feat, params: target.buffs.addBuff(caster, feat),
+                  buffApply=lambda spell, caster, target, **kwargs: target.calc.removeSource('Damage.Additional', spell.nameBuff),
+                  buffUnapply=lambda spell, caster, target, **kwargs: target.calc.removeSource('Damage.Additional', spell.nameBuff),
                   specifics='''The character may spend one of his turn undead attempts to add his Charisma bonus to all weapon damage for a number of rounds equal to the Charisma bonus.''',
                   )
     register_feat(protos, 'DivineMight', 'Epic Divine Might',

@@ -87,9 +87,10 @@ class Character(Unit):
                 self.calc.addSource('Caster.Level', name='SpellGrantLevel', calcInt=1 - clsProto.spellType[1])
                 self.calc.addSource('Caster.Level', name=cls, calcInt=clsLevel)
             self.calc.addSource('AttackBonus.Base', name=cls, calcInt=int(clsLevel * float(clsProto.bab)))
-            self.calc.addSource('SavingThrow.Fortitude', name=cls, calcInt=int(clsLevel * float(clsProto.fortitude)))
-            self.calc.addSource('SavingThrow.Reflex', name=cls, calcInt=int(clsLevel * float(clsProto.reflex)))
-            self.calc.addSource('SavingThrow.Will', name=cls, calcInt=int(clsLevel * float(clsProto.will)))
+
+            self.calc.addSource('SavingThrow.Fortitude', name=cls, calcInt=clsProto.calcSaveThrow('Fortitude', clsLevel))
+            self.calc.addSource('SavingThrow.Reflex', name=cls, calcInt=clsProto.calcSaveThrow('Reflex', clsLevel))
+            self.calc.addSource('SavingThrow.Will', name=cls, calcInt=clsProto.calcSaveThrow('Will', clsLevel))
             self.calc.addSource('HitPoint', name=cls, calcInt=clsLevel*int(clsProto.hd))
 
             # apply class feats/abilities by level

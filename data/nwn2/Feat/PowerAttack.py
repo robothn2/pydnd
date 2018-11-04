@@ -1,20 +1,21 @@
 #coding: utf-8
 from Models import Feat, register_feat
 
-def __active(source, caster, params):
-    value = 6 if 'Improved' in params else 3
-    caster.calc.addSource('AttackBonus.Additional', name=source, calcInt=-value)
-    caster.calc.addSource('Damage.Additional', name=source, calcInt=lambda caster, target: ('Physical', source, value))
+def __active(feat, caster, target, **kwargs):
+    params = kwargs.get('params')
+    value = 6 if params and 'Improved' in params else 3
+    caster.calc.addSource('AttackBonus.Additional', name=feat.nameFull, calcInt=-value)
+    caster.calc.addSource('Damage.Additional', name=feat.nameFull, calcInt=lambda caster, target: ('Physical', feat.nameFull, value))
 
-def __deactive(source, caster):
-    caster.calc.removeSource('AttackBonus.Additional', source)
-    caster.calc.removeSource('Damage.Additional', source)
+def __deactive(feat, caster):
+    caster.calc.removeSource('AttackBonus.Additional', feat.nameFull)
+    caster.calc.removeSource('Damage.Additional', feat.nameFull)
 
 def register(protos):
     # register main feat
     register_feat(protos, 'PowerAttack', 'Power Attack',
-                  apply=lambda source, unit, feat, params, kwargs: unit.calc.addSource('Spell.Activable', name=source, calcInt=feat),
-                  unapply=lambda source, unit, feat, params, kwargs: unit.calc.removeSource('Spell.Activable', source),
+                  apply=lambda feat, caster, target, **kwargs: caster.calc.addSource('Spell.Activable', name=feat.nameFull, calcInt=feat),
+                  unapply=lambda feat, caster, target, **kwargs: caster.calc.removeSource('Spell.Activable', feat.nameFull),
                   active=__active,
                   deactive=__deactive,
                   prerequisite=[('Ability', 'Str', 13)],

@@ -4,31 +4,34 @@ import Dice
 
 name = 'Ranger'
 
-def _applyFeatFavoredEnemy(source, unit, feat, params, kwargs):
-    bonus = max(1, int(unit.getClassLevel('Ranger') / 5))
-    calcDamage = lambda caster,target: None if not target.matchRaces(featParams) else ('Divine', source, bonus)
-    unit.calc.addSource('Damage.Additional', name=source, calcInt=calcDamage, noCache=True)
-    calcSkill = lambda caster,target: 0 if not target.matchRaces(featParams) else max(1, int(caster.getClassLevel('Ranger') / 5))
-    unit.calc.addSource('Skill.Listen', name=source, calcInt=calcSkill, noCache=True)
-    unit.calc.addSource('Skill.Spot', name=source, calcInt=calcSkill, noCache=True)
-    unit.calc.addSource('Skill.Taunt', name=source, calcInt=calcSkill, noCache=True)
-def _unapplyFeatFavoredEnemy(source, unit, feat, params, kwargs):
-    unit.calc.removeSource('Damage.Additional', source)
-    unit.calc.addSource('Skill.Listen', source)
-    unit.calc.addSource('Skill.Spot', source)
-    unit.calc.addSource('Skill.Taunt', source)
+def _applyFeatFavoredEnemy(feat, caster, target, **kwargs):
+    params = kwargs.get('params')
+    bonus = max(1, int(caster.getClassLevel('Ranger') / 5))
+    calcDamage = lambda caster,target: None if not target.matchRaces(params) else ('Divine', feat.nameFull, bonus)
+    caster.calc.addSource('Damage.Additional', name=feat.nameFull, calcInt=calcDamage, noCache=True)
+    calcSkill = lambda caster,target: 0 if not target.matchRaces(params) else max(1, int(caster.getClassLevel('Ranger') / 5))
+    caster.calc.addSource('Skill.Listen', name=feat.nameFull, calcInt=calcSkill, noCache=True)
+    caster.calc.addSource('Skill.Spot', name=feat.nameFull, calcInt=calcSkill, noCache=True)
+    caster.calc.addSource('Skill.Taunt', name=feat.nameFull, calcInt=calcSkill, noCache=True)
+def _unapplyFeatFavoredEnemy(feat, caster, target, **kwargs):
+    caster.calc.removeSource('Damage.Additional', feat.nameFull)
+    caster.calc.addSource('Skill.Listen', feat.nameFull)
+    caster.calc.addSource('Skill.Spot', feat.nameFull)
+    caster.calc.addSource('Skill.Taunt', feat.nameFull)
 
-def _applyFeatBaneOfEnemies(source, unit, feat, params, kwargs):
-    calcDamage = lambda caster,target: None if not target.matchRaces(params) else ('Divine', source, Dice.rollDice(1, 6, 2))
-    unit.calc.addSource('Damage.Additional', name=source, calcInt=calcDamage, noCache=True)
-    unit.calc.addSource('AttackBonus.Additional', name=source, calcInt=lambda caster,target: 2 if target.matchRaces(params) else 0)
-def _unapplyFeatBaneOfEnemies(source, unit, feat, params, kwargs):
-    unit.calc.removeSource('Damage.Additional', source)
-    unit.calc.removeSource('AttackBonus.Additional', source)
+def _applyFeatBaneOfEnemies(feat, caster, target, **kwargs):
+    params = kwargs.get('params')
+    calcDamage = lambda caster,target: None if not target.matchRaces(params) else ('Divine', feat.nameFull, Dice.rollDice(1, 6, 2))
+    caster.calc.addSource('Damage.Additional', name=feat.nameFull, calcInt=calcDamage, noCache=True)
+    caster.calc.addSource('AttackBonus.Additional', name=feat.nameFull, calcInt=lambda caster,target: 2 if target.matchRaces(params) else 0)
+def _unapplyFeatBaneOfEnemies(feat, caster, target, **kwargs):
+    caster.calc.removeSource('Damage.Additional', feat.nameFull)
+    caster.calc.removeSource('AttackBonus.Additional', feat.nameFull)
 
-def _deriveFeatCombatStyle(source, unit, feat, params):
+def _deriveFeatCombatStyle(feat, caster, target, **kwargs):
     bonusFeats = {}
-    level = unit.getClassLevel(name)
+    level = caster.getClassLevel(name)
+    params = kwargs.get('params')
     if 'TwoWeaponFighting' in params:
         if level >= 2:
             bonusFeats['Two-Weapon Fighting'] = ''
@@ -46,17 +49,17 @@ def _deriveFeatCombatStyle(source, unit, feat, params):
         if level >= 11:
             bonusFeats['Improved Rapid Shot'] = ''
     return bonusFeats
-def _underiveFeatCombatStyle(source, unit, feat, params):
+def _underiveFeatCombatStyle(feat, caster, target, **kwargs):
     if feat.nameFull == 'Combat Style':
-        unit.removeFeat('Two-Weapon Fighting')
-        unit.removeFeat('Perfect Two-Weapon Fighting')
-        unit.removeFeat('Rapid Shot')
+        caster.removeFeat('Two-Weapon Fighting')
+        caster.removeFeat('Perfect Two-Weapon Fighting')
+        caster.removeFeat('Rapid Shot')
     elif feat.nameFull == 'Improved Combat Style':
-        unit.removeFeat('Improved Two-Weapon Fighting')
-        unit.removeFeat('Manyshot')
+        caster.removeFeat('Improved Two-Weapon Fighting')
+        caster.removeFeat('Manyshot')
     elif feat.nameFull == 'Combat Mastery':
-        unit.removeFeat('Greater Two-Weapon Fighting')
-        unit.removeFeat('Improved Rapid Shot')
+        caster.removeFeat('Greater Two-Weapon Fighting')
+        caster.removeFeat('Improved Rapid Shot')
 
 proto = {
     'desc': '''A ranger can use a variety of weapons and is quite capable in combat. His skills allow him to survive in the wilderness, to find his prey, and to avoid detection. He also has special knowledge about certain types of creatures, which makes it easier for him to find and defeat such foes. Finally, an experienced ranger has such a tie to nature that he can actually draw upon natural power to cast divine spells, much as a druid does.''',
@@ -68,7 +71,7 @@ proto = {
     'Skill Points': 6,
     'Class Skills': ('Concentration', 'CraftAlchemy', 'CraftArmor', 'CraftTrap', 'CraftWeapon', 'Heal', 'Hide', 'Listen', 'Lore', 'MoveSilently', 'Parry', 'Search', 'SetTrap', 'Spot', 'Survival'),
     'bonus': (
-        (lambda level: level == 1 or level % 5 == 0, ('Feat', 'Favored Enemy', '''At 1st level, a ranger may select a type of creature as his favored enemy. The ranger gains a +1 bonus on Bluff, Listen, Spot, and Taunt checks, and also a +1 bonus on weapon damage rolls against their favored enemy. At 5th level, and every five levels after that, the ranger can choose an additional favored enemy and gains +1 to all favored enemy bonuses.''')),
+        (lambda level: (level == 1) or (level % 5 == 0), ('Feat', 'Favored Enemy', '''At 1st level, a ranger may select a type of creature as his favored enemy. The ranger gains a +1 bonus on Bluff, Listen, Spot, and Taunt checks, and also a +1 bonus on weapon damage rolls against their favored enemy. At 5th level, and every five levels after that, the ranger can choose an additional favored enemy and gains +1 to all favored enemy bonuses.''')),
         (1, ('Feat', 'Track', 'A ranger has the ability to find and read tracks, but he moves slowly when doing so.')),
         (2, ('Feat', 'Combat Style')),
         (3, ('Feat', 'Toughness')),

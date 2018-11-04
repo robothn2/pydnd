@@ -36,26 +36,27 @@ proto = {
     ),
 }
 
-def __applyWeaponOfChoice(source, unit, feat, params, kwargs):
+def __applyWeaponOfChoice(feat, caster, target, **kwargs):
     weapon = kwargs.get('weapon')
     hand = kwargs.get('hand')
+    params = kwargs.get('params')
     if type(params) != list or weapon.nameBase not in params:
         return
 
-    print(source, 'affects weapon:', weapon.getItemBaseName(), ', params:', params)
+    print(feat.nameFull, 'affects weapon:', weapon.getItemBaseName(), ', params:', params)
     if 'IncreasedMultiplier' in params:
-        unit.calc.addSource('Weapon.%s.CriticalMultiplier' % hand, name='IncreasedMultiplier', calcInt=1)
+        caster.calc.addSource('Weapon.%s.CriticalMultiplier' % hand, name='Increased Multiplier', calcInt=1)
     if 'SuperiorWeaponFocus' in params:
-        unit.calc.addSource('AttackBonus.' + hand, name='SuperiorWeaponFocus', calcInt=1)
+        caster.calc.addSource('AttackBonus.' + hand, name='Superior Weapon Focus', calcInt=1)
     if 'KiCritical' in params:
-        unit.calc.addSource('Weapon.%s.CriticalRange' % hand, name='KiCritical', calcInt=2)
-def __unapplyWeaponOfChoice(source, unit, feat, params, kwargs):
+        caster.calc.addSource('Weapon.%s.CriticalRange' % hand, name='Ki Critical', calcInt=2)
+def __unapplyWeaponOfChoice(feat, caster, target, **kwargs):
     pass
 
 
-def __castKiDamage(source, caster, feat, params):
+def __castKiDamage(feat, caster, target, **kwargs):
     pass
-def __decChargeKiDamage(source, unit, feat, params):
+def __decChargeKiDamage(feat, caster, target, **kwargs):
     pass
 
 def register(protos):
@@ -64,9 +65,9 @@ def register(protos):
     # KiDamage group
     register_feat(protos, 'KiDamage', 'Ki Damage',
                   type='Class',
-                  apply=lambda source, unit, feat, params, kwargs: unit.calc.addSource('Spell.Charges', name=source, calcInt=feat),
-                  unapply=lambda source, unit, feat, params, kwargs: unit.calc.removeSource('Spell.Charges', source),
-                  maxCharge=lambda source, unit, feat, params: unit.getClassLevel(),
+                  apply=lambda feat, caster, target, **kwargs: caster.calc.addSource('Spell.Charges', name=feat.nameFull, calcInt=feat),
+                  unapply=lambda feat, caster, target, **kwargs: caster.calc.removeSource('Spell.Charges', feat.nameFull),
+                  maxCharge=lambda feat, caster, target, **kwargs: caster.getClassLevel(),
                   decCharge=__decChargeKiDamage,
                   cast=__castKiDamage,
                   prerequisite=[],
@@ -75,19 +76,23 @@ def register(protos):
 
     # WeaponOfChoice group
     register_feat(protos, 'WeaponOfChoice', 'Weapon of Choice',
-                  applyToWeapon=__applyWeaponOfChoice,
+                  forWeapon=True,
+                  apply=__applyWeaponOfChoice,
                   unapply=__unapplyWeaponOfChoice,
                   specifics='''The weapon chosen to be a weapon of choice by a Weapon Master becomes the focus for all of their special abilities.''',
                   )
     register_feat(protos, 'WeaponOfChoice', 'Increased Multiplier',
+                  nameMember='IncreasedMultiplier',
                   prerequisite=[],
                   specifics='''With their weapon of choice, the multiplier is increased by x1 to all critical hits. Thus a x2 critical multiplier becomes a x3.''',
                   )
     register_feat(protos, 'WeaponOfChoice', 'Superior Weapon Focus',
+                  nameMember='SuperiorWeaponFocus',
                   prerequisite=[],
                   specifics='''The weapon master gains a +1 bonus to all attack rolls with their weapon of choice.''',
                   )
     register_feat(protos, 'WeaponOfChoice', 'Ki Critical',
+                  nameMember='KiCritical',
                   prerequisite=[],
                   specifics='''The weapon master gains an additional +2 to the threat range of their weapon of choice.''',
                   )

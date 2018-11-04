@@ -448,9 +448,18 @@ class PropCalculator:
 
         self.addProp('SpellResistance')
 
-        self.addProp('SavingThrow.Fortitude', {'upstream': 'SavingThrow.All'})
-        self.addProp('SavingThrow.Reflex', {'upstream': 'SavingThrow.All'})
-        self.addProp('SavingThrow.Will', {'upstream': 'SavingThrow.All'})
+        self.addProp('SavingThrow.Fortitude', [
+            {'upstream': 'Modifier.Con'},
+            {'upstream': 'SavingThrow.All'},
+        ])
+        self.addProp('SavingThrow.Reflex', [
+            {'upstream': 'Modifier.Dex'},
+            {'upstream': 'SavingThrow.All'},
+        ])
+        self.addProp('SavingThrow.Will', [
+            {'upstream': 'Modifier.Wis'},
+            {'upstream': 'SavingThrow.All'},
+        ])
 
         self.addProp('Reduction.Fire')
 

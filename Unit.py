@@ -78,8 +78,8 @@ class Unit:
     def getArmorClass(self, target):
         return self.calc.calcPropValue('ArmorClass', self, target)
 
-    def addBuff(self, caster, buffProto):
-        self.buffs.addBuff(caster, buffProto)
+    def addBuff(self, caster, buffProto, metaMagics = []):
+        self.buffs.addBuff(caster, buffProto, metaMagics)
         return True
 
     def hasBuff(self, buffName):
