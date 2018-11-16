@@ -64,6 +64,9 @@ def apply_tuple_resource(res, unit, **kwargs):
                 for featName, featParam in res[1].items():
                     unit.feats.addFeat(featName, featParam)
 
+        elif res[0] == 'PropSource':
+            # support ('PropSource', 'Favored Enemy', kwargs)
+            unit.calc.addSource(res[1], **res[2])
         elif res[0] == 'SpellAccess':
             # support ('SpellAccess', 'Cleric', ('Magic Circle Against Evil', 'Lesser Planar Binding'))
             unit.addAccessSpell(res[1], res[2])
