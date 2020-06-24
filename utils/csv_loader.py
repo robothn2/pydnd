@@ -1,8 +1,7 @@
 #coding: utf-8
 import csv
-import warnings
 
-def loadCsvFile(csvPath):
+def load_csv_file(csvPath):
     props = {}
     try:
         records = csv.reader(open(csvPath, encoding='utf-8'))
