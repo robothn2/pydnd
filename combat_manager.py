@@ -40,7 +40,7 @@ class CombatManager:
       print('new turn for', self.owner.getName(), ', Attacks', attacks)
 
     # attack enemy
-    for _, attack in enumerate(attacks):
+    for attack in attacks:
       if attack[0] < tsBegin:
         continue
       if attack[0] > tsEnd:
@@ -82,17 +82,16 @@ class CombatManager:
 
     hand = attack[2]
     dmgsCalc = caster.calc.calcPropValue('Damage.' + hand, caster, target)
-    for _,dmg in enumerate(dmgsCalc):
+    for dmg in dmgsCalc:
       damages.addSingleSource(dmg[0], dmg[1], dmg[2])
 
     # multiplier
-    weapon = attack[3]
     rangeDiff = self.owner.calc.calcPropValue('Weapon.%s.CriticalRange' % hand, caster, target)
     if roll > 20 - rangeDiff:
       if self.criticalCheck(caster, target, attack):
         _,multipliers = self.owner.calc.getPropValueWithSource('Weapon.%s.CriticalMultiplier' % hand, caster, target)
         for k,v in multipliers.items():
-          if type(v) == int:
+          if isinstance(v, int):
             damages.addMultiplier(k,v)
     return damages
 

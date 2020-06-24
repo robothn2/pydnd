@@ -9,7 +9,7 @@ Skill = Enum('Skill', ('Appraise', 'Bluff', 'Concentration', 'DisableTrap', 'Hea
 def skills_parse(skills):
   d = [0] * len(Skill)
 
-  if type(skills) is dict:
+  if isinstance(skills, dict):
     for k,v in skills.items():
       if Skill[k]:
         d[Skill[k].value - 1] = int(v)

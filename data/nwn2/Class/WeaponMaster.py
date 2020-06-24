@@ -1,15 +1,15 @@
 #coding: utf-8
 
 def __requireWeaponFocusOnMelee(unit):
-    # check Weapon Focus on melee weapon
-    weapons = unit.getFeatParams('Weapon Focus')
-    for _, weaponBaseName in enumerate(weapons):
-        weaponProto = unit.ctx['Weapon'].get(weaponBaseName)
-        if not weaponProto:
-            continue
-        if not weaponProto.proto.get('Ranged'):
-            return True
-    return False
+  # check Weapon Focus on melee weapon
+  weapons = unit.getFeatParams('Weapon Focus')
+  for weaponBaseName in weapons:
+    weaponProto = unit.ctx['Weapon'].get(weaponBaseName)
+    if not weaponProto:
+      continue
+    if not weaponProto.proto.get('Ranged'):
+      return True
+  return False
 
 protos = [{
   'name': 'Weapon Master',
@@ -36,27 +36,27 @@ protos = [{
 }]
 
 def __applyWeaponOfChoice(feat, caster, target, **kwargs):
-    weapon = kwargs.get('weapon')
-    hand = kwargs.get('hand')
-    params = kwargs.get('params')
-    if type(params) != list or weapon.nameBase not in params:
-        return
+  weapon = kwargs.get('weapon')
+  hand = kwargs.get('hand')
+  params = kwargs.get('params')
+  if not isinstance(params, list) or weapon.nameBase not in params:
+    return
 
-    print(feat.nameFull, 'affects weapon:', weapon.getItemBaseName(), ', params:', params)
-    if 'IncreasedMultiplier' in params:
-        caster.calc.addSource('Weapon.%s.CriticalMultiplier' % hand, name='Increased Multiplier', calcInt=1)
-    if 'SuperiorWeaponFocus' in params:
-        caster.calc.addSource('AttackBonus.' + hand, name='Superior Weapon Focus', calcInt=1)
-    if 'KiCritical' in params:
-        caster.calc.addSource('Weapon.%s.CriticalRange' % hand, name='Ki Critical', calcInt=2)
+  print(feat.nameFull, 'affects weapon:', weapon.getItemBaseName(), ', params:', params)
+  if 'IncreasedMultiplier' in params:
+    caster.calc.addSource('Weapon.%s.CriticalMultiplier' % hand, name='Increased Multiplier', calcInt=1)
+  if 'SuperiorWeaponFocus' in params:
+    caster.calc.addSource('AttackBonus.' + hand, name='Superior Weapon Focus', calcInt=1)
+  if 'KiCritical' in params:
+    caster.calc.addSource('Weapon.%s.CriticalRange' % hand, name='Ki Critical', calcInt=2)
 def __unapplyWeaponOfChoice(feat, caster, target, **kwargs):
-    pass
+  pass
 
 
 def __castKiDamage(feat, caster, target, **kwargs):
-    pass
+  pass
 def __decChargeKiDamage(feat, caster, target, **kwargs):
-    pass
+  pass
 
 protos.extend([
   {

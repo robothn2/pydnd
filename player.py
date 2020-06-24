@@ -63,7 +63,7 @@ class Player(Unit):
       ]
     """
     classLevels = self.calc.getProp('Class.Level')
-    for i, levelEntry in enumerate(builder['levels']):
+    for levelEntry in builder['levels']:
       level = levelEntry.pop('level')
       if level > levelRequest:
         break
@@ -83,7 +83,7 @@ class Player(Unit):
       clsLevel = classLevels.calcSingleSource(cls, self, None)
       clsLevel += 1
       self.calc.addSource('Class.Level', name=cls, calcInt=clsLevel)
-      if type(clsProto.spellType) is tuple:
+      if isinstance(clsProto.spellType, tuple):
         self.calc.addSource('Caster.Level', name='SpellGrantLevel', calcInt=1 - clsProto.spellType[1])
         self.calc.addSource('Caster.Level', name=cls, calcInt=clsLevel)
       self.calc.addSource('AttackBonus.Base', name=cls, calcInt=int(clsLevel * float(clsProto.bab)))

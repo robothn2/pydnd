@@ -21,7 +21,7 @@ def __applyWeaponFocus(feat, caster, target, **kwargs):
     weapon = kwargs.get('weapon')
     hand = kwargs.get('hand')
     params = kwargs.get('params')
-    if type(params) is not list or weapon.nameBase not in params:
+    if not isinstance(params, list) or weapon.nameBase not in params:
         return
 
     print(feat.nameFull, 'affects weapon:', weapon.getItemBaseName(), ', params:', params)

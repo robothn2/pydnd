@@ -48,9 +48,9 @@ class FeatGroup:
     for featName,feat in self.members.items():
       if hasattr(feat.model, 'deriveFeat'):
         derives = feat.model.deriveFeat(feat, unit, None, params=self.params)
-        if type(derives) is dict:
+        if isinstance(derives, dict):
           derived.update(derives)
-    if len(derived) > 0:
+    if derived:
       print('derive feats:', derived, ' from group:', self.name)
     return derived
 
@@ -63,11 +63,11 @@ class FeatGroup:
       if 'weapon' in kwargs:
         if self.forWeapon:
           print('  feat weapon:', featName)
-          feat.model.apply(feat, unit, feat, params=self.params, **kwargs)
+          feat.model.apply(self, unit, feat, params=self.params, **kwargs)
       else:
         if not self.forWeapon:
           print('  feat normal:', featName)
-          feat.model.apply(feat, unit, None, params=self.params, **kwargs)
+          feat.model.apply(self, unit, None, params=self.params, **kwargs)
 
 
 class FeatManager:
@@ -94,8 +94,7 @@ class FeatManager:
       self.featGroups[feat.group] = featGroup
 
     #print(repr(self.owner), 'add feat', feat.nameFull, 'to group', feat.group)
-    t = type(featParams)
-    if t is dict:
+    if isinstance(featParams, dict):
       featGroup.addMember(feat, featParams.get(featNameFull))
     else:
       featGroup.addMember(feat, featParams)
@@ -123,7 +122,7 @@ class FeatManager:
     deriveFeats = {}
     for _,group in self.featGroups.items():
       derives = group.deriveFeats(unit)
-      if type(derives) is dict:
+      if isinstance(derives, dict):
         deriveFeats.update(derives)
 
     for featName, featParam in deriveFeats.items():

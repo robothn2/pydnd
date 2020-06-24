@@ -39,55 +39,56 @@ def name_canonical(nameFull):
 
 def apply_tuple_resource(res, unit, **kwargs):
   #print('apply resource:', res)
-  if type(res) != tuple:
+  if not isinstance(res, tuple):
     return
 
-  t = type(res[0])
-  if hasattr(res[0], '__call__'):
+  if callable(res[0]):
     # support (_addDeityWeaponFocus, ...),
     res[0](unit)
     return
-  if t is str:
-    if res[0] == 'Feat':
-      t1 = type(res[1])
-      featChoice = kwargs['featChoice'] if 'featChoice' in kwargs else kwargs
-      if t1 is str:
-        # support ('Feat', 'Breath Weapon')
-        featName = res[1]
-        unit.addFeat(featName, featChoice.get(featName))
-      elif t1 is tuple or t is list:
-        # support ('Feat', ('Natural Armor Increase', 'Draconic Ability Scores'))
-        for _,featName in enumerate(res[1]):
-          unit.feats.addFeat(featName, featChoice.get(featName))
-      elif t1 is dict:
-        # support ('Feat', {'Weapon Focus': 'Longsword'})
-        for featName, featParam in res[1].items():
-          unit.feats.addFeat(featName, featParam)
 
-    elif res[0] == 'PropSource':
-      # support ('PropSource', 'Favored Enemy', kwargs)
-      unit.calc.addSource(res[1], **res[2])
-    elif res[0] == 'SpellAccess':
-      # support ('SpellAccess', 'Cleric', ('Magic Circle Against Evil', 'Lesser Planar Binding'))
-      unit.addAccessSpell(res[1], res[2])
-    elif res[0] == 'SpellType':
-      # support ('SpellType', 'Divine', ...)
-      unit.addAccessSpellClass(res[1])
-    elif res[0] == 'Domain':
-      # support ('Domain', 2)
-      for _, domainName in enumerate(kwargs['domains']):
-        domain = unit.ctx['Domain'].get(domainName)
-        if not domain:
-          warnings.warn('unknown domain:' + domainName)
-          continue
-        domain.apply(unit)
+  if not isinstance(res[0], str):
+    return
+  if res[0] == 'Feat':
+    featChoice = kwargs['featChoice'] if 'featChoice' in kwargs else kwargs
+    if isinstance(res[1], str):
+      # support ('Feat', 'Breath Weapon')
+      featName = res[1]
+      unit.addFeat(featName, featChoice.get(featName))
+    elif isinstance(res[1], (tuple,list)):
+      # support ('Feat', ('Natural Armor Increase', 'Draconic Ability Scores'))
+      for featName in res[1]:
+        unit.feats.addFeat(featName, featChoice.get(featName))
+    elif isinstance(res[1], dict):
+      # support ('Feat', {'Weapon Focus': 'Longsword'})
+      for featName, featParam in res[1].items():
+        unit.feats.addFeat(featName, featParam)
+
+  elif res[0] == 'PropSource':
+    # support ('PropSource', 'Favored Enemy', kwargs)
+    unit.calc.addSource(res[1], **res[2])
+  elif res[0] == 'SpellAccess':
+    # support ('SpellAccess', 'Cleric', ('Magic Circle Against Evil', 'Lesser Planar Binding'))
+    unit.addAccessSpell(res[1], res[2])
+  elif res[0] == 'SpellType':
+    # support ('SpellType', 'Divine', ...)
+    unit.addAccessSpellClass(res[1])
+  elif res[0] == 'Domain':
+    # support ('Domain', 2)
+    # provide Domain name list in kwargs['domains']
+    for domainName in kwargs['domains']:
+      domain = unit.ctx['Domain'].get(domainName)
+      if not domain:
+        warnings.warn('unknown domain:' + domainName)
+        continue
+      domain.apply(unit)
 
 def isRequirementsMatch(requirements, unit):
   if not requirements:
     return True
 
-  for _,cond in enumerate(requirements):
-    if type(cond) != tuple or len(cond) < 2:
+  for cond in requirements:
+    if not isinstance(cond, tuple) or len(cond) < 2:
       continue
 
     # check Ability
@@ -110,7 +111,7 @@ def isRequirementsMatch(requirements, unit):
 
     # check ClassLevel
     elif cond[0] == 'ClassLevel':
-      if type(cond[1]) is str and type(cond[2]) is int:
+      if isinstance(cond[1], str) and isinstance(cond[2], int):
         # support ('ClassLevel', 'Ranger, 21)
         if unit.getClassLevel(cond[1]) < cond[2]:
           return False
@@ -137,18 +138,18 @@ def isRequirementsMatch(requirements, unit):
 
     # check Feat
     elif cond[0] == 'Feat':
-      if type(cond[1]) is tuple:
+      if isinstance(cond[1], tuple):
         # support ('Feat', ('Dodge', 'Mobility', 'CombatExpertise', 'SpringAttack', 'WhirlwindAttack')),
         if not unit.hasFeats(cond[1]):
           return False
-      elif type(cond[1]) is str:
+      elif isinstance(cond[1], str):
         if not unit.hasFeat(cond[1]):
           return False
       else:
         return False
 
     # custom condition
-    elif hasattr(cond[0], '__call__'):
+    elif callable(cond[0]):
       if not cond[0](unit):
         # support (function, 'Weapon Focus in a melee weapon')
         return False
@@ -183,7 +184,7 @@ class Class(ModelBase):
     self.classSkills = _parse(kwargs, 'Class Skills', _parseClassSkills)
     super().__init__(name, **kwargs)
     self.spellType = None
-    for _,bonus in enumerate(kwargs['bonus']):
+    for bonus in kwargs['bonus']:
       # (1, ('SpellType', 'Arcane', ...))
       if bonus[1][0] == 'SpellType':
         self.spellType = (bonus[1][1], bonus[0])
@@ -205,13 +206,13 @@ class Class(ModelBase):
 
     if not hasattr(self.model, 'bonus'):
       return
-    for _,entry in enumerate(self.model.bonus):
+    for entry in self.model.bonus:
       #print(entry)
-      if type(entry) != tuple:
+      if not isinstance(entry, tuple):
         continue
       if entry[0] == level:
         apply_tuple_resource(entry[1], unit, **choices)
-      elif hasattr(entry[0], '__call__'):
+      elif callable(entry[0]):
         if entry[0](level):
           apply_tuple_resource(entry[1], unit, **choices)
   def calcSaveThrow(self, savingName, classLevel):
@@ -224,7 +225,7 @@ class Domain(ModelBase):
   def apply(self, unit):
     print('apply cleric domain %s' % self.name)
     if hasattr(self, 'bonus'):
-      for _,entry in enumerate(self.bonus):
+      for entry in self.bonus:
         print('apply resource %s cleric domain %s' % (str(entry), self.name))
         apply_tuple_resource(entry, unit)
 
@@ -265,7 +266,7 @@ def __calc_attacks_in_turn(maxAttackTimes, baseAttackBonus, babDecValue,
   durationAttack = (secondsPerTurn - delaySecondsToFirstAttack) / len(babList)
   tsOffset = delaySecondsToFirstAttack
   attacks = []
-  for _,bab in enumerate(babList):
+  for bab in babList:
     attacks.append((round(tsOffset,3), bab, hand, weapon))
     tsOffset += durationAttack
   return attacks

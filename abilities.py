@@ -9,7 +9,7 @@ ab4 = abilities_parse(16, 14, 10, 16, 8, 18)
 def abilities_parse(abilities, dexterity = None, constitution = None, intelligence = None, wisdom = None, charisma = None):
   d = {'Str':8, 'Dex':8, 'Con':8, 'Int':8, 'Wis':8, 'Cha':8}
 
-  if type(abilities) is int:
+  if isinstance(abilities, int):
     d['Str'] = abilities
     d['Dex'] = dexterity or 8
     d['Con'] = constitution or 8
@@ -17,7 +17,7 @@ def abilities_parse(abilities, dexterity = None, constitution = None, intelligen
     d['Wis'] = wisdom or 8
     d['Cha'] = charisma or 8
 
-  elif type(abilities) is dict:
+  elif isinstance(abilities, dict):
     for k,v in abilities.items():
       if k == 'Str' or k == 'strength':
         d['Str'] = int(v)
@@ -32,7 +32,7 @@ def abilities_parse(abilities, dexterity = None, constitution = None, intelligen
       elif k == 'Cha' or k == 'charisma':
         d['Cha'] = int(v)
 
-  elif type(abilities) is list and len(abilities) == 6:
+  elif isinstance(abilities, list) and len(abilities) == 6:
     d['Str'] = int(abilities[0])
     d['Dex'] = int(abilities[1])
     d['Con'] = int(abilities[2])

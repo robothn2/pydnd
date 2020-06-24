@@ -1,9 +1,9 @@
 #coding: utf-8
-from utils.props import Props
+from utils.props import Props, Modifier, sum_int_value
 
 class Damages:
   def __init__(self):
-    self.modifier = Props.Modifier()
+    self.modifier = Modifier()
   def __str__(self):
     return str(self.modifier)
 
@@ -17,7 +17,7 @@ class Damages:
 
   def calcTotal(self):
     damageTotal = self.modifier.sumSource('Type')
-    multiplier = Props.sumIntValue(self.modifier.sumSource('Multiplier'))
+    multiplier = sum_int_value(self.modifier.sumSource('Multiplier'))
     if multiplier > 0.01:
       damageTotal = int(damageTotal * multiplier)
     return damageTotal
@@ -45,7 +45,7 @@ class Result:
       cond[0](caster, target, cond[1], self)
 
   def calcTotal(self):
-    return Props.sumIntValue(self.modifier)
+    return sum_int_value(self.modifier)
 
 if __name__ == '__main__':
   dmgs = Damages()

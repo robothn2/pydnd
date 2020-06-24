@@ -20,7 +20,7 @@ def __applyGreatAbility(feat, caster, target, **kwargs):
 def __unapplyGreatAbility(feat, caster, target, **kwargs):
     pass
 
-for _, ability in enumerate(['Strength', 'Dexterity', 'Constitution', 'Intelligence', 'Wisdom', 'Charisma']):
+for ability in ('Strength', 'Dexterity', 'Constitution', 'Intelligence', 'Wisdom', 'Charisma'):
   proto = {
     'name': 'Great ' + ability,
     'type': 'Feat', 'category': 'Epic',

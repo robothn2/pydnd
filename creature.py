@@ -22,7 +22,7 @@ class Creature(Unit):
     self.calc.addSource('HitPoint', name='beastiary.expected_hp', calcInt=int(self.proto['expected_hp']))
     self.calc.addSource('HitPoint', name='beastiary.hp_fudge', calcInt=int(self.proto['hp_fudge']))
 
-    for _,ability in enumerate(self.ctx['Abilities']):
+    for ability in self.ctx['Abilities']:
       self.calc.addSource('Ability.'+ ability + '.Base', name='beastiary', calcInt=int(self.proto[ability]))
 
     self.feats.apply()
@@ -33,7 +33,7 @@ class Creature(Unit):
 
   def __applyAttackParameters(self):
     params = json.loads(self.proto['attack_parameters'])
-    if type(params) != list or len(params) == 0:
+    if not isinstance(params, list) or not params:
       return
 
     attacks = []

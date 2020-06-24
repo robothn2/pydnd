@@ -60,9 +60,9 @@ class PropSourceDisable(PropSource):
   def __repr__(self):
     return '{Disable:' + self.name + ', priority:' + repr(self.priority) + ', value:' + repr(self.calcDisable) + '}'
   def __call__(self, caster, target):
-    if type(self.calcDisable) == bool:
+    if isinstance(self.calcDisable, bool):
       return self.calcDisable
-    if hasattr(self.calcDisable, '__call__'):
+    if callable(self.calcDisable):
       return self.calcDisable(caster, target)
     raise RuntimeError('Found invalid source Disable', self.args)
 
@@ -75,9 +75,9 @@ class PropSourceEnable(PropSource):
   def __repr__(self):
     return '{Enable:' + self.name + ', priority:' + repr(self.priority) + ', value:' + repr(self.calcEnable) + '}'
   def __call__(self, caster, target):
-    if type(self.calcEnable) == bool:
+    if isinstance(self.calcEnable, bool):
       return self.calcEnable
-    if hasattr(self.calcEnable, '__call__'):
+    if callable(self.calcEnable):
       return self.calcEnable(caster, target)
 
 class PropSourceInt(PropSource):
@@ -88,13 +88,13 @@ class PropSourceInt(PropSource):
   def __repr__(self):
     return repr(self.calcInt)
   def __call__(self, caster, target):
-    if type(self.calcInt) == int:
+    if isinstance(self.calcInt, int):
       return self.calcInt
-    if type(self.calcInt) == list:
+    if isinstance(self.calcInt, list):
       return self.calcInt
-    if type(self.calcInt) == tuple:
-      return [self.calcInt]
-    if hasattr(self.calcInt, '__call__'):
+    if isinstance(self.calcInt, tuple):
+      return list(self.calcInt)
+    if callable(self.calcInt):
       return self.calcInt(caster, target)
 
     raise RuntimeError('Found invalid source', self.args, ', calcInt', self.calcInt)
@@ -107,9 +107,9 @@ class PropSourceIntMax(PropSource):
   def __repr__(self):
     return 'Max:' + repr(self.calcMax)
   def __call__(self, caster, target):
-    if type(self.calcMax) == int:
+    if isinstance(self.calcMax, int):
       return self.calcMax
-    if hasattr(self.calcMax, '__call__'):
+    if callable(self.calcMax):
       return self.calcMax(caster, target)
     raise RuntimeError('Found invalid source', self.args)
 
@@ -132,25 +132,25 @@ class PropNode:
 
   def __repr__(self):
     info = '{'
-    if len(self.sourcesInt) > 0:
+    if self.sourcesInt:
       info += ' Sources:' + repr(self.sourcesInt)
-    if len(self.sourcesUpstream) > 0:
+    if self.sourcesUpstream:
       info += ' Upstreams:' + repr(self.sourcesUpstream)
-    if len(self.sourcesEnable) > 0:
+    if self.sourcesEnable:
       info += ' Enable:' + repr(self.sourcesEnable)
-    if len(self.sourcesDisable) > 0:
+    if self.sourcesDisable:
       info += ' Disable:' + repr(self.sourcesDisable)
     return info + '}'
 
   def needRecalc(self):
     #print(self.name, 'recalc set to True')
     self.recalc = True
-    for _,propDownstream in enumerate(self.downstreams):
+    for propDownstream in self.downstreams:
       propDownstream.needRecalc()
 
   def setNoCache(self):
     self.noCache = True
-    for _,propDownstream in enumerate(self.downstreams):
+    for propDownstream in self.downstreams:
       propDownstream.setNoCache()
 
   def __addDownstream(self, downstreamProp):
@@ -181,11 +181,11 @@ class PropNode:
     elif 'calcMulti' in kwargs:
       upstreams = kwargs.get('upstreams')
       upstreamsProp = []
-      for _,upstream in enumerate(upstreams):
+      for upstream in upstreams:
         upstreamDict = {}
-        if type(upstream) == str:
+        if isinstance(upstream, str):
           upstreamsProp.append(self.__addUpstream(upstream, upstreamDict))
-        elif type(upstream) == dict:
+        elif isinstance(upstream, dict):
           upstreamDict = upstream
           upstreamsProp.append(self.__addUpstream(upstream['upstream'], upstreamDict))
       kwargs['upstreams'] = upstreamsProp # replace list of str/dict to list of Prop
@@ -260,7 +260,7 @@ class PropNode:
 
   def printDownstreams(self):
     print(self.name, 'downstreams:', end=' ')
-    for _, d in enumerate(self.downstreams):
+    for d in self.downstreams:
       print(d.name, end=' ')
     print('')
 
@@ -273,11 +273,11 @@ class PropNode:
     self.value = copy.deepcopy(self.defaultValue) # for list value
 
     sourceEnable = None
-    for _,source in enumerate(self.sourcesEnable):
+    for source in self.sourcesEnable:
       if source(caster, target):
         sourceEnable = source
         break
-    for _,sourceDisable in enumerate(self.sourcesDisable):
+    for sourceDisable in self.sourcesDisable:
       if sourceEnable and sourceEnable.priority > sourceDisable.priority:
         print('  Prop %s enabled by %s' % (self.name, sourceEnable.name))
         break # highest priority disable source is lower than effecting enable source
@@ -288,21 +288,21 @@ class PropNode:
     for name,sourceCalculator in self.sourcesInt.items():
       sourceValueInt = sourceCalculator(caster, target)
       if sourceValueInt:
-        if type(sourceValueInt) == tuple:
+        if isinstance(sourceValueInt, tuple):
           self.value.append(sourceValueInt)
         else:
           self.value = self.calculator(sourceValueInt, self.value)
 
-    for _,upstreamCalculator in enumerate(self.sourcesUpstream):
+    for upstreamCalculator in self.sourcesUpstream:
       sourceValueInt = upstreamCalculator(caster, target)
-      if type(self.value) == list:
-        if type(sourceValueInt) == int:
+      if isinstance(self.value, list):
+        if isinstance(sourceValueInt, int):
           print(self.sourcesUpstream, upstreamCalculator, sourceValueInt)
         self.value.extend(sourceValueInt)
       else:
         self.value = self.calculator(sourceValueInt, self.value)
 
-    for _,upstreamCalculator in enumerate(self.sourcesUpstreamMulti):
+    for upstreamCalculator in self.sourcesUpstreamMulti:
       sourceValueInt = upstreamCalculator(caster, target)
       self.value = self.calculator(sourceValueInt, self.value)
 
@@ -320,11 +320,11 @@ class PropNode:
 
     result = {}
     sourceEnable = None
-    for _,source in enumerate(self.sourcesEnable):
+    for source in self.sourcesEnable:
       if source(caster, target):
         sourceEnable = source
         break
-    for _,sourceDisable in enumerate(self.sourcesDisable):
+    for sourceDisable in self.sourcesDisable:
       if sourceEnable and sourceEnable.priority > sourceDisable.priority:
         result[sourceEnable.name] = True
         break # highest priority disable source is lower than effecting enable source
@@ -338,13 +338,13 @@ class PropNode:
         self.value = self.calculator(sourceInt, self.value)
         result[name] = sourceInt
 
-    for _,upstreamEval in enumerate(self.sourcesUpstream):
+    for upstreamEval in self.sourcesUpstream:
       sourceInt = upstreamEval(caster, target)
       if sourceInt != 0:
         self.value = self.calculator(sourceInt, self.value)
         result[upstreamEval.name] = sourceInt
 
-    for _,upstreamMultiEval in enumerate(self.sourcesUpstreamMulti):
+    for upstreamMultiEval in self.sourcesUpstreamMulti:
       sourceInt = upstreamMultiEval(caster, target)
       if sourceInt != 0:
         self.value = self.calculator(sourceInt, self.value)
@@ -470,7 +470,7 @@ class PropCalculator:
     return repr(self.props)
 
   def __addAbilitySources(self):
-    for _,ability in enumerate(self.ctx['Abilities']):
+    for ability in self.ctx['Abilities']:
       ab = 'Ability.' + ability
       self.addProp(ab, [
         {'upstream': ab + '.Base'},
@@ -495,13 +495,13 @@ class PropCalculator:
       raise RuntimeError('found duplicate prop', propName)
 
     prop = PropNode(self.props, propName, calculator, defaultValue)
-    if sources == None:
+    if not sources:
       pass
-    elif type(sources) == dict:
+    elif isinstance(sources, dict):
       src = sources
       prop.addSource(**src)
-    elif type(sources) == list:
-      for _, src in enumerate(sources):
+    elif isinstance(sources, (list, tuple)):
+      for src in sources:
         prop.addSource(**src)
     self.props[propName] = prop
 

@@ -48,7 +48,7 @@ class Unit:
     self.feats.addFeat(featName, featParam)
 
   def hasFeats(self, feats):
-    for _,featFullName in enumerate(feats):
+    for featFullName in feats:
       if not self.feats.hasFeat(featFullName):
         return False
     return True
@@ -64,7 +64,7 @@ class Unit:
 
   def getClassLevel(self, className = None):
     classLevels = self.calc.getProp('Class.Level')
-    if type(className) == str:
+    if isinstance(className, str):
       return classLevels.calcSingleSource(className, self, None)
     return classLevels.calcValue(self, None)
 
@@ -87,7 +87,7 @@ class Unit:
 
   def active(self, name, **kwargs):
     source = self.calc.getPropSource('Spell.Activable', name)
-    if source is None:
+    if not source:
       print('No activable ability found:', name)
       return
     print('Activate ability:', name)
@@ -103,7 +103,7 @@ class Unit:
 
   def castSpell(self, name, target, **kwargs):
     source = self.calc.getPropSource('Spell.Charges', name)
-    if source is None:
+    if not source:
       print('Spell not found:', name)
       return
     print('Cast spell', name, 'to', target.getName())
