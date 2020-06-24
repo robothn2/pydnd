@@ -1,11 +1,11 @@
 #coding: utf-8
 
 def __apply(feat, caster, target, **kwargs):
-    caster.calc.addSource('SavingThrow.All', name=feat.nameFull, calcInt=1)
-    caster.calc.addSource('ArmorClass.Luck', name=feat.nameFull, calcInt=1)
+    caster.calc.addSource('SavingThrow.All', name=feat.name, calcInt=1)
+    caster.calc.addSource('ArmorClass.Luck', name=feat.name, calcInt=1)
 def __unapply(feat, caster, target, **kwargs):
-    caster.calc.removeSource('SavingThrow.All', feat.nameFull)
-    caster.calc.removeSource('ArmorClass.Luck', feat.nameFull)
+    caster.calc.removeSource('SavingThrow.All', feat.name)
+    caster.calc.removeSource('ArmorClass.Luck', feat.name)
 
 protos = [
   {

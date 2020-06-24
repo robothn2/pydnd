@@ -2,7 +2,7 @@
 from player import Player, load_json_file
 from creature import Creature
 from context import ctx
-from models import create_weapon
+from protos import create_weapon
 import time
 
 class Arena:

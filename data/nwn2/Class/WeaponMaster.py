@@ -20,7 +20,7 @@ protos = [{
   'High Saves': 'Reflex.',
   'Skill Points': 2,
   'Class Skills': ('CraftWeapon', 'Intimidate', 'Lore', 'Parry', 'Taunt'),
-  'requirements': (
+  'prerequisite': (
     ('BaseAttackBonus', 5),
     ('Skill', 'Hide', 10),
     ('Skill', 'Tumble', 5),
@@ -42,7 +42,7 @@ def __applyWeaponOfChoice(feat, caster, target, **kwargs):
   if not isinstance(params, list) or weapon.nameBase not in params:
     return
 
-  print(feat.nameFull, 'affects weapon:', weapon.getItemBaseName(), ', params:', params)
+  print(feat.name, 'affects weapon:', weapon.getItemBaseName(), ', params:', params)
   if 'IncreasedMultiplier' in params:
     caster.calc.addSource('Weapon.%s.CriticalMultiplier' % hand, name='Increased Multiplier', calcInt=1)
   if 'SuperiorWeaponFocus' in params:
@@ -62,8 +62,8 @@ protos.extend([
   {
     'name': 'Ki Damage',
     'type': 'Feat', 'category': 'Class',
-    'apply': lambda feat, caster, target, **kwargs: caster.calc.addSource('Spell.Charges', name=feat.nameFull, calcInt=feat),
-    'unapply': lambda feat, caster, target, **kwargs: caster.calc.removeSource('Spell.Charges', feat.nameFull),
+    'apply': lambda feat, caster, target, **kwargs: caster.calc.addSource('Spell.Charges', name=feat.name, calcInt=feat),
+    'unapply': lambda feat, caster, target, **kwargs: caster.calc.removeSource('Spell.Charges', feat.name),
     'maxCharge': lambda feat, caster, target, **kwargs: caster.getClassLevel(),
     'decCharge': __decChargeKiDamage,
     'cast': __castKiDamage,

@@ -2,7 +2,7 @@
 
 from unit import Unit
 from abilities import abilities_parse
-from models import apply_tuple_resource
+from protos import apply_tuple_resource
 import json,warnings
 
 def load_json_file(builderJsonFile):
@@ -50,7 +50,7 @@ class Player(Unit):
     if not race:
       warnings.warn('unknown race:' + raceName)
       return False
-    race.model.apply(self)
+    race.apply(self)
 
     # apply initial abilities
     for k, v in builder['abilities'].items():

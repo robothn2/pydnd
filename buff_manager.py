@@ -7,7 +7,7 @@ class BuffManager:
     self.tsInMs = 0
 
   def addBuff(self, buffCaster, spell, **kwargs):
-    calculator = spell.model.buffDuration
+    calculator = spell.buffDuration
     durationSeconds = calculator if isinstance(calculator, int) else calculator(buffCaster, **kwargs)
     expired = int(1000 * durationSeconds) + self.tsInMs
     buffName = spell.nameBuff
@@ -21,7 +21,7 @@ class BuffManager:
       buffExist = (buffCaster, expired, spell, kwargs)
 
     # apply buff to owner
-    spell.model.buffApply(spell, buffCaster, self.owner, **kwargs)
+    spell.buffApply(spell, buffCaster, self.owner, **kwargs)
     print(repr(self.owner), 'apply buff', spell.nameBuff, ', cast from', repr(buffCaster), ', duration:', durationSeconds)
     return True
 
@@ -37,6 +37,6 @@ class BuffManager:
         caster = buffEntry[0]
         spell = buffEntry[2]
         print(repr(self.owner), '\'s buff', spell.nameBuff, 'expired, cast by', repr(caster))
-        spell.model.buffUnapply(spell, caster, self.owner)
+        spell.buffUnapply(spell, caster, self.owner)
         break
 

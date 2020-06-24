@@ -16,3 +16,4 @@ def parse_file_to_dict(path):
     raise e
 
   return dictionary
+

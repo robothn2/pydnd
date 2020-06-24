@@ -1,6 +1,7 @@
 #coding: utf-8
 from dice import dice_roll
-import re,warnings,copy
+import re
+import warnings
 
 def _parseHighSaves(text):
   if text.find('All') >= 0:
@@ -32,9 +33,9 @@ def _parse(kwargs, key, func):
     return None
   return func(kwargs.pop(key))
 
-def name_canonical(nameFull):
-  name = nameFull.replace('\'s', '').replace('-', ' ')
-  words = name.split(' ')
+def _name_canonical(name):
+  name_new = name.replace('\'s', '').replace('-', ' ')
+  words = name_new.split(' ')
   return ''.join(list(map(lambda word: word.capitalize(), words)))
 
 def apply_tuple_resource(res, unit, **kwargs):
@@ -83,7 +84,7 @@ def apply_tuple_resource(res, unit, **kwargs):
         continue
       domain.apply(unit)
 
-def isRequirementsMatch(requirements, unit):
+def is_requirements_match(requirements, unit):
   if not requirements:
     return True
 
@@ -158,23 +159,25 @@ def isRequirementsMatch(requirements, unit):
       return False
   return True
 
-class ModelBase:
-  def __init__(self, name, **kwargs):
-    self.nameFull = name
-    self.name = name_canonical(name)
-    #make a new class |self.name|, |kwargs| as attributes
-    self.model = type(self.name, (), kwargs)
+class ProtoBase:
+  def __init__(self, **kwargs):
+    self.name = kwargs.pop('name')
+    self.nameCanonical = _name_canonical(self.name)
+    self._proto = kwargs
+  def __getattr__(self, attr):
+    if attr in self._proto:
+      return self._proto[attr]
 
-class Race(ModelBase):
-  def __init__(self, name, **kwargs):
-    super().__init__(name, **kwargs)
+class ProtoRace(ProtoBase):
+  def __init__(self, **kwargs):
+    super().__init__(**kwargs)
 
-class Deity(ModelBase):
-  def __init__(self, name, **kwargs):
-    super().__init__(name, **kwargs)
+class ProtoDeity(ProtoBase):
+  def __init__(self, **kwargs):
+    super().__init__(**kwargs)
 
-class Class(ModelBase):
-  def __init__(self, name, **kwargs):
+class ProtoClass(ProtoBase):
+  def __init__(self, **kwargs):
     self.bab = _parse(kwargs, 'Base Attack Bonus', _parseBaseAttackBonus)
     self.hd = _parse(kwargs, 'Hit Die', _parseHitDie)
     self.highSaves = _parse(kwargs, 'High Saves', _parseHighSaves)
@@ -182,21 +185,17 @@ class Class(ModelBase):
     self.armors = _parse(kwargs, 'Armor Proficiencies', _parseArmorProficiencies)
     self.skillPoints = _parse(kwargs, 'Skill Points', _parseSkillPoints)
     self.classSkills = _parse(kwargs, 'Class Skills', _parseClassSkills)
-    super().__init__(name, **kwargs)
+    super().__init__(**kwargs)
     self.spellType = None
     for bonus in kwargs['bonus']:
       # (1, ('SpellType', 'Arcane', ...))
       if bonus[1][0] == 'SpellType':
         self.spellType = (bonus[1][1], bonus[0])
-        #print('found spell type:', self.spellType, ' for class:', self.nameFull)
 
-    # print(self)
-    # todo: parse bonus and append prerequisite entry ('ClassLevel', name, 11) on feat
+    # todo: parse bonus and merge prerequisite entry
 
   def isAvailable(self, unit):
-    if not hasattr(self.model, 'Requirements'):
-      return True
-    return isRequirementsMatch(self.model.requirements, unit)
+    return is_requirements_match(self.prerequisite, unit)
 
   def levelUp(self, unit, level, **choices):
     print('apply', self.name, 'level', level)
@@ -204,9 +203,9 @@ class Class(ModelBase):
       unit.addFeat('Weapon Proficiency', self.weapons)
       unit.addFeat('Armor Proficiency', self.armors)
 
-    if not hasattr(self.model, 'bonus'):
+    if not isinstance(self.bonus, tuple):
       return
-    for entry in self.model.bonus:
+    for entry in self.bonus:
       #print(entry)
       if not isinstance(entry, tuple):
         continue
@@ -215,12 +214,15 @@ class Class(ModelBase):
       elif callable(entry[0]):
         if entry[0](level):
           apply_tuple_resource(entry[1], unit, **choices)
-  def calcSaveThrow(self, savingName, classLevel):
-    return classLevel // 2 + 2 if savingName in self.highSaves else classLevel // 3
 
-class Domain(ModelBase):
-  def __init__(self, name, **kwargs):
-    super().__init__(name, **kwargs)
+  def calcSaveThrow(self, savingName, classLevel):
+    if savingName in self.highSaves:
+      return classLevel // 2 + 2
+    return classLevel // 3
+
+class ProtoDomain(ProtoBase):
+  def __init__(self, **kwargs):
+    super().__init__(**kwargs)
 
   def apply(self, unit):
     print('apply cleric domain %s' % self.name)
@@ -229,23 +231,24 @@ class Domain(ModelBase):
         print('apply resource %s cleric domain %s' % (str(entry), self.name))
         apply_tuple_resource(entry, unit)
 
-class Feat(ModelBase):
-  def __init__(self, name, **kwargs):
-    self.category = kwargs.pop('Type') if 'Type' in kwargs else 'General'
-    super().__init__(name, **kwargs)
-    self.group = kwargs.get('group', self.name)
-    self.nameBuff = self.nameFull
+class ProtoFeat(ProtoBase):
+  def __init__(self, **kwargs):
+    if 'category' not in kwargs:
+      kwargs['category'] = 'General'
+    super().__init__(**kwargs)
+    #todo: group and nameMember
+    self.group = kwargs.get('group', self.nameCanonical)
     self.nameMember = kwargs.get('nameMember')
+    if hasattr(self, 'buffDuration'):
+      self.nameBuff = self.name
 
   def isAvailable(self, unit):
-    if not hasattr(self.model, 'prerequisite'):
-      return True
-    return isRequirementsMatch(self.model.prerequisite, unit)
+    return is_requirements_match(self.prerequisite, unit)
 
-class Spell(ModelBase):
-  def __init__(self, name, **kwargs):
-    self.nameBuff = kwargs.pop('nameBuff') if 'nameBuff' in kwargs else name
-    super().__init__(name, **kwargs)
+class ProtoSpell(ProtoBase):
+  def __init__(self, **kwargs):
+    super().__init__(**kwargs)
+    self.nameBuff = kwargs.pop('buffName') if 'buffName' in kwargs else self.name
 
 def __calc_attackbonus_list(maxAttackTimes, baseAttackBonus, babDecValue):
   bab = int(baseAttackBonus)
@@ -275,7 +278,7 @@ def apply_weapon_attacks(weapon, unit, hand, maxAttackTimes = 10):
   bab = unit.calc.calcPropValue('AttackBonus.Base', weapon, None)
   babDec = 5
 
-  if weapon.nameBase == 'Kama' and unit.getClassLevel('Monk') > 0:
+  if weapon.getItemBaseName() == 'Kama' and unit.getClassLevel('Monk') > 0:
     babDec = 3
   if hand == 'OffHand':
     if not unit.hasFeat('Two-Weapon Fighting'):
@@ -293,32 +296,42 @@ def apply_weapon_attacks(weapon, unit, hand, maxAttackTimes = 10):
   unit.calc.addSource('Attacks', name=hand, calcInt=lambda caster, target: \
       __calc_attacks_in_turn(maxAttackTimes, bab, babDec, unit.ctx['secondsPerTurn'], tsOffset, weapon, hand))
 
-class Weapon(ModelBase):
-  def __init__(self, name, **kwargs):
-    super().__init__(name, **kwargs)
-    self.nameBase = self.name
+class ProtoWeapon(ProtoBase):
+  def __init__(self, **kwargs):
+    super().__init__(**kwargs)
+
+class Weapon:
+  def __init__(self, proto, **kwargs):
+    self._proto = proto
+    self.kwargs = kwargs
+    if 'name' in kwargs:
+      self.name = kwargs['name']
+    else:
+      self.name = self._proto.name
+      if 'enhancement' in kwargs:
+        self.name += '+' + str(kwargs['enhancement'])
 
   def __repr__(self):
     return self.name
 
   def getItemBaseName(self):
-    return self.nameBase
+    return self._proto.name
 
   def apply(self, unit, hand):
     print('apply', hand, 'weapon:', self.name)
     apply_weapon_attacks(self, unit, hand)
 
     # weapon base damage
-    weaponParams = self.model.damageRoll
+    weaponParams = self._proto.damageRoll
     unit.calc.addSource('Damage.' + hand, name=self.name, calcInt=lambda caster, target: ('Physical', self.name, dice_roll(1, weaponParams[1], weaponParams[0])), noCache=True)
 
     # weapon enhancement
-    if hasattr(self.model, 'enhancement'):
+    if hasattr(self, 'enhancement'):
       unit.calc.addSource('Weapon.%s.Additional' % hand, name='WeaponEnhancement', calcInt=('Magical', 'WeaponEnhancement', self.model.enhancement))
-      unit.calc.addSource('AttackBonus.' + hand, name='WeaponEnhancement', calcInt=self.model.enhancement)
+      unit.calc.addSource('AttackBonus.' + hand, name='WeaponEnhancement', calcInt=self.enhancement)
 
     # weapon critical parameter
-    criticalParams = self.model.criticalThreat
+    criticalParams = self._proto.criticalThreat
     unit.calc.addSource('Weapon.%s.CriticalRange' % hand, name='WeaponBase', calcInt=criticalParams[0])
     unit.calc.addSource('Weapon.%s.CriticalMultiplier' % hand, name='WeaponBase', calcInt=criticalParams[1])
 
@@ -336,24 +349,51 @@ class Weapon(ModelBase):
     unit.calc.removeSource('Weapon.%s.CriticalRange' % hand, 'WeaponBase')
     unit.calc.removeSource('Weapon.%s.CriticalMultiplier' % hand, 'WeaponBase')
 
-def create_weapon(protos, weaponName, **kwargs):
-  if weaponName in protos['Weapon']:
-    weapon = copy.deepcopy(protos['Weapon'][weaponName])
-    if 'name' in kwargs:
-      weapon.name = kwargs['name']
-    elif 'enhancement' in kwargs:
-      weapon.name += '+' + str(kwargs['enhancement'])
-    return weapon
 
-  # for a natural weapon, we need following keys in |props|:
-  #   BaseCriticalThreat, default is [20, 20, 2], also named as 20/x2
-  #   BaseDamage, default is [1,4,1], also named as 1d4
-  #   BaseDamageType, default is ['Bludgeoning']
-  damageRoll = kwargs.pop('damageRoll') if 'damageRoll' in kwargs else (1, 4)
-  criticalThreat = kwargs.pop('criticalThreat') if 'criticalThreat' in kwargs else (0, 2)
-  weaponSize = kwargs.pop('size') if 'size' in kwargs else 'Small'
-  damageType = kwargs.pop('damageType') if 'damageType' in kwargs else 'Bludgeoning'
-  specifics = kwargs.pop('specifics') if 'specifics' in kwargs else 'natural weapon ' + weaponName
-  weapon = Weapon(weaponName, damageRoll = damageRoll, criticalThreat = criticalThreat, damageType = damageType,\
-                  size = weaponSize, specifics = specifics)
-  return weapon
+def create_weapon(protos, protoName, **kwargs):
+  if protoName in protos['Weapon']:
+    proto = protos['Weapon'][protoName]
+  else:
+    # for a natural weapon, we need following keys in |props|:
+    #   damageRoll, default is [1,4,1], also named as 1d4
+    #   BaseCriticalThreat, default is [1, 2], also named as 20/x2
+    #   BaseDamageType, default is ['Bludgeoning']
+    damageRoll = kwargs.get('damageRoll', (1, 4, 1))
+    criticalThreat = kwargs.get('criticalThreat', (1, 2))
+    weaponSize = kwargs.get('size', 'Small')
+    damageType = kwargs.get('damageType', 'Bludgeoning')
+    specifics = kwargs.get('specifics', 'Natural weapon: ' + protoName)
+    proto = ProtoWeapon(name=protoName, damageRoll=damageRoll,
+                        criticalThreat=criticalThreat, damageType=damageType,
+                        size=weaponSize, specifics=specifics)
+
+  return Weapon(proto, **kwargs)
+
+def register_proto(proto, protos):
+  if 'type' not in proto:
+    return False
+
+  t = proto.get('type')
+  if not t or not isinstance(t, str):
+    return False
+  if t == 'Feat':
+    p = ProtoFeat(**proto)
+  elif t == 'Spell':
+    p = ProtoSpell(**proto)
+    #support buff with the same name as the spell that generate it
+    if hasattr(proto, 'buffDuration'):
+      protos['Buff'][p.name] = p
+  elif t == 'Weapon':
+    p = ProtoWeapon(**proto)
+  elif t == 'Race':
+    p = ProtoRace(**proto)
+  elif t == 'Class':
+    p = ProtoClass(**proto)
+  elif t == 'Deity':
+    p = ProtoDeity(**proto)
+  elif t == 'Domain':
+    p = ProtoDomain(**proto)
+  else:
+    return False
+  protos[t][p.name] = p
+  return True

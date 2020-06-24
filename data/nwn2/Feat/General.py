@@ -5,8 +5,8 @@ protos = [
   {
     'name': 'Dodge',
     'type': 'Feat', 'category': 'General',
-    'apply': lambda feat, caster, target, **kwargs: caster.calc.addSource('ArmorClass.Dodge', name=feat.nameFull, calcInt=1),
-    'unapply': lambda feat, caster, target, **kwargs: caster.calc.removeSource('ArmorClass.Dodge', feat.nameFull),
+    'apply': lambda feat, caster, target, **kwargs: caster.calc.addSource('ArmorClass.Dodge', name=feat.name, calcInt=1),
+    'unapply': lambda feat, caster, target, **kwargs: caster.calc.removeSource('ArmorClass.Dodge', feat.name),
     'prerequisite': [('Ability', 'Dex', 13)],
     'specifics': '''The character gains a +1 dodge bonus to AC against attacks from his current target or last attacker.''',
   },
@@ -25,16 +25,16 @@ protos = [
   {
     'name': 'Toughness', 'group': 'Toughness',
     'type': 'Feat', 'category': 'General',
-    'apply': lambda feat, caster, target, **kwargs: caster.calc.addSource('HitPoint', name=feat.nameFull, calcInt=lambda caster,target: caster.getClassLevel()),
-    'unapply': lambda feat, caster, target, **kwargs: caster.calc.removeSource('HitPoint', feat.nameFull),
+    'apply': lambda feat, caster, target, **kwargs: caster.calc.addSource('HitPoint', name=feat.name, calcInt=lambda caster,target: caster.getClassLevel()),
+    'unapply': lambda feat, caster, target, **kwargs: caster.calc.removeSource('HitPoint', feat.name),
     'specifics': '''A character with this feat is tougher than normal, gaining one bonus hit point per level. Hit points are gained retroactively when choosing this feat.''',
   },
   {
     'name': 'Epic Toughness', 'group': 'Toughness',
     'type': 'Feat', 'category': 'General',
     'nameMember': 'Epic',
-    'apply': lambda feat, caster, target, **kwargs: caster.calc.addSource('HitPoint', name=feat.nameFull, calcInt=30),
-    'unapply': lambda feat, caster, target, **kwargs: caster.calc.removeSource('HitPoint', feat.nameFull),
+    'apply': lambda feat, caster, target, **kwargs: caster.calc.addSource('HitPoint', name=feat.name, calcInt=30),
+    'unapply': lambda feat, caster, target, **kwargs: caster.calc.removeSource('HitPoint', feat.name),
     'specifics': '''The character gains +30 hit points. This feat may be taken multiple times, up to a maximum of 300 hit points.''',
   },
 ]

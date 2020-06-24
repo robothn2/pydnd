@@ -7,7 +7,7 @@ def __applyToWeapon(feat, caster, target, **kwargs):
   if params is not list or weapon.getItemBaseName() not in params:
     return
 
-  print(feat.nameFull, 'affects weapon:', weapon.getItemBaseName(), ', params:', params)
+  print(feat.name, 'affects weapon:', weapon.getItemBaseName(), ', params:', params)
   caster.calc.addSource('Damage.'+ hand, name='WeaponSpecialization', calcInt=('Physical', 'WeaponSpecialization', 2))
   if 'Greater' in params:
     caster.calc.addSource('Damage.'+ hand, name='GreaterWeaponSpecialization', calcInt=('Physical', 'GreaterWeaponSpecialization', 2))

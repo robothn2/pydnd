@@ -1,7 +1,7 @@
 #coding: utf-8
 
 from unit import Unit
-from models import Weapon
+from protos import create_weapon
 import warnings, copy, json
 
 class Creature(Unit):
@@ -43,7 +43,7 @@ class Creature(Unit):
       weaponName = attack[0]
       if weaponName not in weaponsCreated:
         # create a virtual weapon
-        weapon = Weapon(weaponName,
+        weapon = create_weapon(weaponName,
                 damageRoll=(1, attack[1]),
                 criticalThreat=(1, len(attack) - 2))
 

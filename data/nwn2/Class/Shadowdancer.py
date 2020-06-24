@@ -11,7 +11,7 @@ protos = {
   'Armor Proficiencies': ('Light'),
   'Skill Points': 6,
   'Class Skills': ('Bluff', 'CraftTrap', 'Diplomacy', 'Hide', 'Listen', 'MoveSilently', 'Parry', 'Search', 'SleightOfHand', 'Spot', 'Tumble'),
-  'requirements': (
+  'prerequisite': (
     ('Skill', 'Move Silently', 8),
     ('Skill', 'Hide', 10),
     ('Skill', 'Tumble', 5),

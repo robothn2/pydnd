@@ -3,16 +3,16 @@
 
 def __active(feat, caster, target, **kwargs):
   value = 6 if feat.hasMember('Improved') else 3
-  caster.calc.addSource('AttackBonus.Additional', name=feat.nameFull, calcInt=-value)
-  caster.calc.addSource('Damage.Additional', name=feat.nameFull, calcInt=lambda caster, target: ('Physical', feat.nameFull, value))
+  caster.calc.addSource('AttackBonus.Additional', name=feat.name, calcInt=-value)
+  caster.calc.addSource('Damage.Additional', name=feat.name, calcInt=lambda caster, target: ('Physical', feat.name, value))
   if feat.hasMember('Favored'):
     caster.calc.addSource('Damage.TwoHand', name='Favored Power Attack', calcInt=lambda caster, target: ('Physical', 'Favored Power Attack', value*2))
     caster.calc.addSource('Damage.MainHand', name='Favored Power Attack', calcInt=lambda caster, target: ('Physical', 'Favored Power Attack', value))
     caster.calc.addSource('Damage.OffHand', name='Favored Power Attack', calcInt=lambda caster, target: ('Physical', 'Favored Power Attack', value))
 
 def __deactive(feat, caster):
-  caster.calc.removeSource('AttackBonus.Additional', feat.nameFull)
-  caster.calc.removeSource('Damage.Additional', feat.nameFull)
+  caster.calc.removeSource('AttackBonus.Additional', feat.name)
+  caster.calc.removeSource('Damage.Additional', feat.name)
   if feat.hasMember('Favored'):
     caster.calc.removeSource('Damage.TwoHand', 'Favored Power Attack')
     caster.calc.removeSource('Damage.MainHand', 'Favored Power Attack')

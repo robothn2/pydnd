@@ -24,7 +24,7 @@ def __applyWeaponFocus(feat, caster, target, **kwargs):
     if not isinstance(params, list) or weapon.nameBase not in params:
         return
 
-    print(feat.nameFull, 'affects weapon:', weapon.getItemBaseName(), ', params:', params)
+    print(feat.name, 'affects weapon:', weapon.getItemBaseName(), ', params:', params)
     caster.calc.addSource('AttackBonus.' + hand, name='WeaponFocus', calcInt=1)
     if 'Greater' in params:
         caster.calc.addSource('AttackBonus.' + hand, name='GreaterWeaponFocus', calcInt=1)
@@ -33,7 +33,7 @@ def __applyWeaponFocus(feat, caster, target, **kwargs):
     if 'ImprovedCritical' in params:
         criticalParams = weapon.proto['BaseCriticalThreat']['params']
         rangeDiff = criticalParams[1] - criticalParams[0]
-        caster.calc.addSource('Weapon.%s.CriticalRange' % hand, name=feat.nameFull, calcInt=rangeDiff)
+        caster.calc.addSource('Weapon.%s.CriticalRange' % hand, name=feat.name, calcInt=rangeDiff)
 def __unapplyWeaponFocus(feat, caster, target, **kwargs):
     caster.calc.removeSource('AttackBonus.TwoHand', feat.nameMember)
     caster.calc.removeSource('AttackBonus.MainHand', feat.nameMember)

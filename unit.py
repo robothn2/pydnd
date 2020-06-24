@@ -92,7 +92,7 @@ class Unit:
       return
     print('Activate ability:', name)
     spell = source.calcInt
-    spell.model.active(spell, self, self)
+    spell.active(spell, self, self)
   def deactive(self, name):
     activableAbility = self.calc.getPropSource('Spell.Activable', name)
     if not activableAbility:
@@ -108,7 +108,7 @@ class Unit:
       return
     print('Cast spell', name, 'to', target.getName())
     spell = source.calcInt
-    spell.model.cast(spell, self, target, params=self.feats.getFeatParams(spell.nameFull), **kwargs)
+    spell.cast(spell, self, target, params=self.feats.getFeatParams(spell.name), **kwargs)
 
 
   def addEnemy(self, enemy):

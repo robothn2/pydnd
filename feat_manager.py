@@ -15,8 +15,8 @@ class FeatGroup:
 
   def addMember(self, feat, param):
     if len(self.members) == 0:
-      self.forWeapon = hasattr(feat.model, 'forWeapon')
-    self.members[feat.nameFull] = feat
+      self.forWeapon = hasattr(feat, 'forWeapon')
+    self.members[feat.name] = feat
     if feat.nameMember and feat.nameMember not in self.params:
       self.params.append(feat.nameMember)
 
@@ -46,8 +46,8 @@ class FeatGroup:
   def deriveFeats(self, unit):
     derived = {}
     for featName,feat in self.members.items():
-      if hasattr(feat.model, 'deriveFeat'):
-        derives = feat.model.deriveFeat(feat, unit, None, params=self.params)
+      if callable(feat.deriveFeat):
+        derives = feat.deriveFeat(feat, unit, None, params=self.params)
         if isinstance(derives, dict):
           derived.update(derives)
     if derived:
@@ -57,17 +57,17 @@ class FeatGroup:
   def apply(self, unit, kwargs):
     #print(repr(unit), 'apply feat group:', self.name, ', members:', str(self.members.keys()))
     for featName, feat in self.members.items():
-      if not hasattr(feat.model, 'apply'):
+      if not hasattr(feat, 'apply'):
         continue
 
       if 'weapon' in kwargs:
         if self.forWeapon:
           print('  feat weapon:', featName)
-          feat.model.apply(self, unit, feat, params=self.params, **kwargs)
+          feat.apply(self, unit, feat, params=self.params, **kwargs)
       else:
         if not self.forWeapon:
           print('  feat normal:', featName)
-          feat.model.apply(self, unit, None, params=self.params, **kwargs)
+          feat.apply(self, unit, None, params=self.params, **kwargs)
 
 
 class FeatManager:
@@ -89,11 +89,11 @@ class FeatManager:
 
     featGroup = self.featGroups.get(feat.group)
     if not featGroup:
-      #print('create feat group:', feat.group, 'for ', feat.nameFull)
+      #print('create feat group:', feat.group, 'for ', feat.name)
       featGroup = FeatGroup(self.owner, feat.group)
       self.featGroups[feat.group] = featGroup
 
-    #print(repr(self.owner), 'add feat', feat.nameFull, 'to group', feat.group)
+    #print(repr(self.owner), 'add feat', feat.name, 'to group', feat.group)
     if isinstance(featParams, dict):
       featGroup.addMember(feat, featParams.get(featNameFull))
     else:

@@ -32,27 +32,27 @@ protos = [{
 def _applyFeatFavoredEnemy(feat, caster, target, **kwargs):
   params = kwargs.get('params')
   bonus = max(1, int(caster.getClassLevel('Ranger') / 5) + 1)
-  calcDamage = lambda caster,target: None if not target.matchRaces(params) else ('Divine', feat.nameFull, bonus)
-  caster.calc.addSource('Damage.Additional', name=feat.nameFull, calcInt=calcDamage, noCache=True)
+  calcDamage = lambda caster,target: None if not target.matchRaces(params) else ('Divine', feat.name, bonus)
+  caster.calc.addSource('Damage.Additional', name=feat.name, calcInt=calcDamage, noCache=True)
   calcSkill = lambda caster,target: 0 if not target.matchRaces(params) else max(1, int(caster.getClassLevel('Ranger') / 5))
-  caster.calc.addSource('Skill.Listen', name=feat.nameFull, calcInt=calcSkill, noCache=True)
-  caster.calc.addSource('Skill.Spot', name=feat.nameFull, calcInt=calcSkill, noCache=True)
-  caster.calc.addSource('Skill.Taunt', name=feat.nameFull, calcInt=calcSkill, noCache=True)
+  caster.calc.addSource('Skill.Listen', name=feat.name, calcInt=calcSkill, noCache=True)
+  caster.calc.addSource('Skill.Spot', name=feat.name, calcInt=calcSkill, noCache=True)
+  caster.calc.addSource('Skill.Taunt', name=feat.name, calcInt=calcSkill, noCache=True)
 def _unapplyFeatFavoredEnemy(feat, caster, target, **kwargs):
-  caster.calc.removeSource('Damage.Additional', feat.nameFull)
-  caster.calc.addSource('Skill.Listen', feat.nameFull)
-  caster.calc.addSource('Skill.Spot', feat.nameFull)
-  caster.calc.addSource('Skill.Taunt', feat.nameFull)
+  caster.calc.removeSource('Damage.Additional', feat.name)
+  caster.calc.addSource('Skill.Listen', feat.name)
+  caster.calc.addSource('Skill.Spot', feat.name)
+  caster.calc.addSource('Skill.Taunt', feat.name)
 
 def _applyFeatBaneOfEnemies(feat, caster, target, **kwargs):
   params = kwargs.get('params')
   #todo:
-  calcDamage = lambda caster,target: None if not target.matchRaces(params) else ('Divine', feat.nameFull, (1, 6, 2))
-  caster.calc.addSource('Damage.Additional', name=feat.nameFull, calcInt=calcDamage, noCache=True)
-  caster.calc.addSource('AttackBonus.Additional', name=feat.nameFull, calcInt=lambda caster,target: 2 if target.matchRaces(params) else 0)
+  calcDamage = lambda caster,target: None if not target.matchRaces(params) else ('Divine', feat.name, (1, 6, 2))
+  caster.calc.addSource('Damage.Additional', name=feat.name, calcInt=calcDamage, noCache=True)
+  caster.calc.addSource('AttackBonus.Additional', name=feat.name, calcInt=lambda caster,target: 2 if target.matchRaces(params) else 0)
 def _unapplyFeatBaneOfEnemies(feat, caster, target, **kwargs):
-  caster.calc.removeSource('Damage.Additional', feat.nameFull)
-  caster.calc.removeSource('AttackBonus.Additional', feat.nameFull)
+  caster.calc.removeSource('Damage.Additional', feat.name)
+  caster.calc.removeSource('AttackBonus.Additional', feat.name)
 
 def _deriveFeatCombatStyle(feat, caster, target, **kwargs):
   bonusFeats = {}
@@ -76,14 +76,14 @@ def _deriveFeatCombatStyle(feat, caster, target, **kwargs):
       bonusFeats['Improved Rapid Shot'] = ''
   return bonusFeats
 def _underiveFeatCombatStyle(feat, caster, target, **kwargs):
-  if feat.nameFull == 'Combat Style':
+  if feat.name == 'Combat Style':
     caster.removeFeat('Two-Weapon Fighting')
     caster.removeFeat('Perfect Two-Weapon Fighting')
     caster.removeFeat('Rapid Shot')
-  elif feat.nameFull == 'Improved Combat Style':
+  elif feat.name == 'Improved Combat Style':
     caster.removeFeat('Improved Two-Weapon Fighting')
     caster.removeFeat('Manyshot')
-  elif feat.nameFull == 'Combat Mastery':
+  elif feat.name == 'Combat Mastery':
     caster.removeFeat('Greater Two-Weapon Fighting')
     caster.removeFeat('Improved Rapid Shot')
 

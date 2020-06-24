@@ -6,7 +6,7 @@ def _addDeityWeaponFocus(unit):
   if not deity:
     return
 
-  weapon = deity.model.favoredWeapon
+  weapon = deity.favoredWeapon
   print('deity:', deityName, ', favored weapon:', weapon)
   if weapon == 'Unarmed Strike':
     unit.addFeat('Improved Unarmed Strike')
