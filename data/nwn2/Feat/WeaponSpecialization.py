@@ -22,7 +22,7 @@ def __unapply(feat, caster, target, **kwargs):
 protos = [
   {
     'name': 'Weapon Specialization', 'group': 'WeaponSpecialization',
-    'type': 'Feat', 'catgory': 'Special',
+    'type': 'Feat', 'category': 'Special',
     'forWeapon': True,
     'apply': __applyToWeapon,
     'unapply': __unapply,
@@ -31,13 +31,13 @@ protos = [
   },
   {
     'name': 'Greater Weapon Specialization', 'group': 'WeaponSpecialization',
-    'type': 'Feat', 'catgory': 'Special',
+    'type': 'Feat', 'category': 'Special',
     'prerequisite': [('ClassLevel', 'Fighter', 12), ('Feat', ('Greater Weapon Focus', 'Weapon Specialization'))],
     'specifics': '''This feat grants an additional +1 to hit bonus with the selected weapon. This stacks with all other bonuses to attack roll (including Weapon Focus). This feat can be taken multiple times, but each time the effect applies to a new type of weapon.''',
   },
   {
     'name': 'Epic Weapon Specialization', 'group': 'WeaponSpecialization',
-    'type': 'Feat', 'catgory': 'Epic',
+    'type': 'Feat', 'category': 'Epic',
     'prerequisite': [('Level', 21), ('Feat', ('Epic Weapon Focus', 'Greater Weapon Specialization'))],
     'specifics': '''The character gains +6 to all damage dealt using the selected weapon. This feat can be taken multiple times, but applies to a different weapon each time. This bonus replaces that of Weapon Specialization and Greater Weapon Specialization.''',
   },

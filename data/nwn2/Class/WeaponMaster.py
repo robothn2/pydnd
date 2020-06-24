@@ -61,7 +61,7 @@ def __decChargeKiDamage(feat, caster, target, **kwargs):
 protos.extend([
   {
     'name': 'Ki Damage',
-    'type': 'Feat', 'catgory': 'Class',
+    'type': 'Feat', 'category': 'Class',
     'apply': lambda feat, caster, target, **kwargs: caster.calc.addSource('Spell.Charges', name=feat.nameFull, calcInt=feat),
     'unapply': lambda feat, caster, target, **kwargs: caster.calc.removeSource('Spell.Charges', feat.nameFull),
     'maxCharge': lambda feat, caster, target, **kwargs: caster.getClassLevel(),
@@ -72,7 +72,7 @@ protos.extend([
 
   {
     'name': 'Weapon of Choice', 'group': 'WeaponOfChoice',
-    'type': 'Feat', 'catgory': 'Class',
+    'type': 'Feat', 'category': 'Class',
     'forWeapon': True,
     'apply': __applyWeaponOfChoice,
     'unapply': __unapplyWeaponOfChoice,
@@ -80,17 +80,17 @@ protos.extend([
   },
   {
     'name': 'Increased Multiplier', 'group': 'WeaponOfChoice',
-    'type': 'Feat', 'catgory': 'Class',
+    'type': 'Feat', 'category': 'Class',
     'specifics': '''With their weapon of choice, the multiplier is increased by x1 to all critical hits. Thus a x2 critical multiplier becomes a x3.''',
   },
   {
     'name': 'Superior Weapon Focus', 'group': 'WeaponOfChoice',
-    'type': 'Feat', 'catgory': 'Class',
+    'type': 'Feat', 'category': 'Class',
     'specifics': '''The weapon master gains a +1 bonus to all attack rolls with their weapon of choice.''',
   },
   {
     'name': 'Ki Critical', 'group': 'WeaponOfChoice',
-    'type': 'Feat', 'catgory': 'Class',
+    'type': 'Feat', 'category': 'Class',
     'specifics': '''The weapon master gains an additional +2 to the threat range of their weapon of choice.''',
   },
 ])

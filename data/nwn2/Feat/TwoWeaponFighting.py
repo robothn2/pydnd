@@ -27,7 +27,7 @@ def _applyTwoWeaponFighting(feat, caster, target, **kwargs):
 protos = [
   {
     'name': 'Two-Weapon Fighting', 'group': 'TwoWeaponFighting',
-    'type': 'Feat', 'catgory': 'Combat',
+    'type': 'Feat', 'category': 'Combat',
     'forWeapon': True,
     'prerequisite': [('Ability', 'Dex', 15)],
     'apply': _applyTwoWeaponFighting,
@@ -35,21 +35,21 @@ protos = [
   },
   {
     'name': 'Improved Two-Weapon Fighting', 'group': 'TwoWeaponFighting',
-    'type': 'Feat', 'catgory': 'Combat',
+    'type': 'Feat', 'category': 'Combat',
     'prerequisite': [('Feat', 'Two-Weapon Fighting'), ('Ability', 'Dex', 17), ('BaseAttackBonus', 6)],
     'apply': _applyTwoWeaponFighting,
     'specifics': '''The character with this feat is able to get a second off-hand attack (at a penalty of -5 to his attack roll).''',
   },
   {
     'name': 'Greater Two-Weapon Fighting', 'group': 'TwoWeaponFighting',
-    'type': 'Feat', 'catgory': 'Combat',
+    'type': 'Feat', 'category': 'Combat',
     'prerequisite': [('Feat', 'Improved Two-Weapon Fighting'), ('Ability', 'Dex', 19), ('BaseAttackBonus', 11)],
     'apply': _applyTwoWeaponFighting,
     'specifics': '''This feat grants a third attack with your off-hand weapon with a -10 attack penalty.''',
   },
   {
     'name': 'Perfect Two-Weapon Fighting', 'group': 'TwoWeaponFighting',
-    'type': 'Feat', 'catgory': 'Epic',
+    'type': 'Feat', 'category': 'Epic',
     'prerequisite': [('Feat', 'Greater Two-Weapon Fighting'), ('Ability', 'Dex', 25), ('Level', 21)],
     'apply': _applyTwoWeaponFighting,
     'specifics': '''The character can make as many attacks with their off hand weapon as with their main hand weapon, using the same base attack bonus.''',

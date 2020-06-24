@@ -21,7 +21,7 @@ def __deactive(feat, caster):
 protos = [
   {
     'name': 'Power Attack', 'group': 'PowerAttack',
-    'type': 'Feat', 'catgory': 'General',
+    'type': 'Feat', 'category': 'General',
     'apply': __active,
     'unapply': __deactive,
     'prerequisite': [('Ability', 'Str', 13)],
@@ -30,14 +30,14 @@ protos = [
 
   {
     'name': 'Improved Power Attack', 'group': 'PowerAttack',
-    'type': 'Feat', 'catgory': 'General',
+    'type': 'Feat', 'category': 'General',
     'prerequisite': [('Feat', 'PowerAttack'), ('BaseAttackBonus', 6)],
     'specifics': '''This feat allows the character to trade a -6 penalty on his attack roll to gain a +6 bonus on his damage roll. It is very useful when fighting tough, easy-to-hit opponents.''',
   },
 
   {
     'name': 'Favored Power Attack', 'group': 'PowerAttack',
-    'type': 'Feat', 'catgory': 'Ranger',
+    'type': 'Feat', 'category': 'Class',
     'prerequisite': [('Feat', 'FavoredEnemy'), ('Feat', 'PowerAttack'), ('BaseAttackBonus', 4)],
     'specifics': '''When you use the Power Attack or Improved Power Attack feat with a one-handed weapon against a favored enemy, your Power Attack damage bonus is doubled. With a two-handed weapon against a favored enemy, your Power Attack damage bonus is tripled.''',
   },

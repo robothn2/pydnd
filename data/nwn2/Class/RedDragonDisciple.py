@@ -64,7 +64,7 @@ def __unapplyHalfDragon(feat, caster, target, **kwargs):
 protos.extend([
   {
     'name': 'Draconic Ability Scores',
-    'type': 'Feat', 'catgory': 'Class',
+    'type': 'Feat', 'category': 'Class',
     'apply': __applyDraconicAbilityScores,
     'unapply': __unapplyDraconicAbilityScores,
     'prerequisite': [('Ability', 'Dex', 13)],
@@ -72,14 +72,14 @@ protos.extend([
   },
   {
     'name': 'Natural Armor Increase',
-    'type': 'Feat', 'catgory': 'Class',
+    'type': 'Feat', 'category': 'Class',
     'apply': __applyNaturalArmorIncrease,
     'unapply': __unapplyNaturalArmorIncrease,
     'specifics': '''At 1st level, the red dragon disciple's skin toughens and begins to grow scaly, granting him a +1 natural armor bonus to AC. This bonus improves to +2 at 4th level, +3 at 7th level, and +4 at 10th level.''',
   },
   {
     'name': 'Half-Dragon',
-    'type': 'Feat', 'catgory': 'Class',
+    'type': 'Feat', 'category': 'Class',
     'apply': __applyHalfDragon,
     'unapply': __unapplyHalfDragon,
     'specifics': '''At 10th level, the red dragon disciple's transformation is complete. He becomes a half-dragon, and gains darkvision as well as immunity to sleep, paralysis, and fire.''',

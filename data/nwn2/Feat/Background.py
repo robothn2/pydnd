@@ -10,7 +10,7 @@ def __unapply(feat, caster, target, **kwargs):
 protos = [
   {
     'name': 'Luck of Heroes',
-    'type': 'Feat', 'catgory': 'Background',
+    'type': 'Feat', 'category': 'Background',
     'apply': __apply,
     'unapply': __unapply,
     'specifics': '''Character gains a +1 bonus on all saving throws as well as a +1 luck bonus to Armor Class.''',

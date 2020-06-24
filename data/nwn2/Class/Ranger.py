@@ -91,14 +91,14 @@ protos.extend([
   # Feat group: FavoredEnemy
   {
     'name': 'Favored Enemy', 'group': 'FavoredEnemy',
-    'type': 'Feat', 'catgory': 'Class',
+    'type': 'Feat', 'category': 'Class',
     'apply': _applyFeatFavoredEnemy,
     'unapply': _unapplyFeatFavoredEnemy,
     'specifics': '''The character gains a +1 bonus to damage rolls against their favored enemy. They also receive a +1 bonus on Listen, Spot, and Taunt checks against the favored enemy. Every 5 levels, the ranger may choose an additional Favored Enemy and all bonuses against all favored enemies increase by +1.''',
   },
   {
     'name': 'Bane of Enemies', 'group': 'FavoredEnemy',
-    'type': 'Feat', 'catgory': 'Class',
+    'type': 'Feat', 'category': 'Class',
     'apply': _applyFeatBaneOfEnemies,
     'unapply': _unapplyFeatBaneOfEnemies,
     'prerequisite': [('ClassLevel', 'Ranger', 21)],
@@ -108,19 +108,19 @@ protos.extend([
   # Feat group: CombatStyle
   {
     'name': 'Combat Style', 'group': 'CombatStyle',
-    'type': 'Feat', 'catgory': 'Class',
+    'type': 'Feat', 'category': 'Class',
     'deriveFeat': _deriveFeatCombatStyle,
     'underiveFeat': _underiveFeatCombatStyle,
     'specifics': '''A Ranger can chosen TwoWeaponFighting or Archery combat style. If you chosen TwoWeaponFighting, you gain the following bonus feats: TwoWeaponFighting at 2nd level, Improved TwoWeaponFighting at 6th level, Greater TwoWeaponFighting at 11st level, and Perfect TwoWeaponFighting at 21st level. If you chosen Archery, you gain the following bonus feats: Rapid Shot at 2nd level, Manyshot at 6th level, and Improved Rapid Shot at 11th level. You gain the benefit of these feats even if you do not meet their prerequisites.''',
   },
   {
     'name': 'Improved Combat Style', 'group': 'CombatStyle',
-    'type': 'Feat', 'catgory': 'Class',
+    'type': 'Feat', 'category': 'Class',
     'specifics': '''At 6th level, a ranger's aptitude in his chosen combat style (archery or two-weapon combat) improves. If he selected archery at 2nd level, he is treated as having the Manyshot feat, even if he does not have the normal prerequisites for that feat. If the ranger selected two-weapon combat at 2nd level, he is treated as having the Improved Two-Weapon Fighting feat, even if he does not have the normal prerequisites for that feat. As before, the benefits of the ranger's chosen style apply only when he wears light or no armor. He loses all benefits of his combat style when wearing medium or heavy armor.''',
   },
   {
     'name': 'Combat Mastery', 'group': 'CombatStyle',
-    'type': 'Feat', 'catgory': 'Class',
+    'type': 'Feat', 'category': 'Class',
     'specifics': '''At 11th level, a ranger's aptitude in his chosen combat style (archery or two-weapon combat) improves again. If he selected archery at 2nd level, he is treated as having the Improved Rapid Shot feat, even if he does not have the normal prerequisites for that feat. If the ranger selected two-weapon combat at 2nd level, he is treated as having the Greater Two-Weapon Fighting feat, even if he does not have the normal prerequisites for that feat. As before, the benefits of the ranger's chosen style apply only when he wears light or no armor. He loses all benefits of his combat style when wearing medium or heavy armor.''',
   },
 ])
