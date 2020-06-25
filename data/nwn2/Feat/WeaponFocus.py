@@ -13,7 +13,7 @@ def availableParams(unit):
     weaponsAvailable = []
     for _, weaponBaseName in weapons:
         weaponProto = unit.ctx['Weapon'][weaponBaseName]
-        if weaponProto.proto['WeaponSize'] != 'Large':
+        if weaponProto.size != 'Large':
             weaponsAvailable.append(weaponBaseName)
     return weaponsAvailable
 
@@ -21,7 +21,7 @@ def __applyWeaponFocus(feat, caster, target, **kwargs):
     weapon = kwargs.get('weapon')
     hand = kwargs.get('hand')
     params = kwargs.get('params')
-    if not isinstance(params, list) or weapon.nameBase not in params:
+    if not isinstance(params, list) or weapon.getItemBaseName() not in params:
         return
 
     print(feat.name, 'affects weapon:', weapon.getItemBaseName(), ', params:', params)

@@ -1,30 +1,25 @@
 #coding: utf-8
-from utils.props import Props, Modifier, sum_int_value
+from utils.props import Modifier, sum_int_value
 
-class Damages:
-  def __init__(self):
-    self.modifier = Modifier()
-  def __str__(self):
-    return str(self.modifier)
-
+class Damages(Modifier):
   def addSingleSource(self, damageType, source, value):
-    self.modifier.updateSource(('Type', damageType, source), value)
+    self.updateSource(('Type', damageType, source), value)
   def addMultiplier(self, source, value):
-    self.modifier.updateSource(('Multiplier', source), value)
+    self.updateSource(('Multiplier', source), value)
   def addMultipliers(self, sources):
     for k,v in sources.items():
-      self.modifier.updateSource(('Multiplier', k), v)
+      self.updateSource(('Multiplier', k), v)
 
   def calcTotal(self):
-    damageTotal = self.modifier.sumSource('Type')
-    multiplier = sum_int_value(self.modifier.sumSource('Multiplier'))
+    damageTotal = self.sumSource('Type')
+    multiplier = sum_int_value(self.sumSource('Multiplier'))
     if multiplier > 0.01:
       damageTotal = int(damageTotal * multiplier)
     return damageTotal
 
 class Result:
   def __init__(self, name):
-    self.modifier = Props.Modifier()
+    self.modifier = Modifier()
     self.name = name
 
   def addSingleSource(self, source, value):
@@ -51,9 +46,9 @@ if __name__ == '__main__':
   dmgs = Damages()
   """
   """
-  modifierChar = Props.Modifier()
+  modifierChar = Modifier()
   modifierChar.updateSource(('Damage', 'Additional', 'Physical', 'Ability:Str'), 4)
-  modifierWeapon = Props.Modifier()
+  modifierWeapon = Modifier()
   modifierWeapon.updateSource(('Damage', 'Additional', 'Magical', 'WeaponEnhancement'), 2)
   modifierWeapon.updateSource(('Damage', 'Additional', 'Sonic', 'WeaponDamageBonus'), 5)
 

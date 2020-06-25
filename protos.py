@@ -38,127 +38,6 @@ def _name_canonical(name):
   words = name_new.split(' ')
   return ''.join(list(map(lambda word: word.capitalize(), words)))
 
-def apply_tuple_resource(res, unit, **kwargs):
-  #print('apply resource:', res)
-  if not isinstance(res, tuple):
-    return
-
-  if callable(res[0]):
-    # support (_addDeityWeaponFocus, ...),
-    res[0](unit)
-    return
-
-  if not isinstance(res[0], str):
-    return
-  if res[0] == 'Feat':
-    featChoice = kwargs['featChoice'] if 'featChoice' in kwargs else kwargs
-    if isinstance(res[1], str):
-      # support ('Feat', 'Breath Weapon')
-      featName = res[1]
-      unit.addFeat(featName, featChoice.get(featName))
-    elif isinstance(res[1], (tuple,list)):
-      # support ('Feat', ('Natural Armor Increase', 'Draconic Ability Scores'))
-      for featName in res[1]:
-        unit.feats.addFeat(featName, featChoice.get(featName))
-    elif isinstance(res[1], dict):
-      # support ('Feat', {'Weapon Focus': 'Longsword'})
-      for featName, featParam in res[1].items():
-        unit.feats.addFeat(featName, featParam)
-
-  elif res[0] == 'PropSource':
-    # support ('PropSource', 'Favored Enemy', kwargs)
-    unit.calc.addSource(res[1], **res[2])
-  elif res[0] == 'SpellAccess':
-    # support ('SpellAccess', 'Cleric', ('Magic Circle Against Evil', 'Lesser Planar Binding'))
-    unit.addAccessSpell(res[1], res[2])
-  elif res[0] == 'SpellType':
-    # support ('SpellType', 'Divine', ...)
-    unit.addAccessSpellClass(res[1])
-  elif res[0] == 'Domain':
-    # support ('Domain', 2)
-    # provide Domain name list in kwargs['domains']
-    for domainName in kwargs['domains']:
-      domain = unit.ctx['Domain'].get(domainName)
-      if not domain:
-        warnings.warn('unknown domain:' + domainName)
-        continue
-      domain.apply(unit)
-
-def is_requirements_match(requirements, unit):
-  if not requirements:
-    return True
-
-  for cond in requirements:
-    if not isinstance(cond, tuple) or len(cond) < 2:
-      continue
-
-    # check Ability
-    if cond[0] == 'Ability':
-      # support ('Ability', 'Dex', 13),
-      if unit.calc.calcPropValue('Ability.' + cond[1] + '.Base', unit, None) < cond[2]:
-        return False
-
-    # check Skill
-    elif cond[0] == 'Skill':
-      # support ('Skill', 'Tumble', 5),
-      if unit.calc.calcPropValue('Skill.' + cond[1], 'Builder') < cond[2]:
-        return False
-
-    # check Level
-    elif cond[0] == 'Level':
-      # support ('Level', 21)
-      if unit.getClassLevel() < cond[1]:
-        return False
-
-    # check ClassLevel
-    elif cond[0] == 'ClassLevel':
-      if isinstance(cond[1], str) and isinstance(cond[2], int):
-        # support ('ClassLevel', 'Ranger, 21)
-        if unit.getClassLevel(cond[1]) < cond[2]:
-          return False
-      else:
-        return False
-
-    # check ClassAny
-    elif cond[0] == 'ClassAny':
-      clsMatched = False
-      if isinstance(cond[1], tuple):
-        # support ('ClassAny', ('Bard', 'Sorcerer'))
-        for cls in cond[1]:
-          if unit.getClassLevel(cls) > 0:
-            clsMatched = True
-            break
-      if not clsMatched:
-        return False
-
-    # check BaseAttackBonus
-    elif cond[0] == 'BaseAttackBonus':
-      # support ('BaseAttackBonus', 5)
-      if unit.calc.calcPropValue('AttackBonus.Base', unit) < cond[2]:
-        return False
-
-    # check Feat
-    elif cond[0] == 'Feat':
-      if isinstance(cond[1], tuple):
-        # support ('Feat', ('Dodge', 'Mobility', 'CombatExpertise', 'SpringAttack', 'WhirlwindAttack')),
-        if not unit.hasFeats(cond[1]):
-          return False
-      elif isinstance(cond[1], str):
-        if not unit.hasFeat(cond[1]):
-          return False
-      else:
-        return False
-
-    # custom condition
-    elif callable(cond[0]):
-      if not cond[0](unit):
-        # support (function, 'Weapon Focus in a melee weapon')
-        return False
-    else:
-      warnings.warn('unknown condition ' + repr(cond))
-      return False
-  return True
-
 class ProtoBase:
   def __init__(self, **kwargs):
     self.name = kwargs.pop('name')
@@ -195,7 +74,7 @@ class ProtoClass(ProtoBase):
     # todo: parse bonus and merge prerequisite entry
 
   def isAvailable(self, unit):
-    return is_requirements_match(self.prerequisite, unit)
+    return unit.matchPrerequisite(self.prerequisite)
 
   def levelUp(self, unit, level, **choices):
     print('apply', self.name, 'level', level)
@@ -210,10 +89,10 @@ class ProtoClass(ProtoBase):
       if not isinstance(entry, tuple):
         continue
       if entry[0] == level:
-        apply_tuple_resource(entry[1], unit, **choices)
+        unit.applyTupleResource(entry[1], **choices)
       elif callable(entry[0]):
         if entry[0](level):
-          apply_tuple_resource(entry[1], unit, **choices)
+          unit.applyTupleResource(entry[1], **choices)
 
   def calcSaveThrow(self, savingName, classLevel):
     if savingName in self.highSaves:
@@ -229,7 +108,7 @@ class ProtoDomain(ProtoBase):
     if hasattr(self, 'bonus'):
       for entry in self.bonus:
         print('apply resource %s cleric domain %s' % (str(entry), self.name))
-        apply_tuple_resource(entry, unit)
+        unit.applyTupleResource(entry)
 
 class ProtoFeat(ProtoBase):
   def __init__(self, **kwargs):
@@ -243,7 +122,7 @@ class ProtoFeat(ProtoBase):
       self.nameBuff = self.name
 
   def isAvailable(self, unit):
-    return is_requirements_match(self.prerequisite, unit)
+    return unit.matchPrerequisite(self.prerequisite)
 
 class ProtoSpell(ProtoBase):
   def __init__(self, **kwargs):
@@ -302,12 +181,12 @@ class ProtoWeapon(ProtoBase):
 
 class Weapon:
   def __init__(self, proto, **kwargs):
-    self._proto = proto
+    self.proto = proto
     self.kwargs = kwargs
     if 'name' in kwargs:
       self.name = kwargs['name']
     else:
-      self.name = self._proto.name
+      self.name = self.proto.name
       if 'enhancement' in kwargs:
         self.name += '+' + str(kwargs['enhancement'])
 
@@ -315,14 +194,14 @@ class Weapon:
     return self.name
 
   def getItemBaseName(self):
-    return self._proto.name
+    return self.proto.name
 
   def apply(self, unit, hand):
     print('apply', hand, 'weapon:', self.name)
     apply_weapon_attacks(self, unit, hand)
 
     # weapon base damage
-    weaponParams = self._proto.damageRoll
+    weaponParams = self.proto.damageRoll
     unit.calc.addSource('Damage.' + hand, name=self.name, calcInt=lambda caster, target: ('Physical', self.name, dice_roll(1, weaponParams[1], weaponParams[0])), noCache=True)
 
     # weapon enhancement
@@ -331,7 +210,7 @@ class Weapon:
       unit.calc.addSource('AttackBonus.' + hand, name='WeaponEnhancement', calcInt=self.enhancement)
 
     # weapon critical parameter
-    criticalParams = self._proto.criticalThreat
+    criticalParams = self.proto.criticalThreat
     unit.calc.addSource('Weapon.%s.CriticalRange' % hand, name='WeaponBase', calcInt=criticalParams[0])
     unit.calc.addSource('Weapon.%s.CriticalMultiplier' % hand, name='WeaponBase', calcInt=criticalParams[1])
 

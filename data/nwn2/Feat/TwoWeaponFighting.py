@@ -11,10 +11,10 @@ def _applyTwoWeaponFighting(feat, caster, target, **kwargs):
     if weaponMH:
       caster.calc.addSource('AttackBonus.MainHand', name='Feat:TwoWeaponFighting', calcInt=-4)
       caster.calc.addSource('AttackBonus.OffHand', name='Feat:TwoWeaponFighting', calcInt=-4)
-      if weapon.proto['WeaponSize'] in ['Tiny', 'Small']:
+      if weapon.proto.size in ['Tiny', 'Small']:
         caster.calc.addSource('AttackBonus.MainHand', name='Feat:TwoWeaponFighting', calcInt=2)
         caster.calc.addSource('AttackBonus.OffHand', name='Feat:TwoWeaponFighting', calcInt=2)
-      # todo:
+      ''' todo:
       if 'Perfect' in params:
         apply_weapon_attacks(weapon, caster, hand, 10)
       elif 'Greater' in params:
@@ -23,6 +23,7 @@ def _applyTwoWeaponFighting(feat, caster, target, **kwargs):
         apply_weapon_attacks(weapon, caster, hand, 2)
       else:
         apply_weapon_attacks(weapon, caster, hand, 1)
+      '''
 
 protos = [
   {

@@ -99,8 +99,6 @@ protos.extend([
   {
     'name': 'Bane of Enemies', 'group': 'FavoredEnemy',
     'type': 'Feat', 'category': 'Class',
-    'apply': _applyFeatBaneOfEnemies,
-    'unapply': _unapplyFeatBaneOfEnemies,
     'prerequisite': [('ClassLevel', 'Ranger', 21)],
     'specifics': '''The character gains a 2d6 bonus to damage rolls and +2 attack bonus against their favored enemy.''',
   },

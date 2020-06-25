@@ -1,10 +1,10 @@
 #coding: utf-8
-
 from utils.props import Props
 from combat_manager import CombatManager
 from buff_manager import BuffManager
 from feat_manager import FeatManager
 from prop_calculator import PropCalculator
+import warnings
 
 class Unit:
   def __init__(self, ctx):
@@ -24,6 +24,128 @@ class Unit:
 
     self.buffs.update(deltaTime)
     self.combat.update(deltaTime)
+
+
+  def applyTupleResource(self, res, **kwargs):
+    #print('apply resource:', res)
+    if not isinstance(res, tuple):
+      return
+
+    if callable(res[0]):
+      # support (_addDeityWeaponFocus, ...),
+      res[0](self)
+      return
+
+    if not isinstance(res[0], str):
+      return
+    if res[0] == 'Feat':
+      featChoice = kwargs['featChoice'] if 'featChoice' in kwargs else kwargs
+      if isinstance(res[1], str):
+        # support ('Feat', 'Breath Weapon')
+        featName = res[1]
+        self.addFeat(featName, featChoice.get(featName))
+      elif isinstance(res[1], (tuple,list)):
+        # support ('Feat', ('Natural Armor Increase', 'Draconic Ability Scores'))
+        for featName in res[1]:
+          self.feats.addFeat(featName, featChoice.get(featName))
+      elif isinstance(res[1], dict):
+        # support ('Feat', {'Weapon Focus': 'Longsword'})
+        for featName, featParam in res[1].items():
+          self.feats.addFeat(featName, featParam)
+
+    elif res[0] == 'PropSource':
+      # support ('PropSource', 'Favored Enemy', kwargs)
+      self.calc.addSource(res[1], **res[2])
+    elif res[0] == 'SpellAccess':
+      # support ('SpellAccess', 'Cleric', ('Magic Circle Against Evil', 'Lesser Planar Binding'))
+      self.addAccessSpell(res[1], res[2])
+    elif res[0] == 'SpellType':
+      # support ('SpellType', 'Divine', ...)
+      self.addAccessSpellClass(res[1])
+    elif res[0] == 'Domain':
+      # support ('Domain', 2)
+      # provide Domain name list in kwargs['domains']
+      for domainName in kwargs['domains']:
+        domain = self.ctx['Domain'].get(domainName)
+        if not domain:
+          warnings.warn('unknown domain:' + domainName)
+          continue
+        domain.apply(self)
+
+  def matchPrerequisite(self, requirements):
+    if not requirements:
+      return True
+
+    for cond in requirements:
+      if not isinstance(cond, tuple) or len(cond) < 2:
+        continue
+
+      # check Ability
+      if cond[0] == 'Ability':
+        # support ('Ability', 'Dex', 13),
+        if self.calc.calcPropValue('Ability.' + cond[1] + '.Base', self, None) < cond[2]:
+          return False
+
+      # check Skill
+      elif cond[0] == 'Skill':
+        # support ('Skill', 'Tumble', 5),
+        if self.calc.calcPropValue('Skill.' + cond[1], 'Builder') < cond[2]:
+          return False
+
+      # check Level
+      elif cond[0] == 'Level':
+        # support ('Level', 21)
+        if self.getClassLevel() < cond[1]:
+          return False
+
+      # check ClassLevel
+      elif cond[0] == 'ClassLevel':
+        if isinstance(cond[1], str) and isinstance(cond[2], int):
+          # support ('ClassLevel', 'Ranger, 21)
+          if self.getClassLevel(cond[1]) < cond[2]:
+            return False
+        else:
+          return False
+
+      # check ClassAny
+      elif cond[0] == 'ClassAny':
+        clsMatched = False
+        if isinstance(cond[1], tuple):
+          # support ('ClassAny', ('Bard', 'Sorcerer'))
+          for cls in cond[1]:
+            if self.getClassLevel(cls) > 0:
+              clsMatched = True
+              break
+        if not clsMatched:
+          return False
+
+      # check BaseAttackBonus
+      elif cond[0] == 'BaseAttackBonus':
+        # support ('BaseAttackBonus', 5)
+        if self.calc.calcPropValue('AttackBonus.Base', self) < cond[2]:
+          return False
+
+      # check Feat
+      elif cond[0] == 'Feat':
+        if isinstance(cond[1], tuple):
+          # support ('Feat', ('Dodge', 'Mobility', 'CombatExpertise', 'SpringAttack', 'WhirlwindAttack')),
+          if not self.hasFeats(cond[1]):
+            return False
+        elif isinstance(cond[1], str):
+          if not self.hasFeat(cond[1]):
+            return False
+        else:
+          return False
+
+      # custom condition
+      elif callable(cond[0]):
+        if not cond[0](self):
+          # support (function, 'Weapon Focus in a melee weapon')
+          return False
+      else:
+        warnings.warn('unknown condition ' + repr(cond))
+        return False
+    return True
 
   def getName(self):
     return self.props.get('name')

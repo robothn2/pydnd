@@ -57,7 +57,7 @@ class FeatGroup:
   def apply(self, unit, kwargs):
     #print(repr(unit), 'apply feat group:', self.name, ', members:', str(self.members.keys()))
     for featName, feat in self.members.items():
-      if not hasattr(feat, 'apply'):
+      if not feat.apply:
         continue
 
       if 'weapon' in kwargs:
@@ -84,7 +84,7 @@ class FeatManager:
   def addFeat(self, featNameFull, featParams = None):
     feat = self.owner.ctx['Feat'].get(featNameFull)
     if not feat:
-      warnings.warn('unknown feat: ' + featNameFull)
+      #warnings.warn('unknown feat: ' + featNameFull)
       return None
 
     featGroup = self.featGroups.get(feat.group)

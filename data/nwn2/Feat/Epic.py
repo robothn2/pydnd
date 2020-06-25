@@ -12,10 +12,10 @@ protos = [
 ]
 
 def __applyGreatAbility(feat, caster, target, **kwargs):
-    ability = feat.name[6:9]
+    ability = feat.name[5:8]
     propName = 'Ability.%s.Base' % ability
     prop = caster.calc.getProp(propName)
-    value = prop.calcSingleSource(feat.name, caster, None)
+    value = prop if isinstance(prop, int) else prop.calcSingleSource(feat.name, caster, None)
     caster.calc.addSource(propName, name=feat.name, calcInt=value+1)
 def __unapplyGreatAbility(feat, caster, target, **kwargs):
     pass

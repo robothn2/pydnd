@@ -2,7 +2,6 @@
 
 from unit import Unit
 from abilities import abilities_parse
-from protos import apply_tuple_resource
 import json,warnings
 
 def load_json_file(builderJsonFile):
@@ -101,7 +100,7 @@ class Player(Unit):
       if feats:
         #print('found builder feats:', feats)
         featChoice = levelEntry['featChoice'] if 'featChoice' in levelEntry else {}
-        apply_tuple_resource(('Feat', feats), self, **featChoice)
+        self.applyTupleResource(('Feat', feats), **featChoice)
 
       # update skills
       for skillName,skillLevel in levelEntry['skills'].items():

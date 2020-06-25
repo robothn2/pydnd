@@ -43,7 +43,7 @@ class Creature(Unit):
       weaponName = attack[0]
       if weaponName not in weaponsCreated:
         # create a virtual weapon
-        weapon = create_weapon(weaponName,
+        weapon = create_weapon(self.ctx, weaponName,
                 damageRoll=(1, attack[1]),
                 criticalThreat=(1, len(attack) - 2))
 
