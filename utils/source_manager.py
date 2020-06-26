@@ -1,14 +1,19 @@
 #coding: utf-8
+from dice import dice_roll
 
 '''
-  SourceManager 管理多个 Calculator
-    Calculator 可以包含多个 Source
-    Calculator 可以引用多个其它 Calculator 的计算结果，这多个结果可以选择 sum 或 max 来逐一处理
-      Calculator 分多种：ValueCalclator、DisableCalculator、EnableCalculator
-        ValueCalclator 计算的值可以是一个 tuple，里面附带类型
-  Rule 是 DND 规则，可以初始化 SourceManager 内 Source 的计算关系
-    WeaponRule 用来设置武器计算规则
-    UnitRule 用来设置 Unit 计算规则
+  SourceManager contains some Calculators provided by DND rule.
+  Each Calculator contains multi sources that registered by Feat, Item, Buff,
+    etc. it can also reference other Calculators, this mechnicism allows value
+    computed recursively.
+  Calculator uses a source method for result post-processing to sources and
+    references, it also use a merge method for result merging between sources
+    and references.
+  Calculator can disable/enable all upstreams & sources
+  A source can return value of int, tuple(2 or 3 elements) or dict:
+    tuple(2): a single key-value pair
+    tuple(3): a int value computed by dice roll(min, max, times)
+    dict: result can be merged by key, sum values on same key
 '''
 
 _preset_merge_methods = {
@@ -18,7 +23,9 @@ _preset_merge_methods = {
 }
 _preset_source_methods = {
   'modifier': lambda value: (value - 10) // 2,
+  'sum_dict': lambda d: sum(d.values()),
 }
+
 
 def _translate_method(method, methodTable):
   if not method:
@@ -38,6 +45,15 @@ def _postproc_result(resultOld, resultNew, methodMerge, methodSource):
   return resultOld # deal with resultNew == 0
 
 class Calculator:
+  class _IntDict(dict):
+    def __add__(self, other):
+      for k,v in other.items():
+        if k in self:
+          self[k] += int(v)
+        else:
+          self[k] = int(v)
+      return self
+
   def __init__(self, name, methodMerge, methodSource, kwargs):
     self._name = name
     self._upstreams = []
@@ -64,7 +80,6 @@ class Calculator:
       self.markDirty()
 
   def addSource(self, sourceName, valueEstimator):
-    assert(sourceName not in self._sources)
     self._sources[sourceName] = valueEstimator
     self.markDirty()
 
@@ -86,8 +101,17 @@ class Calculator:
 
     result = None
     for name,estimator in self._sources.items():
-      if isinstance(estimator, (int, list)):
+      if isinstance(estimator, int):
         resultNew = estimator
+      elif isinstance(estimator, dict):
+        resultNew = Calculator._IntDict(estimator)
+      elif isinstance(estimator, tuple):
+        if len(estimator) == 2:
+          resultNew = Calculator._IntDict({estimator[0]: estimator[1]})
+        elif len(estimator) == 3:
+          resultNew = dice_roll(*estimator)
+        else:
+          raise RuntimeError('invalid source tuple "%s"' % name)
       elif callable(estimator):
         resultNew = estimator(kwargs)
       else:
@@ -115,12 +139,18 @@ class SourceManager:
   def addCalculator(self, name, methodMerge='sum', methodSource=None, **kwargs):
     if name not in self._calc:
       self._calc[name] = Calculator(name, methodMerge, methodSource, kwargs)
+    upstream = kwargs.get('upstream')
+    if isinstance(upstream, str):
+      self.linkCalculator(upstream, name)
+    elif isinstance(upstream, (tuple, list)):
+      for up in upstream:
+        self.linkCalculator(up, name)
 
   def linkCalculator(self, upstreamName, downstreamName):
     up = self._calc.get(upstreamName)
     down = self._calc.get(downstreamName)
     if not up or not down:
-      return
+      raise RuntimeError('calculator link fail "{}" -> "{}"'.format(upstreamName, downstreamName))
     up.addDownstream(down)
     down.addUpstream(up)
 

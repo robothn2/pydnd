@@ -126,3 +126,85 @@ class TestSourceManager(unittest.TestCase):
 
     sm.removeSource('ab.str.base', 'builder')
     self.assertEqual(sm.calcResult('mod.str'), -4)
+
+  def test_calculator_lambda_source(self):
+    sm = SourceManager()
+
+    sm.addCalculator('c', 'sum', noCache=True)
+    sm.addSource('c', 's1', lambda kwargs: 5)
+    self.assertEqual(sm.calcResult('c'), 5)
+    sm.addSource('c', 's2', lambda kwargs: kwargs.get('p', 2))
+    self.assertEqual(sm.calcResult('c'), 7)
+    self.assertEqual(sm.calcResult('c', p=3), 8)
+
+    sm.removeSource('c', 's1')
+    self.assertEqual(sm.calcResult('c', p=-5), -5)
+
+  def test_calculator_replace_source(self):
+    sm = SourceManager()
+
+    sm.addCalculator('level.class', 'sum')
+    sm.addSource('level.class', 'ranger', 1)
+    sm.addSource('level.class', 'ranger', 7)
+    self.assertEqual(sm.calcResult('level.class'), 7)
+
+  def test_calculator_discard_cache_value(self):
+    sm = SourceManager()
+
+    sm.addCalculator('level.class', 'sum')
+    sm.addSource('level.class', 'ranger', 7)
+    self.assertEqual(sm.calcResult('level.class'), 7)
+    sm.addSource('level.class', 'cleric', 2)
+    self.assertEqual(sm.calcResult('level.class'), 9)
+
+  def test_calculator_lambda_level(self):
+    sm = SourceManager()
+
+    sm.addCalculator('level.class', 'sum')
+    sm.addCalculator('sr.race', 'max', lambda value: value + 11)
+    sm.linkCalculator('level.class', 'sr.race')
+    sm.addCalculator('sr', 'max')
+    sm.linkCalculator('sr.race', 'sr')
+    sm.addSource('level.class', 'ranger', 5)
+    self.assertEqual(sm.calcResult('sr'), 16)
+    sm.addSource('level.class', 'cleric', 5)
+    self.assertEqual(sm.calcResult('sr'), 21)
+    sm.addSource('level.class', 'fighter', 5)
+    self.assertEqual(sm.calcResult('sr'), 26)
+
+  def test_calculator_tuple_result(self):
+    sm = SourceManager()
+
+    sm.addCalculator('dmg.additional', 'sum')
+    sm.addCalculator('dmg.mainhand', 'sum')
+    sm.linkCalculator('dmg.additional', 'dmg.mainhand')
+    sm.addSource('dmg.mainhand', 'dagger', {'physical': 4})
+    self.assertEqual(sm.calcResult('dmg.mainhand'), {'physical': 4})
+    sm.addSource('dmg.additional', 'powerattack', {'physical': 3})
+    self.assertEqual(sm.calcResult('dmg.mainhand'), {'physical': 7})
+    sm.addSource('dmg.additional', 'divinemight', {'divine': 2})
+    self.assertEqual(sm.calcResult('dmg.mainhand'), {'physical': 7, 'divine': 2})
+
+  def test_calculator_sum_dict_result(self):
+    sm = SourceManager()
+
+    sm.addCalculator('dmg.additional')
+    sm.addCalculator('dmg.mainhand')
+    sm.linkCalculator('dmg.additional', 'dmg.mainhand')
+    sm.addCalculator('dmg', methodSource='sum_dict')
+    sm.linkCalculator('dmg.mainhand', 'dmg')
+    sm.addSource('dmg.mainhand', 'dagger', {'physical': 4})
+    sm.addSource('dmg.additional', 'divinemight', {'divine': 2})
+    sm.addSource('dmg.additional', 'powerattack', {'physical': 3})
+    self.assertEqual(sm.calcResult('dmg'), 9)
+
+  def test_calculator_add_and_link(self):
+    sm = SourceManager()
+
+    sm.addCalculator('dmg.additional')
+    sm.addCalculator('dmg.mainhand', upstream='dmg.additional')
+    sm.addCalculator('dmg', methodSource='sum_dict', upstream='dmg.mainhand')
+    sm.addSource('dmg.mainhand', 'dagger', {'physical': 4})
+    sm.addSource('dmg.additional', 'divinemight', {'divine': 2})
+    sm.addSource('dmg.additional', 'powerattack', {'physical': 3})
+    self.assertEqual(sm.calcResult('dmg'), 9)
