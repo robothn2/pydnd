@@ -14,6 +14,8 @@ from dice import dice_roll
     tuple(2): a single key-value pair
     tuple(3): a int value computed by dice roll(min, max, times)
     dict: result can be merged by key, sum values on same key
+  Once upon you build up a SourceManager with rule(fill Caculators), do NOT
+    call SourceManager.addCaculator() any more, instead of call addSource().
 '''
 
 _preset_merge_methods = {
@@ -59,6 +61,7 @@ class Calculator:
     self._upstreams = []
     self._downstreams = [] # for markDirty recursively
     self._sources = {}
+    self._enablers = []
     # merge result of two sources & upstreams
     self._methodMerge = _translate_method(methodMerge, _preset_merge_methods)
     if not self._methodMerge:
@@ -69,6 +72,7 @@ class Calculator:
     self._noCache = kwargs.get('noCache', False)
     self._defaultResult = kwargs.get('defaultResult', 0)
     self._result = self._defaultResult
+    self._sourceAsEnabler = kwargs.get('sourceAsEnabler', False)
 
   def addDownstream(self, calculator):
     if calculator not in self._downstreams:
@@ -78,13 +82,30 @@ class Calculator:
     if calculator not in self._upstreams:
       self._upstreams.append(calculator)
       self.markDirty()
+      if calculator._noCache:
+        self.markNoCache()
 
   def addSource(self, sourceName, valueEstimator):
-    self._sources[sourceName] = valueEstimator
-    self.markDirty()
+    #print('{} add source: {}'.format(self._name, sourceName))
+    if self._sourceAsEnabler:
+      enabler = (sourceName, *valueEstimator)
+      if enabler not in self._enablers:
+        self._enablers.append(enabler)
+        self._enablers.sort(key=lambda elem: elem[1], reverse=True)
+        #print(self._enablers)
+        self.markDirty()
+    else:
+      self._sources[sourceName] = valueEstimator
+      self.markDirty()
 
   def removeSource(self, sourceName):
-    if sourceName in self._sources:
+    if self._sourceAsEnabler:
+      for i,v in enumerate(self._enablers):
+        if v[0] == sourceName:
+          del self._enablers[i]
+          self.markDirty()
+          break
+    elif sourceName in self._sources:
       self._sources.pop(sourceName)
       self.markDirty()
 
@@ -92,33 +113,62 @@ class Calculator:
     if self._dirty:
       return
     self._dirty = True
+    #print('dirty: ' + self._name)
     for downstream in self._downstreams:
       downstream.markDirty()
 
+  def markNoCache(self):
+    if self._noCache:
+      return
+    self._noCache = True
+    for up in self._upstreams:
+      up.markNoCache()
+
   def __call__(self, kwargs):
-    if not self._dirty:
+    if not self._noCache and not self._dirty:
       return self._result
 
     result = None
-    for name,estimator in self._sources.items():
-      if isinstance(estimator, int):
-        resultNew = estimator
-      elif isinstance(estimator, dict):
-        resultNew = Calculator._IntDict(estimator)
-      elif isinstance(estimator, tuple):
-        if len(estimator) == 2:
-          resultNew = Calculator._IntDict({estimator[0]: estimator[1]})
-        elif len(estimator) == 3:
-          resultNew = dice_roll(*estimator)
+    self._dirty = False
+    if self._sourceAsEnabler:
+      for enabler in self._enablers:
+        #print('enabler "{}" priority({}), value({})'.format(*enabler))
+        if enabler[2]:
+          break; # do upstreams merging
+        return self._defaultResult
+    else:
+      for name,estimator in self._sources.items():
+        if isinstance(estimator, int):
+          # support constant int or expression
+          resultNew = estimator
+        #elif isinstance(estimator, dict):
+        #  # support multi int/tuple
+        #  resultNew = Calculator._IntDict(estimator)
+        elif isinstance(estimator, tuple):
+          if len(estimator) == 2:
+            resultNew = Calculator._IntDict()
+            if isinstance(estimator[1], int):
+              # support ('physical', 3)
+              resultNew[estimator[0]] = estimator[1]
+            elif isinstance(estimator[1], tuple):
+              if not self._noCache:
+                raise RuntimeError('dice tuple need noCache property on "%s"' % self._name)
+              if len(estimator[1]) != 3:
+                raise RuntimeError('dice tuple format error returned by "%s"' % name)
+              # support ('physical', (1,6,2))
+              resultNew[estimator[0]] = dice_roll(*estimator[1])
+          elif len(estimator) == 3:
+            # support lambda kwargs: ('physical', (1,6,2))
+            resultNew = dice_roll(*estimator)
+          else:
+            raise RuntimeError('invalid source tuple "%s"' % name)
+        elif callable(estimator):
+          resultNew = estimator(kwargs)
         else:
-          raise RuntimeError('invalid source tuple "%s"' % name)
-      elif callable(estimator):
-        resultNew = estimator(kwargs)
-      else:
-        continue
+          continue
 
-      result = _postproc_result(result, resultNew,
-                                self._methodMerge, self._methodSource)
+        result = _postproc_result(result, resultNew,
+                                  self._methodMerge, self._methodSource)
 
     for upstream in self._upstreams:
       resultNew = upstream(kwargs)
@@ -127,8 +177,6 @@ class Calculator:
       #print(' {}: {} result: {}->{}'.format(self._name, upstream._name, resultNew, result))
 
     self._result = self._defaultResult if result is None else result
-    if not self._noCache:
-      self._dirty = False
     #print(' {} result: {}'.format(self._name, self._result))
     return self._result
 

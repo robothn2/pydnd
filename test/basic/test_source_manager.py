@@ -2,6 +2,7 @@
 from utils.source_manager import SourceManager
 #from rule.nwn2 import RuleFactory
 import unittest
+from collections import defaultdict
 
 
 class TestSourceManager(unittest.TestCase):
@@ -11,6 +12,23 @@ class TestSourceManager(unittest.TestCase):
     #factory = RuleFactory()
     #rule = factory.get('UnitSourceManager')
     #rule.fill_source_manager(self._manager, factory)
+
+  def test_calculator_default_result(self):
+    sm = SourceManager()
+    # defaultResult is 0 if not set
+    sm.addCalculator('a1')
+    self.assertEqual(sm.calcResult('a1'), 0)
+    sm.addSource('a1', 'b', 2)
+    self.assertEqual(sm.calcResult('a1'), 2)
+    sm.removeSource('a1', 'b')
+    self.assertEqual(sm.calcResult('a1'), 0)
+
+    sm.addCalculator('a2', defaultResult=5)
+    self.assertEqual(sm.calcResult('a2'), 5)
+    sm.addSource('a2', 'b', 2)
+    self.assertEqual(sm.calcResult('a2'), 2)
+    sm.removeSource('a2', 'b')
+    self.assertEqual(sm.calcResult('a2'), 5)
 
   def test_calculator_add_remove_source(self):
     sm = SourceManager()
@@ -65,42 +83,24 @@ class TestSourceManager(unittest.TestCase):
 
   def test_calculator_upstreams(self):
     sm = SourceManager()
-    '''
-    ab.str (sum)
-      ab.str.base (sum)
-        builder = 12
-        race = 2
-        levelup:4 = 1
-      ab.str.item (max)
-        ring = 5
-        kama = 2
-        belt = 6
-      ab.str.buff (max)
-        bull strength = 4
-    '''
 
     sm.addCalculator('ab.str.base', 'sum')
+    sm.addCalculator('ab.str.item', 'max')
+    sm.addCalculator('ab.str.buff', 'max')
+    sm.addCalculator('ab.str', 'sum', upstream=('ab.str.base', 'ab.str.item', 'ab.str.buff'))
     sm.addSource('ab.str.base', 'builder', 12)
     sm.addSource('ab.str.base', 'race', 2)
     sm.addSource('ab.str.base', 'levelup:4', 1)
-    sm.addCalculator('ab.str.item', 'max')
     sm.addSource('ab.str.item', 'ring', 5)
     sm.addSource('ab.str.item', 'kama', 2)
     sm.addSource('ab.str.item', 'belt', 6)
-    sm.addCalculator('ab.str.buff', 'max')
     sm.addSource('ab.str.buff', 'bull strength', 4)
-    sm.addCalculator('ab.str', 'sum')
-    sm.linkCalculator('ab.str.base', 'ab.str')
-    sm.linkCalculator('ab.str.item', 'ab.str')
-    sm.linkCalculator('ab.str.buff', 'ab.str')
     self.assertEqual(sm.calcResult('ab.str'), 25)
 
-    sm.addCalculator('mod.str', 'sum', 'modifier')
-    sm.linkCalculator('ab.str', 'mod.str')
+    sm.addCalculator('mod.str', 'sum', 'modifier', upstream='ab.str')
     self.assertEqual(sm.calcResult('mod.str'), 7)
 
-    sm.addCalculator('attackbonus.mod', 'sum')
-    sm.linkCalculator('mod.str', 'attackbonus.mod')
+    sm.addCalculator('attackbonus.mod', 'sum', upstream='mod.str')
     self.assertEqual(sm.calcResult('attackbonus.mod'), 7)
 
     sm.removeSource('ab.str.buff', 'bull strength')
@@ -110,18 +110,13 @@ class TestSourceManager(unittest.TestCase):
     sm = SourceManager()
 
     sm.addCalculator('ab.str.base', 'sum')
-    sm.addSource('ab.str.base', 'builder', 12)
     sm.addCalculator('ab.str.item', 'max')
-    sm.addSource('ab.str.item', 'belt', 6)
     sm.addCalculator('ab.str.buff', 'max')
+    sm.addCalculator('ab.str', 'sum', upstream=('ab.str.base', 'ab.str.item', 'ab.str.buff'))
+    sm.addCalculator('mod.str', 'sum', 'modifier', upstream='ab.str')
+    sm.addSource('ab.str.base', 'builder', 12)
+    sm.addSource('ab.str.item', 'belt', 6)
     sm.addSource('ab.str.buff', 'weakness', -4)
-    sm.addCalculator('ab.str', 'sum')
-    sm.linkCalculator('ab.str.base', 'ab.str')
-    sm.linkCalculator('ab.str.item', 'ab.str')
-    sm.linkCalculator('ab.str.buff', 'ab.str')
-
-    sm.addCalculator('mod.str', 'sum', 'modifier')
-    sm.linkCalculator('ab.str', 'mod.str')
     self.assertEqual(sm.calcResult('mod.str'), 2) # ((12 + 6 + -4) - 10) / 2
 
     sm.removeSource('ab.str.base', 'builder')
@@ -161,10 +156,8 @@ class TestSourceManager(unittest.TestCase):
     sm = SourceManager()
 
     sm.addCalculator('level.class', 'sum')
-    sm.addCalculator('sr.race', 'max', lambda value: value + 11)
-    sm.linkCalculator('level.class', 'sr.race')
-    sm.addCalculator('sr', 'max')
-    sm.linkCalculator('sr.race', 'sr')
+    sm.addCalculator('sr.race', 'max', lambda value: value + 11, upstream='level.class')
+    sm.addCalculator('sr', 'max', upstream='sr.race')
     sm.addSource('level.class', 'ranger', 5)
     self.assertEqual(sm.calcResult('sr'), 16)
     sm.addSource('level.class', 'cleric', 5)
@@ -176,35 +169,55 @@ class TestSourceManager(unittest.TestCase):
     sm = SourceManager()
 
     sm.addCalculator('dmg.additional', 'sum')
-    sm.addCalculator('dmg.mainhand', 'sum')
-    sm.linkCalculator('dmg.additional', 'dmg.mainhand')
-    sm.addSource('dmg.mainhand', 'dagger', {'physical': 4})
+    sm.addCalculator('dmg.mainhand', 'sum', upstream='dmg.additional')
+    sm.addSource('dmg.mainhand', 'dagger', ('physical', 4))
     self.assertEqual(sm.calcResult('dmg.mainhand'), {'physical': 4})
-    sm.addSource('dmg.additional', 'powerattack', {'physical': 3})
+    sm.addSource('dmg.additional', 'powerattack', ('physical', 3))
     self.assertEqual(sm.calcResult('dmg.mainhand'), {'physical': 7})
-    sm.addSource('dmg.additional', 'divinemight', {'divine': 2})
+    sm.addSource('dmg.additional', 'divinemight', ('divine', 2))
     self.assertEqual(sm.calcResult('dmg.mainhand'), {'physical': 7, 'divine': 2})
 
   def test_calculator_sum_dict_result(self):
     sm = SourceManager()
 
     sm.addCalculator('dmg.additional')
-    sm.addCalculator('dmg.mainhand')
-    sm.linkCalculator('dmg.additional', 'dmg.mainhand')
-    sm.addCalculator('dmg', methodSource='sum_dict')
-    sm.linkCalculator('dmg.mainhand', 'dmg')
-    sm.addSource('dmg.mainhand', 'dagger', {'physical': 4})
-    sm.addSource('dmg.additional', 'divinemight', {'divine': 2})
-    sm.addSource('dmg.additional', 'powerattack', {'physical': 3})
-    self.assertEqual(sm.calcResult('dmg'), 9)
-
-  def test_calculator_add_and_link(self):
-    sm = SourceManager()
-
-    sm.addCalculator('dmg.additional')
     sm.addCalculator('dmg.mainhand', upstream='dmg.additional')
     sm.addCalculator('dmg', methodSource='sum_dict', upstream='dmg.mainhand')
-    sm.addSource('dmg.mainhand', 'dagger', {'physical': 4})
-    sm.addSource('dmg.additional', 'divinemight', {'divine': 2})
-    sm.addSource('dmg.additional', 'powerattack', {'physical': 3})
+    sm.addSource('dmg.mainhand', 'dagger', ('physical', 4))
+    sm.addSource('dmg.additional', 'divinemight', ('divine', 2))
+    sm.addSource('dmg.additional', 'powerattack', ('physical', 3))
     self.assertEqual(sm.calcResult('dmg'), 9)
+
+  def test_calculator_roll_dice(self):
+    sm = SourceManager()
+
+    sm.addCalculator('dmg.mainhand.variable', noCache=True)
+    sm.addCalculator('dmg.mainhand', upstream='dmg.mainhand.variable')
+    sm.addCalculator('dmg', methodSource='sum_dict', upstream='dmg.mainhand')
+    # A dagger with 1d4 base damage and a +2d6 sonic
+    sm.addSource('dmg.mainhand.variable', 'dagger:base', ('physical', (1,4,1)))
+    sm.addSource('dmg.mainhand.variable', 'dagger:element', ('sonic', (1,6,2)))
+    results = defaultdict(int)
+    for i in range(500):
+      results[sm.calcResult('dmg')] += 1
+    self.assertEqual(len(results), 6*2+4 + 1 - 3)
+
+  def test_calculator_source_enabler(self):
+    sm = SourceManager()
+
+    sm.addCalculator('ac.dex_mod')
+    sm.addCalculator('ac.dex_mod_control', sourceAsEnabler=True, upstream='ac.dex_mod')
+    sm.addCalculator('ac', upstream='ac.dex_mod_control')
+    # player will lost his dex modifier ac if he has footflat buff, until he has
+    # UncannyDodge feat
+    self.assertEqual(sm.calcResult('ac'), 0)
+    sm.addSource('ac.dex_mod', 'builder', 4)
+    self.assertEqual(sm.calcResult('ac'), 4)
+    sm.addSource('ac.dex_mod_control', 'foot_flat', (5, False))
+    self.assertEqual(sm.calcResult('ac'), 0)
+    sm.addSource('ac.dex_mod_control', 'uncanny_dodge', (10, True))
+    self.assertEqual(sm.calcResult('ac'), 4)
+    sm.removeSource('ac.dex_mod_control', 'uncanny_dodge')
+    self.assertEqual(sm.calcResult('ac'), 0)
+    sm.removeSource('ac.dex_mod_control', 'foot_flat')
+    self.assertEqual(sm.calcResult('ac'), 4)
